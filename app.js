@@ -1673,6 +1673,7 @@ const formulaCard = document.querySelector(".formula-card");
 const quickSwitch = document.querySelector(".quick-switch");
 const quickSwitchButtons = document.querySelectorAll(".quick-switch button");
 const homeButton = document.querySelector("#home-button");
+const headerAccountBox = document.querySelector(".header-account-box");
 const productNameInput = document.querySelector("#product-name");
 const savedProductsSelect = document.querySelector("#saved-products");
 const saveProductButton = document.querySelector("#save-product-button");
@@ -1761,6 +1762,7 @@ let currentCalculator = "china";
 let currentProductId = null;
 let currentUser = null;
 let isKakaoConfigured = false;
+let accountFeatureEnabled = true;
 let isAuthReady = false;
 let savedProductsCache = [];
 let currentProduct = createProduct("상품 1");
@@ -3506,7 +3508,7 @@ function renderCalculator(id, options = {}) {
   mockForm.hidden = isFinal;
   finalSummaryPanel.hidden = !isFinal;
   renderFinalSummaryMode();
-  sessionBar.hidden = false;
+  sessionBar.hidden = !accountFeatureEnabled;
   comingSoonSection.hidden = true;
   bannerGrid.hidden = true;
   homeGuideStrip.hidden = true;
@@ -3548,17 +3550,19 @@ async function requestJson(url, options = {}) {
 async function refreshAuthState() {
   try {
     const data = await requestJson("/api/me");
-    currentUser = data.user;
+    accountFeatureEnabled = data.accountFeatureEnabled !== false;
+    currentUser = accountFeatureEnabled ? data.user : null;
     isKakaoConfigured = Boolean(data.kakaoConfigured);
     isAuthReady = true;
 
-    if (currentUser) {
+    if (accountFeatureEnabled && currentUser) {
       await refreshSavedProducts();
     } else {
       savedProductsCache = [];
     }
   } catch {
     currentUser = null;
+    accountFeatureEnabled = true;
     isKakaoConfigured = false;
     isAuthReady = false;
     savedProductsCache = [];
@@ -3861,6 +3865,13 @@ function resolveProductName() {
 }
 
 async function saveCurrentProduct() {
+  if (!accountFeatureEnabled) {
+    setSaveStatus("저장 기능은 현재 제공하지 않습니다.", "warning", {
+      toast: true,
+    });
+    return;
+  }
+
   if (!currentUser) {
     setSaveStatus("카카오로 시작하면 저장할 수 있습니다.", "warning", {
       toast: true,
@@ -4051,6 +4062,17 @@ function createNewProduct() {
 }
 
 function renderLoginStatus() {
+  if (headerAccountBox) {
+    headerAccountBox.hidden = !accountFeatureEnabled;
+  }
+
+  if (!accountFeatureEnabled) {
+    if (sessionBar) {
+      sessionBar.hidden = true;
+    }
+    return;
+  }
+
   const savedCount = savedProductsCache.length;
   const savedCountLabel = `저장 상품 ${savedCount}개`;
   if (accountSavedCount) {

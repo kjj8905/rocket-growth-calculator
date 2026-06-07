@@ -71,31 +71,46 @@ After deployment, submit these URLs to search consoles:
 - `https://your-production-domain.example/robots.txt`
 - `https://your-production-domain.example/llms.txt`
 
-## Deploy MVP on Render
+## Deploy Free Validation on Render
 
-This project includes `render.yaml` for a Render Web Service with a persistent disk.
+This project includes `render.yaml` for a free Render Web Service validation deploy.
 
-Recommended MVP settings:
+Recommended free validation settings:
 
 - Repository: private GitHub repository
 - Runtime: Node
 - Build command: `npm install`
 - Start command: `npm start`
-- Persistent disk mount path: `/data`
-- Database path: `/data/app.sqlite`
-- Instance count: 1
+- Account/save feature: disabled
+- Database path: `./data/app.sqlite`
 
 Render environment variables:
 
 ```env
 NODE_VERSION=24.14.1
-DATABASE_PATH=/data/app.sqlite
+DATABASE_PATH=./data/app.sqlite
+ACCOUNT_FEATURE_ENABLED=false
 PUBLIC_SITE_URL=https://your-render-service.onrender.com
 KAKAO_REST_API_KEY=
 KAKAO_CLIENT_SECRET=
 KAKAO_REDIRECT_URI=https://your-render-service.onrender.com/auth/kakao/callback
 SESSION_SECRET=replace-with-a-long-random-string
 ```
+
+For the free validation version, keep `ACCOUNT_FEATURE_ENABLED=false`. This hides Kakao login and saved calculation UI, and disables product-save APIs. The SQLite file is only ephemeral in this mode.
+
+Render free services can sleep after inactivity. The app exposes a lightweight health URL for uptime monitors:
+
+```text
+https://your-render-service.onrender.com/healthz
+```
+
+Paid storage upgrade settings:
+
+- Add a Render persistent disk with mount path `/data`
+- Set `DATABASE_PATH=/data/app.sqlite`
+- Set `ACCOUNT_FEATURE_ENABLED=true`
+- Set Kakao login environment variables and redirect URI
 
 After the Render URL is issued, update Kakao Developers:
 

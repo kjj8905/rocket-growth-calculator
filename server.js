@@ -21,6 +21,7 @@ const DATABASE_PATH = path.resolve(__dirname, process.env.DATABASE_PATH || "./da
 const KAKAO_REST_API_KEY = process.env.KAKAO_REST_API_KEY || "";
 const KAKAO_CLIENT_SECRET = process.env.KAKAO_CLIENT_SECRET || "";
 const KAKAO_REDIRECT_URI = process.env.KAKAO_REDIRECT_URI || `http://localhost:${PORT}/auth/kakao/callback`;
+const ACCOUNT_FEATURE_ENABLED = process.env.ACCOUNT_FEATURE_ENABLED !== "false";
 const SEO_GUIDES = [
   {
     slug: "rocket-growth-calculator",
@@ -463,10 +464,13 @@ app.use(async (req, res, next) => {
 });
 
 app.get("/api/me", (req, res) => {
+  const accountFeatureEnabled = isAccountFeatureEnabled();
+
   res.json({
-    authenticated: Boolean(req.currentUser),
+    accountFeatureEnabled,
+    authenticated: accountFeatureEnabled && Boolean(req.currentUser),
     kakaoConfigured: isKakaoConfigured(),
-    user: req.currentUser
+    user: accountFeatureEnabled && req.currentUser
       ? {
           id: req.currentUser.id,
           kakaoId: req.currentUser.kakao_id,
@@ -478,6 +482,11 @@ app.get("/api/me", (req, res) => {
 });
 
 app.get("/auth/kakao/start", (req, res) => {
+  if (!isAccountFeatureEnabled()) {
+    res.status(404).send("계정 기능은 현재 제공되지 않습니다.");
+    return;
+  }
+
   if (!isKakaoConfigured()) {
     res.status(503).send(renderConfigErrorPage());
     return;
@@ -650,6 +659,14 @@ app.get("/sitemap.xml", (req, res) => {
 
 app.get("/llms.txt", (req, res) => {
   res.type("text/plain").send(renderLlmsTxt());
+});
+
+app.get("/healthz", (req, res) => {
+  res.json({
+    ok: true,
+    service: "rocket-growth-calculator",
+    time: new Date().toISOString(),
+  });
 });
 
 app.use(express.static(__dirname));
@@ -1057,7 +1074,11 @@ function escapeXml(value) {
 }
 
 function isKakaoConfigured() {
-  return Boolean(KAKAO_REST_API_KEY && KAKAO_REDIRECT_URI);
+  return isAccountFeatureEnabled() && Boolean(KAKAO_REST_API_KEY && KAKAO_REDIRECT_URI);
+}
+
+function isAccountFeatureEnabled() {
+  return ACCOUNT_FEATURE_ENABLED;
 }
 
 function sign(value) {
@@ -1162,6 +1183,11 @@ function getSessionFromRequest(req) {
 }
 
 function requireLogin(req, res, next) {
+  if (!isAccountFeatureEnabled()) {
+    res.status(403).json({ error: "account_feature_disabled", message: "저장 기능은 현재 제공하지 않습니다." });
+    return;
+  }
+
   if (!req.currentUser) {
     res.status(401).json({ error: "login_required", message: "상품 저장을 위해 로그인이 필요합니다." });
     return;
