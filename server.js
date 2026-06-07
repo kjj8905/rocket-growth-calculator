@@ -710,7 +710,12 @@ function normalizeSiteUrl(value) {
 
 function renderIndexHtml() {
   const filePath = path.join(__dirname, "index.html");
-  return fs.readFileSync(filePath, "utf8").replaceAll("__SITE_URL__", PUBLIC_SITE_URL);
+  return fs
+    .readFileSync(filePath, "utf8")
+    .replaceAll("__SITE_URL__", PUBLIC_SITE_URL)
+    .replace(/<section class="overview-section" aria-labelledby="overview-title" hidden>/, '<section class="overview-section" aria-labelledby="overview-title">')
+    .replace(/<div class="category-explain-grid" aria-label="[^"]*" hidden>/, (match) => match.replace(" hidden", ""))
+    .replace(/<section class="seo-content-section knowledge-hub-teaser" aria-labelledby="knowledge-title" hidden>/, '<section class="seo-content-section knowledge-hub-teaser" aria-labelledby="knowledge-title">');
 }
 
 function renderGuideIndexPage() {
