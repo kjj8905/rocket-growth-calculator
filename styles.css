@@ -2170,7 +2170,7 @@ select {
   min-width: 0;
   width: 100%;
   height: 46px;
-  border: 1px solid rgba(2, 32, 71, 0.05);
+  border: 1px solid rgba(2, 32, 71, 0.12);
   border-radius: 14px;
   background: var(--white);
   color: var(--grey-800);
@@ -2191,9 +2191,9 @@ input {
 
 input:focus,
 select:focus {
-  border-color: var(--grey-300);
+  border-color: rgba(49, 130, 246, 0.58);
   background: var(--white);
-  box-shadow: none;
+  box-shadow: 0 0 0 3px rgba(49, 130, 246, 0.12);
   outline: none;
 }
 
@@ -2203,6 +2203,31 @@ input:disabled,
   background: var(--grey-50);
   color: var(--grey-600);
   opacity: 1;
+}
+
+.input-with-unit:not(.disabled) input[data-field],
+.final-direct-field input {
+  border-color: rgba(49, 130, 246, 0.36);
+  background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+  box-shadow:
+    inset 0 0 0 1px rgba(49, 130, 246, 0.08),
+    0 1px 2px rgba(2, 32, 71, 0.04);
+}
+
+.input-with-unit:not(.disabled):hover input[data-field],
+.final-direct-field:hover input {
+  border-color: rgba(49, 130, 246, 0.58);
+  box-shadow:
+    inset 0 0 0 1px rgba(49, 130, 246, 0.12),
+    0 2px 6px rgba(49, 130, 246, 0.08);
+}
+
+.input-with-unit:not(.disabled) input[data-field]:focus,
+.final-direct-field input:focus {
+  border-color: var(--blue-500);
+  box-shadow:
+    inset 0 0 0 1px rgba(49, 130, 246, 0.18),
+    0 0 0 3px rgba(49, 130, 246, 0.16);
 }
 
 select {
