@@ -4530,8 +4530,8 @@ function showHome(scrollTarget = bannerGrid) {
   workspace.hidden = true;
   bannerGrid.hidden = false;
   homeGuideStrip.hidden = false;
-  overviewSection.hidden = false;
-  seoSection.hidden = false;
+  overviewSection.hidden = true;
+  seoSection.hidden = true;
   window.history.replaceState(null, "", window.location.pathname);
   scrollTarget.scrollIntoView({ behavior: "smooth", block: "start" });
 }
