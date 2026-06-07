@@ -853,6 +853,18 @@ function renderDocumentShell({ title, description, canonicalUrl, body, jsonLd })
     <meta name="twitter:description" content="${escapeHtml(description)}" />
     <meta name="twitter:image" content="${PUBLIC_SITE_URL}/assets/site-flow.svg" />
     <link rel="stylesheet" href="/styles.css" />
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-EGL6JRLHH0"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-EGL6JRLHH0');
+    </script>
+    <script
+      async
+      src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6269248806672306"
+      crossorigin="anonymous"
+    ></script>
     ${jsonLdBlock}
   </head>
   <body>
