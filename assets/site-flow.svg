@@ -1,0 +1,35 @@
+<svg width="760" height="300" viewBox="0 0 760 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="760" height="300" rx="28" fill="#F2F4F6"/>
+  <rect x="34" y="72" width="112" height="112" rx="20" fill="#FFFFFF"/>
+  <rect x="184" y="72" width="112" height="112" rx="20" fill="#FFFFFF"/>
+  <rect x="334" y="72" width="112" height="112" rx="20" fill="#FFFFFF"/>
+  <rect x="484" y="72" width="112" height="112" rx="20" fill="#FFFFFF"/>
+  <rect x="634" y="72" width="92" height="112" rx="20" fill="#FFFFFF"/>
+  <path d="M146 128H184" stroke="#B0B8C1" stroke-width="4" stroke-linecap="round"/>
+  <path d="M296 128H334" stroke="#B0B8C1" stroke-width="4" stroke-linecap="round"/>
+  <path d="M446 128H484" stroke="#B0B8C1" stroke-width="4" stroke-linecap="round"/>
+  <path d="M596 128H634" stroke="#B0B8C1" stroke-width="4" stroke-linecap="round"/>
+  <path d="M174 116L186 128L174 140" stroke="#B0B8C1" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M324 116L336 128L324 140" stroke="#B0B8C1" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M474 116L486 128L474 140" stroke="#B0B8C1" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M624 116L636 128L624 140" stroke="#B0B8C1" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="58" y="104" width="64" height="44" rx="10" fill="#E8F3FF"/>
+  <path d="M66 148H114" stroke="#4E5968" stroke-width="4" stroke-linecap="round"/>
+  <path d="M78 104V148M104 104V148" stroke="#D1D6DB" stroke-width="3"/>
+  <path d="M214 114H260L270 148H204L214 114Z" fill="#E8F3FF"/>
+  <path d="M206 148H270" stroke="#4E5968" stroke-width="4" stroke-linecap="round"/>
+  <path d="M216 158C216 163 212 167 207 167C202 167 198 163 198 158" stroke="#4E5968" stroke-width="4" stroke-linecap="round"/>
+  <path d="M274 158C274 163 270 167 265 167C260 167 256 163 256 158" stroke="#4E5968" stroke-width="4" stroke-linecap="round"/>
+  <rect x="366" y="106" width="48" height="42" rx="8" fill="#E8F3FF"/>
+  <path d="M358 148H422" stroke="#4E5968" stroke-width="4" stroke-linecap="round"/>
+  <path d="M374 106V148M406 106V148" stroke="#D1D6DB" stroke-width="3"/>
+  <path d="M508 150C508 130 522 116 540 116C558 116 572 130 572 150" stroke="#D1D6DB" stroke-width="8" stroke-linecap="round"/>
+  <path d="M540 150L556 134" stroke="#4E5968" stroke-width="5" stroke-linecap="round"/>
+  <path d="M654 106H706M654 132H698M654 158H686" stroke="#B0B8C1" stroke-width="5" stroke-linecap="round"/>
+  <path d="M688 132L700 144L718 118" stroke="#3182F6" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="90" y="220" text-anchor="middle" fill="#4E5968" font-size="19" font-family="Arial, sans-serif" font-weight="700">사입</text>
+  <text x="240" y="220" text-anchor="middle" fill="#4E5968" font-size="19" font-family="Arial, sans-serif" font-weight="700">국제 물류</text>
+  <text x="390" y="220" text-anchor="middle" fill="#4E5968" font-size="19" font-family="Arial, sans-serif" font-weight="700">입고</text>
+  <text x="540" y="220" text-anchor="middle" fill="#4E5968" font-size="19" font-family="Arial, sans-serif" font-weight="700">소모 비용</text>
+  <text x="680" y="220" text-anchor="middle" fill="#4E5968" font-size="19" font-family="Arial, sans-serif" font-weight="700">최종 비용</text>
+</svg>

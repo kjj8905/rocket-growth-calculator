@@ -1,0 +1,506 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>로켓그로스 계산기 | 쿠팡 로켓그로스 마진·비용 계산기</title>
+    <meta
+      name="description"
+      content="로켓그로스 계산기로 중국사입, LCL 물류, 쿠팡 입고, 쿠팡 수수료, 최종 비용과 마진율을 한 화면에서 계산하세요."
+    />
+    <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1" />
+    <meta
+      name="keywords"
+      content="로켓그로스 계산기, 로켓그로스 마진 계산기, 쿠팡 로켓그로스 비용, 쿠팡 수수료 계산기, 중국사입 계산기, LCL 물류비 계산기"
+    />
+    <meta name="author" content="Rocket Growth Calculator" />
+    <meta name="application-name" content="로켓그로스 계산기" />
+    <link rel="canonical" href="__SITE_URL__/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="ko_KR" />
+    <meta property="og:site_name" content="로켓그로스 계산기" />
+    <meta property="og:title" content="로켓그로스 계산기 | 쿠팡 로켓그로스 마진·비용 계산기" />
+    <meta
+      property="og:description"
+      content="중국사입부터 쿠팡 입고, 쿠팡 수수료, 최종 비용과 마진율까지 단계별로 계산하는 로켓그로스 비용 계산기입니다."
+    />
+    <meta property="og:url" content="__SITE_URL__/" />
+    <meta property="og:image" content="__SITE_URL__/assets/site-flow.svg" />
+    <meta property="og:image:alt" content="로켓그로스 비용 계산 흐름" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="로켓그로스 계산기 | 쿠팡 로켓그로스 마진·비용 계산기" />
+    <meta
+      name="twitter:description"
+      content="중국사입, 중국→한국 물류, 한국→쿠팡 입고, 쿠팡 수수료, 최종 비용을 한 흐름으로 계산합니다."
+    />
+    <meta name="twitter:image" content="__SITE_URL__/assets/site-flow.svg" />
+    <link rel="stylesheet" href="./styles.css" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "Organization",
+            "@id": "__SITE_URL__/#organization",
+            "name": "로켓그로스 계산기",
+            "url": "__SITE_URL__/"
+          },
+          {
+            "@type": "WebSite",
+            "@id": "__SITE_URL__/#website",
+            "name": "로켓그로스 계산기",
+            "url": "__SITE_URL__/",
+            "inLanguage": "ko-KR",
+            "publisher": {
+              "@id": "__SITE_URL__/#organization"
+            },
+            "potentialAction": {
+              "@type": "SearchAction",
+              "target": "__SITE_URL__/?q={search_term_string}",
+              "query-input": "required name=search_term_string"
+            }
+          },
+          {
+            "@type": "WebApplication",
+            "@id": "__SITE_URL__/#webapp",
+            "name": "로켓그로스 계산기",
+            "alternateName": [
+              "로켓그로스 마진 계산기",
+              "쿠팡 로켓그로스 비용 계산기",
+              "중국사입 계산기"
+            ],
+            "url": "__SITE_URL__/",
+            "applicationCategory": "BusinessApplication",
+            "operatingSystem": "Web",
+            "inLanguage": "ko-KR",
+            "isAccessibleForFree": true,
+            "description": "중국사입, LCL 물류, 쿠팡 입고, 쿠팡 수수료, 최종 비용과 마진율을 단계별로 계산하는 웹 계산기입니다.",
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "KRW"
+            },
+            "featureList": [
+              "중국사입 원가 계산",
+              "중국→한국 LCL 물류비 계산",
+              "한국→쿠팡 입고 비용 계산",
+              "쿠팡 판매 수수료 계산",
+              "최종 비용·마진율·최소 ROAS 요약"
+            ],
+            "publisher": {
+              "@id": "__SITE_URL__/#organization"
+            }
+          },
+          {
+            "@type": "BreadcrumbList",
+            "@id": "__SITE_URL__/#breadcrumb",
+            "itemListElement": [
+              {
+                "@type": "ListItem",
+                "position": 1,
+                "name": "홈",
+                "item": "__SITE_URL__/"
+              },
+              {
+                "@type": "ListItem",
+                "position": 2,
+                "name": "로켓그로스 계산기",
+                "item": "__SITE_URL__/"
+              }
+            ]
+          }
+        ]
+      }
+    </script>
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="intro" aria-labelledby="page-title">
+        <div>
+          <p class="eyebrow">비용 계산 워크스페이스</p>
+          <h1 id="page-title">
+            <button class="home-title-button" type="button" id="home-button" aria-label="홈으로 돌아가기">
+              로켓그로스 비용 계산기
+            </button>
+          </h1>
+        </div>
+        <article class="header-account-box" aria-label="계정 상태">
+          <div class="account-status">
+            <p class="eyebrow">계정</p>
+            <div class="account-title-row">
+              <p id="login-status">계정 상태 확인 중</p>
+              <span class="account-saved-count" id="account-saved-count">저장 상품 0개</span>
+            </div>
+            <span id="account-status-description">카카오로 시작하면 상품별 계산안을 저장할 수 있습니다.</span>
+          </div>
+          <div class="login-controls">
+            <button class="ghost-small-button" type="button" id="kakao-login-button">카카오로 시작하기</button>
+          </div>
+        </article>
+      </section>
+
+      <nav class="calculator-category-nav" aria-label="계산기 카테고리">
+        <button class="is-active" type="button" data-category="rocket-growth" aria-current="page">
+          로켓그로스 계산기
+        </button>
+        <button type="button" data-category="margin">마진·판매가 계산기</button>
+        <button type="button" data-category="china-purchase">중국사입 원가 계산기</button>
+        <button type="button" data-category="ad-break-even">광고 손익분기 계산기</button>
+        <button type="button" data-category="cash-flow">사입·정산 현금흐름 계산기</button>
+      </nav>
+
+      <section class="session-bar" aria-label="계산안 저장 및 관리" hidden>
+        <article class="product-box">
+          <div class="product-head">
+            <div>
+              <p class="eyebrow">저장한 계산안</p>
+              <h2>상품별 계산안을 저장하고 목록에서 바로 관리합니다.</h2>
+            </div>
+            <div class="product-save-meta">
+              <span class="saved-count-pill" id="saved-products-count">저장 상품 0개</span>
+              <span class="product-mode-pill" id="product-mode-status">새 계산안 작성 중</span>
+              <p class="save-status" id="save-status" aria-live="polite">
+                변경한 내용은 저장하면 목록에 보관됩니다.
+              </p>
+            </div>
+          </div>
+          <div class="product-controls">
+            <label class="product-name-field">
+              <span>상품명</span>
+              <input id="product-name" type="text" value="상품 1" />
+            </label>
+            <button class="primary-small-button" type="button" id="save-product-button">저장하기</button>
+            <select id="saved-products" aria-label="저장된 상품 선택">
+              <option value="">아직 저장한 상품이 없습니다</option>
+            </select>
+            <button class="ghost-small-button" type="button" id="load-product-button">불러오기</button>
+            <button class="ghost-small-button" type="button" id="new-product-button">새 계산안</button>
+          </div>
+          <div class="saved-list-panel" aria-label="저장한 계산안 목록">
+            <button
+              class="saved-list-toggle"
+              type="button"
+              id="saved-list-toggle"
+              aria-expanded="false"
+              aria-controls="saved-products-list"
+            >
+              <span>
+                <strong>저장한 계산안 보기</strong>
+                <em id="saved-list-helper">목록을 펼쳐서 불러오기와 삭제를 할 수 있습니다.</em>
+              </span>
+              <b id="saved-list-toggle-count">0개</b>
+            </button>
+            <div class="saved-products-list" id="saved-products-list" aria-live="polite">
+              <p class="saved-empty-message">로그인하면 저장한 계산안 목록이 표시됩니다.</p>
+            </div>
+          </div>
+        </article>
+
+      </section>
+
+      <section class="coming-soon-section" id="coming-soon-section" hidden aria-live="polite">
+        <article class="coming-soon-card">
+          <div class="coming-soon-copy">
+            <p class="eyebrow">서비스 확장 예정</p>
+            <h2 id="coming-soon-title">마진율 계산기가 곧 제공됩니다.</h2>
+            <p id="coming-soon-description">
+              셀러 계산 흐름에 맞춰 순차적으로 제공될 예정입니다.
+            </p>
+          </div>
+          <div class="coming-soon-visual" aria-hidden="true">
+            <div class="coming-window">
+              <span></span>
+              <span></span>
+              <span></span>
+              <i></i>
+            </div>
+            <div class="coming-progress">
+              <b></b>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <section class="banner-grid" aria-label="계산기 선택">
+        <button class="calc-banner" type="button" data-calculator="china">
+          <span>중국사입</span>
+        </button>
+        <button class="calc-banner" type="button" data-calculator="china-korea">
+          <span>중국→한국</span>
+        </button>
+        <button class="calc-banner" type="button" data-calculator="korea-coupang">
+          <span>한국→쿠팡</span>
+        </button>
+        <button class="calc-banner" type="button" data-calculator="coupang">
+          <span>쿠팡 소모 비용</span>
+        </button>
+        <button class="calc-banner" type="button" data-calculator="final">
+          <span>최종 비용</span>
+        </button>
+      </section>
+
+      <section class="home-guide-strip" aria-label="계산 기준 바로가기">
+        <a href="/guides">계산 기준 보기</a>
+      </section>
+
+      <section class="overview-section" aria-labelledby="overview-title" hidden>
+        <div class="overview-hero">
+          <div class="overview-copy">
+            <p class="eyebrow">사이트 설명</p>
+            <h2 id="overview-title">상품 사입부터 최종 비용까지 한 흐름으로 봅니다.</h2>
+            <p>
+              중국 사입부터 쿠팡 소모 비용, 최종 비용 요약까지 5단계로 나누어 확인합니다.
+              먼저 필요한 구간을 선택하고, 이후 실제 계산식과 데이터를 연결하는 구조입니다.
+            </p>
+          </div>
+        </div>
+
+        <div class="category-explain-grid" aria-label="계산기 카테고리 설명" hidden>
+          <article class="explain-card">
+            <div>
+              <p class="eyebrow">중국사입</p>
+              <h3>제품 구매 원가를 봅니다.</h3>
+              <p>제품단가, 수량, 환율, 중국 내륙 운송비를 입력하는 첫 단계입니다.</p>
+            </div>
+          </article>
+          <article class="explain-card">
+            <div>
+              <p class="eyebrow">중국→한국</p>
+              <h3>국제 물류 비용을 분리합니다.</h3>
+              <p>해상·항공 운송, 중량, 통관 전후 비용을 확인하는 구간입니다.</p>
+            </div>
+          </article>
+          <article class="explain-card">
+            <div>
+              <p class="eyebrow">한국→쿠팡</p>
+              <h3>쿠팡센터 입고 전 비용을 봅니다.</h3>
+              <p>국내 운송, 포장, 라벨, 박스 단위 작업비를 묶어 정리합니다.</p>
+            </div>
+          </article>
+          <article class="explain-card">
+            <div>
+              <p class="eyebrow">쿠팡 소모 비용</p>
+              <h3>판매 후 빠지는 비용을 봅니다.</h3>
+              <p>쿠팡수수료, 광고비, 반품비 등 판매 소모 비용 자리입니다.</p>
+            </div>
+          </article>
+          <article class="explain-card">
+            <div>
+              <p class="eyebrow">최종 비용 요약</p>
+              <h3>단계별 총액만 모아서 봅니다.</h3>
+              <p>세부 입력값 대신 각 구간 합계와 전체 예상 비용만 확인하는 마지막 단계입니다.</p>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="seo-content-section knowledge-hub-teaser" aria-labelledby="knowledge-title" hidden>
+        <div class="knowledge-hub-card">
+          <div>
+            <p class="eyebrow">계산 기준</p>
+            <h2 id="knowledge-title">비용 항목과 FAQ는 지식 허브에서 확인하세요.</h2>
+            <p>
+              LCL 물류비, 수입 부가세, 쿠팡 파레트 비용, 쿠팡 판매 수수료처럼 헷갈리는 기준은
+              계산기와 분리된 문서 페이지로 정리했습니다.
+            </p>
+          </div>
+          <div class="knowledge-link-panel" aria-label="관련 계산 기준">
+            <a class="knowledge-main-link" href="/guides">지식 허브 보기</a>
+            <div>
+              <a href="/guides/rocket-growth-calculator">로켓그로스 계산기</a>
+              <a href="/guides/margin-price-calculator">마진·판매가</a>
+              <a href="/guides/china-purchase-cost">중국사입 원가</a>
+              <a href="/guides/ad-break-even-roas">광고 손익분기</a>
+              <a href="/guides/cash-flow-calculator">현금흐름</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="workspace" hidden>
+        <div class="selected-banner" aria-live="polite">
+          <button class="calc-banner calc-banner-active" type="button">
+            <span id="active-title">중국사입</span>
+          </button>
+          <div class="quick-switch" aria-label="다른 계산기">
+            <button type="button" data-calculator="china">중국사입</button>
+            <button type="button" data-calculator="china-korea">중국→한국</button>
+            <button type="button" data-calculator="korea-coupang">한국→쿠팡</button>
+            <button type="button" data-calculator="coupang">쿠팡 소모 비용</button>
+            <button type="button" data-calculator="final">최종 비용</button>
+          </div>
+        </div>
+
+        <div class="calculator-layout">
+          <aside class="form-panel" aria-labelledby="form-title">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">선택한 계산기</p>
+                <h2 id="form-title">중국사입</h2>
+                <p class="stage-summary" id="stage-summary">제품 원가와 중국 내 구매 비용을 확인합니다.</p>
+              </div>
+            </div>
+
+            <div class="result-card">
+              <div class="result-row">
+                <span>제품별 매입단가</span>
+                <strong>0 원</strong>
+              </div>
+              <div class="result-row">
+                <span>총 매입예상비용</span>
+                <strong>0 원</strong>
+              </div>
+            </div>
+
+            <div class="final-summary-panel" hidden>
+              <div class="final-mode-bar" aria-label="최종 비용 요약 방식">
+                <div>
+                  <p class="eyebrow">요약 방식</p>
+                  <strong id="final-mode-title">계산값으로 보기</strong>
+                </div>
+                <button class="final-mode-toggle" type="button" id="final-direct-toggle" aria-pressed="false">
+                  직접 입력하기
+                </button>
+              </div>
+
+              <div class="final-profit-card" aria-label="1개 기준 마진 요약">
+                <div>
+                  <span>1개당 판매가액</span>
+                  <strong data-profit-metric="unitSalePrice">0 원</strong>
+                </div>
+                <div>
+                  <span>1개당 상품원가</span>
+                  <strong data-profit-metric="unitProductCost">0 원</strong>
+                </div>
+                <div>
+                  <span>1개당 예상 마진</span>
+                  <strong data-profit-metric="unitMargin">0 원</strong>
+                </div>
+                <div>
+                  <span>마진율</span>
+                  <strong data-profit-metric="marginRate">0%</strong>
+                </div>
+                <div>
+                  <span>총 예상마진</span>
+                  <strong data-profit-metric="totalExpectedMargin">0 원</strong>
+                </div>
+                <div>
+                  <span>최소 ROAS</span>
+                  <strong data-profit-metric="minimumRoas">0%</strong>
+                </div>
+              </div>
+
+              <div class="cost-summary-card">
+                <div class="cost-summary-list" aria-label="단계별 총 비용">
+                  <div class="cost-summary-row" data-final-help="china" role="button" tabindex="0">
+                    <span>중국사입 총 비용</span>
+                    <strong data-final-total="china">0 원</strong>
+                    <label class="final-direct-field" hidden>
+                      <span class="sr-only">중국사입 총 비용 직접 입력</span>
+                      <input data-final-direct="china" type="text" inputmode="numeric" value="0" />
+                      <em>원</em>
+                    </label>
+                  </div>
+                  <div class="cost-summary-row" data-final-help="china-korea" role="button" tabindex="0">
+                    <span>중국→한국 물류 총 비용</span>
+                    <strong data-final-total="china-korea">0 원</strong>
+                    <label class="final-direct-field" hidden>
+                      <span class="sr-only">중국에서 한국 물류 총 비용 직접 입력</span>
+                      <input data-final-direct="china-korea" type="text" inputmode="numeric" value="0" />
+                      <em>원</em>
+                    </label>
+                  </div>
+                  <div class="cost-summary-row" data-final-help="korea-coupang" role="button" tabindex="0">
+                    <span>한국→쿠팡 입고 총 비용</span>
+                    <strong data-final-total="korea-coupang">0 원</strong>
+                    <label class="final-direct-field" hidden>
+                      <span class="sr-only">한국에서 쿠팡 입고 총 비용 직접 입력</span>
+                      <input data-final-direct="korea-coupang" type="text" inputmode="numeric" value="0" />
+                      <em>원</em>
+                    </label>
+                  </div>
+                  <div class="cost-summary-row" data-final-help="coupang" role="button" tabindex="0">
+                    <span>쿠팡 소모 비용 총액</span>
+                    <strong data-final-total="coupang">0 원</strong>
+                    <label class="final-direct-field" hidden>
+                      <span class="sr-only">쿠팡 소모 비용 총액 직접 입력</span>
+                      <input data-final-direct="coupang" type="text" inputmode="numeric" value="0" />
+                      <em>원</em>
+                    </label>
+                  </div>
+                </div>
+
+                <div class="final-total-stack">
+                  <div class="final-total-card" data-final-help="grand" role="button" tabindex="0" aria-label="최종 예상 총 비용">
+                    <span>최종 예상 총비용</span>
+                    <strong data-final-total="grand">0 원</strong>
+                  </div>
+                  <div class="final-business-card">
+                    <span>총 판매금액</span>
+                    <strong data-final-business="totalSales">0 원</strong>
+                    <em>판매가 × 수량</em>
+                  </div>
+                  <div class="final-business-card" data-final-margin-card>
+                    <span>총 예상마진</span>
+                    <strong data-final-business="totalMargin">0 원</strong>
+                    <em>총 판매금액 - 총비용</em>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <form class="mock-form" id="stage-form" novalidate></form>
+          </aside>
+
+          <section class="preview-panel" aria-label="선택한 계산기 설명">
+            <div class="preview-visual">
+              <div class="visual-window">
+                <div class="visual-toolbar">
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </div>
+                <div class="visual-lines">
+                  <i></i>
+                  <i></i>
+                  <i></i>
+                  <i></i>
+                </div>
+              </div>
+            </div>
+            <div class="formula-card">
+              <p class="eyebrow">입력 구조</p>
+              <h3 id="formula-title">중국사입 계산기 입력 구조</h3>
+              <ul id="formula-list">
+                <li>상단 결과 요약</li>
+                <li>환율 입력</li>
+                <li>매입 및 운송 입력</li>
+                <li>대행/운송, 수수료/세금 입력</li>
+              </ul>
+            </div>
+          </section>
+        </div>
+      </section>
+    </main>
+
+    <div class="save-toast" id="save-toast" data-tone="neutral" role="status" aria-live="polite" hidden>
+      <strong id="save-toast-title">저장 안내</strong>
+      <p id="save-toast-message">입력값이 계산기에 반영되었습니다.</p>
+    </div>
+
+    <div class="save-confirm" id="save-confirm" role="dialog" aria-modal="true" aria-labelledby="save-confirm-title" hidden>
+      <div class="save-confirm-backdrop" data-save-confirm-cancel></div>
+      <article class="save-confirm-card">
+        <p class="eyebrow" id="save-confirm-eyebrow">저장 확인</p>
+        <h2 id="save-confirm-title">기존 계산안을 업데이트할까요?</h2>
+        <p id="save-confirm-message">이미 저장된 상품명입니다. 변경된 내용으로 저장할까요?</p>
+        <div class="save-confirm-actions">
+          <button class="ghost-small-button" type="button" id="save-confirm-cancel">취소</button>
+          <button class="primary-small-button" type="button" id="save-confirm-submit">저장하기</button>
+        </div>
+      </article>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

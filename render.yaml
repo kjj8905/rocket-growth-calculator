@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: rocket-growth-calculator
+    runtime: node
+    buildCommand: npm install
+    startCommand: npm start
+    disk:
+      name: app-data
+      mountPath: /data
+      sizeGB: 1
+    envVars:
+      - key: NODE_VERSION
+        value: 24.14.1
+      - key: DATABASE_PATH
+        value: /data/app.sqlite
+      - key: PUBLIC_SITE_URL
+        sync: false
+      - key: KAKAO_REST_API_KEY
+        sync: false
+      - key: KAKAO_CLIENT_SECRET
+        sync: false
+      - key: KAKAO_REDIRECT_URI
+        sync: false
+      - key: SESSION_SECRET
+        sync: false
