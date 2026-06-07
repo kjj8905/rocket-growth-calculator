@@ -12,7 +12,7 @@ services:
       - key: ACCOUNT_FEATURE_ENABLED
         value: "false"
       - key: PUBLIC_SITE_URL
-        sync: false
+        value: https://wingcoupang.site
       - key: KAKAO_REST_API_KEY
         sync: false
       - key: KAKAO_CLIENT_SECRET

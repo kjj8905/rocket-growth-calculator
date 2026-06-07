@@ -90,10 +90,10 @@ Render environment variables:
 NODE_VERSION=24.14.1
 DATABASE_PATH=./data/app.sqlite
 ACCOUNT_FEATURE_ENABLED=false
-PUBLIC_SITE_URL=https://your-render-service.onrender.com
+PUBLIC_SITE_URL=https://wingcoupang.site
 KAKAO_REST_API_KEY=
 KAKAO_CLIENT_SECRET=
-KAKAO_REDIRECT_URI=https://your-render-service.onrender.com/auth/kakao/callback
+KAKAO_REDIRECT_URI=https://wingcoupang.site/auth/kakao/callback
 SESSION_SECRET=replace-with-a-long-random-string
 ```
 
@@ -114,8 +114,8 @@ Paid storage upgrade settings:
 
 After the Render URL is issued, update Kakao Developers:
 
-- Web platform domain: `https://your-render-service.onrender.com`
-- Redirect URI: `https://your-render-service.onrender.com/auth/kakao/callback`
+- Web platform domain: `https://wingcoupang.site`
+- Redirect URI: `https://wingcoupang.site/auth/kakao/callback`
 
 ## Data
 
