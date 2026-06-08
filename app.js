@@ -1653,6 +1653,8 @@ const bannerGrid = document.querySelector(".banner-grid");
 const overviewSection = document.querySelector(".overview-section");
 const seoSection = document.querySelector(".seo-content-section");
 const homeGuideStrip = document.querySelector(".home-guide-strip");
+const homeQuickCalculator = document.querySelector("#quick-home-calculator");
+const homeSeoExplainSection = document.querySelector(".home-seo-explain-section");
 const workspace = document.querySelector(".workspace");
 const sessionBar = document.querySelector(".session-bar");
 const comingSoonSection = document.querySelector("#coming-soon-section");
@@ -1698,6 +1700,10 @@ const loginButton = document.querySelector("#kakao-login-button");
 const loginStatus = document.querySelector("#login-status");
 const accountStatusDescription = document.querySelector("#account-status-description");
 const accountSavedCount = document.querySelector("#account-saved-count");
+const quickHomeInputs = document.querySelectorAll("[data-quick-field]");
+const quickHomeResults = document.querySelectorAll("[data-quick-result]");
+const quickHomeStatus = document.querySelector("[data-quick-status]");
+const quickHomeDetailButton = document.querySelector("[data-quick-detail-start]");
 const finalDirectToggle = document.querySelector("#final-direct-toggle");
 const finalModeTitle = document.querySelector("#final-mode-title");
 const finalDirectInputs = document.querySelectorAll("[data-final-direct]");
@@ -2063,6 +2069,69 @@ function formatMetricValue(value, format = "currency", decimals = 1) {
   }
 
   return formatCurrency(value);
+}
+
+function readQuickHomeValues() {
+  return Object.fromEntries(
+    Array.from(quickHomeInputs).map((input) => [input.dataset.quickField, parseNumber(input.value)]),
+  );
+}
+
+function setQuickHomeResult(key, value, formatter = formatCurrency) {
+  const target = Array.from(quickHomeResults).find((element) => element.dataset.quickResult === key);
+  if (target) {
+    target.textContent = formatter(value);
+  }
+}
+
+function updateQuickHomeCalculator() {
+  if (!quickHomeInputs.length) {
+    return;
+  }
+
+  const values = readQuickHomeValues();
+  const quantity = Math.max(0, Math.round(values.quantity || 0));
+  const salePriceKrw = Math.max(0, values.salePriceKrw || 0);
+  const baseUnitCostKrw = Math.max(0, values.unitProductCostKrw || 0);
+  const logisticsInboundTotalKrw = Math.max(0, values.logisticsInboundTotalKrw || 0);
+  const adCostTotalKrw = Math.max(0, values.adCostTotalKrw || 0);
+  const coupangFeeRate = Math.max(0, values.coupangFeeRate || 0);
+  const logisticsPerUnitKrw = quantity > 0 ? logisticsInboundTotalKrw / quantity : 0;
+  const adCostPerUnitKrw = quantity > 0 ? adCostTotalKrw / quantity : 0;
+  const coupangFeePerUnitKrw = salePriceKrw * (coupangFeeRate / 100);
+  const unitCostKrw = baseUnitCostKrw + logisticsPerUnitKrw;
+  const unitMarginKrw = salePriceKrw - unitCostKrw - coupangFeePerUnitKrw - adCostPerUnitKrw;
+  const totalSalesKrw = salePriceKrw * quantity;
+  const totalMarginKrw = unitMarginKrw * quantity;
+  const totalCostKrw = Math.max(0, totalSalesKrw - totalMarginKrw);
+  const marginRate = totalSalesKrw > 0 ? (totalMarginKrw / totalSalesKrw) * 100 : 0;
+  const allowableAdPerUnitKrw = salePriceKrw - unitCostKrw - coupangFeePerUnitKrw;
+  const minimumRoas = allowableAdPerUnitKrw > 0 && salePriceKrw > 0 ? (salePriceKrw / allowableAdPerUnitKrw) * 100 : 0;
+
+  setQuickHomeResult("unitCost", unitCostKrw);
+  setQuickHomeResult("unitMargin", unitMarginKrw);
+  setQuickHomeResult("totalMargin", totalMarginKrw);
+  setQuickHomeResult("marginRate", marginRate, formatPercent);
+  setQuickHomeResult("totalCost", totalCostKrw);
+  setQuickHomeResult("minimumRoas", minimumRoas, formatPercent);
+
+  if (quickHomeStatus) {
+    quickHomeStatus.textContent = unitMarginKrw > 0 ? "마진 확보" : "손실 가능";
+    quickHomeStatus.classList.toggle("is-loss", unitMarginKrw <= 0);
+  }
+}
+
+function applyQuickHomeValuesToDetailCalculator() {
+  const values = readQuickHomeValues();
+  const quantity = Math.max(0, Math.round(values.quantity || 0));
+  const salePriceKrw = Math.max(0, values.salePriceKrw || 0);
+  const coupangFeeRate = Math.max(0, values.coupangFeeRate || 0);
+  const adCostPerUnitKrw = quantity > 0 ? Math.max(0, values.adCostTotalKrw || 0) / quantity : 0;
+
+  currentProduct.stages.china.quantity = quantity;
+  currentProduct.stages.coupang.salePriceKrw = salePriceKrw;
+  currentProduct.stages.coupang.coupangFeeRate = coupangFeeRate;
+  currentProduct.stages.coupang.adCostKrw = adCostPerUnitKrw;
 }
 
 function isOriginCertificateDutyFree(values) {
@@ -3464,6 +3533,8 @@ function showComingSoon(category, options = {}) {
   sessionBar.hidden = true;
   bannerGrid.hidden = true;
   homeGuideStrip.hidden = true;
+  homeQuickCalculator.hidden = true;
+  homeSeoExplainSection.hidden = true;
   overviewSection.hidden = true;
   seoSection.hidden = true;
   workspace.hidden = true;
@@ -3512,6 +3583,8 @@ function renderCalculator(id, options = {}) {
   comingSoonSection.hidden = true;
   bannerGrid.hidden = true;
   homeGuideStrip.hidden = true;
+  homeQuickCalculator.hidden = true;
+  homeSeoExplainSection.hidden = true;
   overviewSection.hidden = true;
   seoSection.hidden = true;
   workspace.hidden = false;
@@ -4519,6 +4592,16 @@ loginButton.addEventListener("click", async () => {
   await handleLoginButtonClick();
 });
 
+quickHomeInputs.forEach((input) => {
+  input.addEventListener("input", updateQuickHomeCalculator);
+});
+
+quickHomeDetailButton?.addEventListener("click", () => {
+  applyQuickHomeValuesToDetailCalculator();
+  renderCalculator("china");
+  window.history.replaceState(null, "", "?calc=china");
+});
+
 function showHome(scrollTarget = bannerGrid) {
   setActiveCategory("rocket-growth");
   workspace.classList.remove("is-final", "is-standalone");
@@ -4530,6 +4613,8 @@ function showHome(scrollTarget = bannerGrid) {
   workspace.hidden = true;
   bannerGrid.hidden = false;
   homeGuideStrip.hidden = false;
+  homeQuickCalculator.hidden = false;
+  homeSeoExplainSection.hidden = false;
   overviewSection.hidden = true;
   seoSection.hidden = true;
   window.history.replaceState(null, "", window.location.pathname);
@@ -4544,6 +4629,7 @@ initializeApp();
 
 async function initializeApp() {
   await refreshAuthState();
+  updateQuickHomeCalculator();
   window.setTimeout(scrollActiveCategoryIntoView, 120);
 
   const initialParams = new URLSearchParams(window.location.search);
