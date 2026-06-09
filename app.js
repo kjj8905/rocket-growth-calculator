@@ -1704,9 +1704,13 @@ const quickHomeInputs = document.querySelectorAll("[data-quick-field]");
 const quickHomeResults = document.querySelectorAll("[data-quick-result]");
 const quickHomeStatus = document.querySelector("[data-quick-status]");
 const quickHomeDetailButton = document.querySelector("[data-quick-detail-start]");
+const quickHomeMarginProgress = document.querySelector("[data-quick-margin-progress]");
+const quickHomeMarginMessage = document.querySelector("[data-quick-margin-message]");
+const quickHomeHero = document.querySelector("[data-quick-hero]");
 const finalDirectToggle = document.querySelector("#final-direct-toggle");
 const finalModeTitle = document.querySelector("#final-mode-title");
 const finalDirectInputs = document.querySelectorAll("[data-final-direct]");
+const stageProgressSummary = document.querySelector("#stage-progress-summary");
 const finalTotalElements = {
   china: document.querySelector('[data-final-total="china"]'),
   "china-korea": document.querySelector('[data-final-total="china-korea"]'),
@@ -1727,6 +1731,24 @@ const finalProfitElements = {
   totalExpectedMargin: document.querySelector('[data-profit-metric="totalExpectedMargin"]'),
   minimumRoas: document.querySelector('[data-profit-metric="minimumRoas"]'),
 };
+const finalProfitHero = document.querySelector("[data-final-profit-hero]");
+const finalMarginProgress = document.querySelector("[data-final-margin-progress]");
+const finalMarginMessage = document.querySelector("[data-final-margin-message]");
+const finalMarginActions = document.querySelector("[data-final-margin-actions]");
+const saveLoginModal = document.querySelector("#wc-save-login-modal");
+const saveInputModal = document.querySelector("#wc-save-input-modal");
+const saveSuccessModal = document.querySelector("#wc-save-success-modal");
+const saveLoginPreview = document.querySelector('[data-save-preview="login"]');
+const saveInputPreview = document.querySelector('[data-save-preview="input"]');
+const saveKakaoButton = document.querySelector("#wc-save-kakao-button");
+const saveEmailButton = document.querySelector("#wc-save-email-button");
+const saveNameInput = document.querySelector("#wc-save-name");
+const saveMemoInput = document.querySelector("#wc-save-memo");
+const saveNameError = document.querySelector("#wc-save-name-error");
+const saveSubmitButton = document.querySelector("#wc-save-submit-button");
+const saveTagButtons = document.querySelectorAll("[data-save-tag]");
+const saveSuccessSummary = document.querySelector("#wc-save-success-summary");
+const saveOpenListButton = document.querySelector("#wc-save-open-list-button");
 const finalChartItems = [
   { key: "china", label: "중국사입", totalKey: "china", color: "#3182F6", emptyColor: "#D9EAFF" },
   { key: "china-korea", label: "중국→한국", totalKey: "china-korea", color: "#03B26C", emptyColor: "#D9F4E8" },
@@ -1778,6 +1800,8 @@ let saveToastHideTimer = null;
 let saveConfirmResolver = null;
 let currentFinalChartKey = "grand";
 let isSavedListExpanded = false;
+let activeSaveModal = null;
+let selectedSaveTags = new Set();
 const saveButtonLabel = "저장하기";
 const saveActionButtons = [
   { button: saveProductButton, label: saveButtonLabel },
@@ -1787,6 +1811,8 @@ let currentHelpKey = "customsExchangeRate";
 function createProduct(name) {
   return {
     name,
+    memo: "",
+    tags: [],
     stages: clone(defaultStages),
     finalSummary: clone(defaultFinalSummary),
   };
@@ -1807,6 +1833,8 @@ function normalizeProduct(product) {
   const savedStages = product?.stages || {};
   return {
     name: product?.name || getNextProductName(),
+    memo: String(product?.memo || ""),
+    tags: Array.isArray(product?.tags) ? product.tags.map((tag) => String(tag)).filter(Boolean) : [],
     stages: Object.fromEntries(
       Object.entries(defaultStages).map(([stage, defaults]) => [
         stage,
@@ -2071,6 +2099,64 @@ function formatMetricValue(value, format = "currency", decimals = 1) {
   return formatCurrency(value);
 }
 
+function getMarginStatus(marginRate, totalMargin, minimumRoas) {
+  const safeMargin = Number.isFinite(marginRate) ? marginRate : 0;
+  const safeTotalMargin = Number.isFinite(totalMargin) ? totalMargin : 0;
+
+  if (safeMargin < 0) {
+    return {
+      tone: "danger",
+      title: "손실 구조입니다",
+      message: `팔수록 ${formatCurrency(Math.abs(safeTotalMargin))} 손해입니다. 판매가를 올리거나 물류비를 줄여야 합니다.`,
+      showActions: true,
+    };
+  }
+
+  if (safeMargin < 10) {
+    return {
+      tone: "amber",
+      title: "마진이 너무 낮습니다",
+      message: "광고비 여유가 없습니다. 마진율 최소 15% 이상을 권장합니다.",
+      showActions: true,
+    };
+  }
+
+  if (safeMargin < 20) {
+    return {
+      tone: "yellow",
+      title: "마진율 주의 구간입니다",
+      message: "광고 집행 시 손익분기가 빠듯합니다. 광고 손익분기 계산기를 확인하세요.",
+      showActions: false,
+    };
+  }
+
+  return {
+    tone: "green",
+    title: "양호한 마진 구조입니다",
+    message: `광고 여유가 있습니다. 최소 ROAS ${formatPercent(minimumRoas)}를 기준으로 광고를 설정하세요.`,
+    showActions: false,
+  };
+}
+
+function updateMarginHero({ hero, progress, messageElement, marginRate, totalMargin, minimumRoas, actions }) {
+  if (!hero) {
+    return;
+  }
+
+  const status = getMarginStatus(marginRate, totalMargin, minimumRoas);
+  const progressWidth = Math.max(0, Math.min(100, Number.isFinite(marginRate) ? marginRate : 0));
+  hero.dataset.tone = status.tone;
+  if (progress) {
+    progress.style.width = `${progressWidth}%`;
+  }
+  if (messageElement) {
+    messageElement.textContent = `${status.title} · ${status.message}`;
+  }
+  if (actions) {
+    actions.hidden = !status.showActions;
+  }
+}
+
 function readQuickHomeValues() {
   return Object.fromEntries(
     Array.from(quickHomeInputs).map((input) => [input.dataset.quickField, parseNumber(input.value)]),
@@ -2084,12 +2170,53 @@ function setQuickHomeResult(key, value, formatter = formatCurrency) {
   }
 }
 
+function setQuickHomeFieldState(field, state = "", message = "") {
+  const input = Array.from(quickHomeInputs).find((element) => element.dataset.quickField === field);
+  const wrapper = input?.closest("label");
+  if (!wrapper) {
+    return;
+  }
+
+  wrapper.classList.remove("wc-field-valid", "wc-field-warning", "wc-field-error");
+  let hint = wrapper.querySelector(".wc-field-hint");
+  if (!hint) {
+    hint = document.createElement("p");
+    hint.className = "wc-field-hint";
+    wrapper.appendChild(hint);
+  }
+  hint.textContent = message;
+
+  if (state) {
+    wrapper.classList.add(`wc-field-${state}`);
+  }
+}
+
+function updateQuickHomeFieldFeedback(values) {
+  quickHomeInputs.forEach((input) => {
+    const value = parseNumber(input.value);
+    setQuickHomeFieldState(input.dataset.quickField, value > 0 ? "valid" : "");
+  });
+
+  if (parseNumber(values.coupangFeeRate) === 0) {
+    setQuickHomeFieldState("coupangFeeRate", "warning", "보통 10~15% 입력. 카테고리 수수료를 확인하세요.");
+  }
+
+  if (parseNumber(values.quantity) === 0) {
+    setQuickHomeFieldState("quantity", "warning", "수량을 입력해야 총 마진이 계산됩니다.");
+  }
+
+  if (parseNumber(values.unitProductCostKrw) > parseNumber(values.salePriceKrw) && parseNumber(values.salePriceKrw) > 0) {
+    setQuickHomeFieldState("unitProductCostKrw", "error", "원가가 판매가보다 높습니다.");
+  }
+}
+
 function updateQuickHomeCalculator() {
   if (!quickHomeInputs.length) {
     return;
   }
 
   const values = readQuickHomeValues();
+  updateQuickHomeFieldFeedback(values);
   const quantity = Math.max(0, Math.round(values.quantity || 0));
   const salePriceKrw = Math.max(0, values.salePriceKrw || 0);
   const baseUnitCostKrw = Math.max(0, values.unitProductCostKrw || 0);
@@ -2114,6 +2241,14 @@ function updateQuickHomeCalculator() {
   setQuickHomeResult("marginRate", marginRate, formatPercent);
   setQuickHomeResult("totalCost", totalCostKrw);
   setQuickHomeResult("minimumRoas", minimumRoas, formatPercent);
+  updateMarginHero({
+    hero: quickHomeHero,
+    progress: quickHomeMarginProgress,
+    messageElement: quickHomeMarginMessage,
+    marginRate,
+    totalMargin: totalMarginKrw,
+    minimumRoas,
+  });
 
   if (quickHomeStatus) {
     quickHomeStatus.textContent = unitMarginKrw > 0 ? "마진 확보" : "손실 가능";
@@ -3120,6 +3255,7 @@ function renderField(field, stageValues, calculatedValues) {
   }
   const labelClass = labelClasses.length > 0 ? ` class="${labelClasses.join(" ")}"` : "";
   const helpAttributes = hasHelp ? ` data-help-key="${escapeHtml(field.key)}"` : "";
+  const fieldAttributes = ` data-field-key="${escapeHtml(field.key)}"`;
   const labelContent = `
     <span class="field-label-text">
       ${escapeHtml(field.label)}
@@ -3134,7 +3270,7 @@ function renderField(field, stageValues, calculatedValues) {
       .join("");
 
     return `
-      <label${labelClass}${helpAttributes}>
+      <label${labelClass}${helpAttributes}${fieldAttributes}>
         ${labelContent}
         <select data-field="${escapeHtml(field.key)}">${options}</select>
       </label>
@@ -3151,12 +3287,13 @@ function renderField(field, stageValues, calculatedValues) {
     : `data-field="${escapeHtml(field.key)}" inputmode="${field.inputmode || "decimal"}"`;
 
   return `
-    <label${labelClass}${helpAttributes}>
+    <label${labelClass}${helpAttributes}${fieldAttributes}>
       ${labelContent}
       <div class="${wrapperClass}">
         <input type="text" value="${escapeHtml(value)}" ${inputAttributes} />
         <em>${escapeHtml(field.unit)}</em>
       </div>
+      ${isComputed ? "" : '<p class="wc-field-hint" data-field-hint></p>'}
     </label>
   `;
 }
@@ -3197,6 +3334,95 @@ function renderStageForm(id) {
   }
 
   renderGenericPreview(id);
+}
+
+function setRenderedFieldState(fieldKey, state = "", message = "") {
+  const label = Array.from(mockForm.querySelectorAll("[data-field-key]")).find(
+    (element) => element.dataset.fieldKey === fieldKey,
+  );
+  if (!label || label.classList.contains("computed-field")) {
+    return;
+  }
+
+  label.classList.remove("wc-field-valid", "wc-field-warning", "wc-field-error");
+  const hint = label.querySelector("[data-field-hint]");
+  if (hint) {
+    hint.textContent = message;
+  }
+  if (state) {
+    label.classList.add(`wc-field-${state}`);
+  }
+}
+
+function updateRenderedFieldFeedback() {
+  if (currentCalculator === "final" || !mockForm) {
+    return;
+  }
+
+  mockForm.querySelectorAll("[data-field-key]").forEach((label) => {
+    if (label.classList.contains("computed-field")) {
+      return;
+    }
+    const input = label.querySelector("[data-field]");
+    const value = parseNumber(input?.value || "");
+    setRenderedFieldState(label.dataset.fieldKey, value > 0 ? "valid" : "");
+  });
+
+  const stageValues = currentProduct.stages[currentCalculator] || {};
+  if (currentCalculator === "coupang" && parseNumber(stageValues.coupangFeeRate) === 0) {
+    setRenderedFieldState("coupangFeeRate", "warning", "보통 10~15% 입력. 카테고리 수수료를 확인하세요.");
+  }
+
+  if (currentCalculator === "china" && parseNumber(stageValues.quantity) === 0) {
+    setRenderedFieldState("quantity", "warning", "수량을 입력해야 총 마진이 계산됩니다.");
+  }
+
+  if (
+    ["marginCalculator", "adBreakEvenCalculator"].includes(currentCalculator) &&
+    parseNumber(stageValues.unitCostKrw) > parseNumber(stageValues.salePriceKrw) &&
+    parseNumber(stageValues.salePriceKrw) > 0
+  ) {
+    setRenderedFieldState("unitCostKrw", "error", "원가가 판매가보다 높습니다.");
+  }
+}
+
+function getStageProgressState(calculations) {
+  const stages = currentProduct.stages;
+  const progress = {
+    china: parseNumber(stages.china.productUnitCny) > 0 || parseNumber(calculations.china.total) > 0,
+    "china-korea":
+      parseNumber(stages["china-korea"].totalCbm) > 0 ||
+      parseNumber(stages["china-korea"].expectedFreightKrw) > 0 ||
+      parseNumber(calculations["china-korea"].total) > 0,
+    "korea-coupang":
+      parseNumber(stages["korea-coupang"].koreaCoupangFreightKrw) > 0 ||
+      parseNumber(stages["korea-coupang"].palletWrappingFeeKrw) > 0 ||
+      parseNumber(calculations["korea-coupang"].total) > 0,
+    coupang: parseNumber(stages.coupang.coupangFeeRate) > 0,
+  };
+  const doneCount = Object.values(progress).filter(Boolean).length;
+  const cumulativeCost = [
+    progress.china ? calculations.china.total : 0,
+    progress["china-korea"] ? calculations["china-korea"].total : 0,
+    progress["korea-coupang"] ? calculations["korea-coupang"].total : 0,
+    progress.coupang ? getFinalCostTotals(calculations).coupang : 0,
+  ].reduce((sum, value) => sum + value, 0);
+
+  return { progress, doneCount, cumulativeCost };
+}
+
+function updateStageProgress(calculations) {
+  const { progress, doneCount, cumulativeCost } = getStageProgressState(calculations);
+
+  quickSwitchButtons.forEach((button) => {
+    const calculatorId = button.dataset.calculator;
+    button.classList.toggle("is-done", Boolean(progress[calculatorId]) && calculatorId !== currentCalculator);
+  });
+
+  if (stageProgressSummary) {
+    stageProgressSummary.textContent = `${doneCount}/5 단계 완료 · 누계 비용 ${formatCurrency(cumulativeCost)}`;
+    stageProgressSummary.hidden = Boolean(categoryByStandaloneCalculator[currentCalculator]);
+  }
 }
 
 function renderGenericPreview(id) {
@@ -3467,6 +3693,15 @@ function updateFinalSummary(calculations) {
   finalProfitElements.minimumRoas
     .closest("div")
     ?.setAttribute("data-tone", profitMetrics.minimumRoas <= 0 && profitMetrics.unitSalePrice > 0 ? "danger" : "neutral");
+  updateMarginHero({
+    hero: finalProfitHero,
+    progress: finalMarginProgress,
+    messageElement: finalMarginMessage,
+    marginRate: profitMetrics.marginRate,
+    totalMargin: profitMetrics.totalExpectedMargin,
+    minimumRoas: profitMetrics.minimumRoas,
+    actions: finalMarginActions,
+  });
 }
 
 function renderFinalSummaryMode() {
@@ -3499,10 +3734,12 @@ function updateCalculationUI() {
   if (currentCalculator !== "final") {
     updateComputedFields(calculations[currentCalculator]);
     updateResultCard(calculations);
+    updateRenderedFieldFeedback();
   } else {
     renderFinalChart(finalCalculations, currentFinalChartKey);
   }
 
+  updateStageProgress(finalCalculations);
   updateFinalSummary(finalCalculations);
 }
 
@@ -3659,6 +3896,8 @@ function normalizeProductRecord(product) {
   return {
     id: product.id,
     name: product.name,
+    memo: String(product.memo || ""),
+    tags: Array.isArray(product.tags) ? product.tags.map((tag) => String(tag)).filter(Boolean) : [],
     stages: clone(product.stages || {}),
     finalSummary: normalizeFinalSummary(product.finalSummary),
     createdAt: product.createdAt,
@@ -3782,6 +4021,14 @@ function renderSavedProductCards(savedProducts) {
       const currentPill = isCurrent ? '<span class="saved-current-pill">열려 있음</span>' : "";
       const loadLabel = isCurrent ? "열려 있음" : "불러오기";
       const loadDisabled = isCurrent ? " disabled" : "";
+      const metrics = getSavedProductMetrics(product);
+      const marginTone = metrics.totalExpectedMargin < 0 ? "danger" : getMarginBadgeTone(metrics.marginRate);
+      const lossBadge = metrics.totalExpectedMargin < 0 ? '<span class="saved-loss-pill">손실</span>' : "";
+      const tags = Array.isArray(product.tags) ? product.tags : [];
+      const tagHtml =
+        tags.length > 0
+          ? `<div class="saved-product-tags">${tags.map((tag) => `<span>${escapeHtml(tag)}</span>`).join("")}</div>`
+          : "";
       return `
         <article class="saved-product-card${isCurrent ? " is-current" : ""}" data-saved-card="${escapeHtml(product.id)}">
           <div class="saved-product-card-head">
@@ -3789,8 +4036,14 @@ function renderSavedProductCards(savedProducts) {
               <h3>${escapeHtml(product.name)}</h3>
               <time datetime="${escapeHtml(product.updatedAt || "")}">최근 저장 ${escapeHtml(formatSavedDate(product.updatedAt))}</time>
             </div>
-            ${currentPill}
+            <div class="saved-card-pills">${currentPill}${lossBadge}</div>
           </div>
+          <div class="saved-product-metrics" data-tone="${escapeHtml(marginTone)}">
+            <span>마진율 <strong>${escapeHtml(formatPercent(metrics.marginRate))}</strong></span>
+            <span>총마진 <strong>${escapeHtml(formatCurrency(metrics.totalExpectedMargin))}</strong></span>
+            <span>수량 <strong>${escapeHtml(formatNumber(Math.max(0, parseNumber(product.stages?.china?.quantity))))}개</strong></span>
+          </div>
+          ${tagHtml}
           <div class="saved-product-actions">
             <button class="saved-load-button" type="button" data-load-product="${escapeHtml(product.id)}"${loadDisabled}>${loadLabel}</button>
             <button class="saved-delete-button" type="button" data-delete-product="${escapeHtml(product.id)}">삭제</button>
@@ -3814,6 +4067,26 @@ function renderSavedListToggle(savedProducts) {
   if (savedProductsList) {
     savedProductsList.hidden = !isSavedListExpanded;
   }
+}
+
+function getSavedProductMetrics(product) {
+  const originalProduct = currentProduct;
+  try {
+    currentProduct = normalizeProduct(product);
+    return calculateProfitMetrics(getFinalDisplayCalculations(calculateAll()));
+  } finally {
+    currentProduct = originalProduct;
+  }
+}
+
+function getMarginBadgeTone(marginRate) {
+  if (marginRate >= 20) {
+    return "green";
+  }
+  if (marginRate >= 10) {
+    return "amber";
+  }
+  return "danger";
 }
 
 function renderSavedProducts() {
@@ -3932,12 +4205,194 @@ function setSaveStatus(message, tone = "neutral", options = {}) {
   resetSaveActionButtonLabels();
 }
 
+function getCurrentSavePreview() {
+  const profitMetrics = calculateProfitMetrics(getFinalDisplayCalculations(calculateAll()));
+  return {
+    totalMargin: profitMetrics.totalExpectedMargin,
+    marginRate: profitMetrics.marginRate,
+    salePrice: profitMetrics.unitSalePrice,
+    quantity: Math.max(0, parseNumber(currentProduct.stages.china.quantity)),
+    feeRate: parseNumber(currentProduct.stages.coupang.coupangFeeRate),
+  };
+}
+
+function renderSavePreview(target) {
+  if (!target) {
+    return;
+  }
+
+  const preview = getCurrentSavePreview();
+  const marginTone = preview.totalMargin < 0 ? "danger" : "green";
+  target.innerHTML = `
+    <div>
+      <span>총 예상마진</span>
+      <strong data-tone="${escapeHtml(marginTone)}">${escapeHtml(formatCurrency(preview.totalMargin))}</strong>
+    </div>
+    <div>
+      <span>마진율</span>
+      <strong>${escapeHtml(formatPercent(preview.marginRate))}</strong>
+    </div>
+    <div>
+      <span>판매가</span>
+      <strong>${escapeHtml(formatCurrency(preview.salePrice))}</strong>
+    </div>
+    <div>
+      <span>수량 · 수수료율</span>
+      <strong>${escapeHtml(formatNumber(preview.quantity))}개 · ${escapeHtml(formatPercent(preview.feeRate))}</strong>
+    </div>
+  `;
+}
+
+function setBodySaveModalLock() {
+  document.body.classList.toggle("wc-save-lock", Boolean(activeSaveModal));
+}
+
+function openSaveModal(modal) {
+  closeSaveModal();
+  if (!modal) {
+    return;
+  }
+  activeSaveModal = modal;
+  modal.hidden = false;
+  setBodySaveModalLock();
+  const focusTarget = modal.querySelector("input, textarea, button:not([disabled])");
+  window.setTimeout(() => focusTarget?.focus(), 0);
+}
+
+function closeSaveModal() {
+  if (!activeSaveModal) {
+    return;
+  }
+  activeSaveModal.hidden = true;
+  activeSaveModal = null;
+  setBodySaveModalLock();
+}
+
+function persistPendingSaveDraft() {
+  try {
+    sessionStorage.setItem(
+      "rgPendingSaveDraft",
+      JSON.stringify({
+        product: currentProduct,
+        productId: currentProductId,
+        calculator: currentCalculator,
+      }),
+    );
+    sessionStorage.setItem("rgContinueSaveAfterLogin", "1");
+  } catch {
+    // 브라우저 저장소를 사용할 수 없어도 로그인 자체는 진행합니다.
+  }
+}
+
+function restorePendingSaveDraft() {
+  const shouldContinue = sessionStorage.getItem("rgContinueSaveAfterLogin") === "1";
+  const rawDraft = sessionStorage.getItem("rgPendingSaveDraft");
+  sessionStorage.removeItem("rgContinueSaveAfterLogin");
+  sessionStorage.removeItem("rgPendingSaveDraft");
+
+  if (!shouldContinue || !rawDraft) {
+    return null;
+  }
+
+  try {
+    const draft = JSON.parse(rawDraft);
+    if (draft?.product) {
+      currentProduct = normalizeProduct(draft.product);
+      currentProductId = draft.productId || null;
+      productNameInput.value = currentProduct.name;
+    }
+    return draft;
+  } catch {
+    return { calculator: currentCalculator };
+  }
+}
+
+function showSaveLoginModal() {
+  renderSavePreview(saveLoginPreview);
+  openSaveModal(saveLoginModal);
+}
+
+function updateSaveSubmitState() {
+  const name = saveNameInput?.value.trim() || "";
+  if (saveSubmitButton) {
+    saveSubmitButton.disabled = name.length === 0;
+  }
+  saveNameInput?.closest(".wc-save-field")?.setAttribute("data-error", "false");
+  if (saveNameError) {
+    saveNameError.hidden = true;
+  }
+}
+
+function setSaveTagSelection(tags) {
+  selectedSaveTags = new Set(Array.isArray(tags) ? tags : []);
+  saveTagButtons.forEach((button) => {
+    button.classList.toggle("is-selected", selectedSaveTags.has(button.dataset.saveTag));
+  });
+}
+
+function showSaveInputModal() {
+  renderSavePreview(saveInputPreview);
+  if (saveNameInput) {
+    saveNameInput.value = productNameInput.value.trim() || currentProduct.name || getNextProductName();
+  }
+  if (saveMemoInput) {
+    saveMemoInput.value = currentProduct.memo || "";
+  }
+  setSaveTagSelection(currentProduct.tags || []);
+  updateSaveSubmitState();
+  openSaveModal(saveInputModal);
+}
+
+function renderSuccessSummary(product) {
+  if (!saveSuccessSummary) {
+    return;
+  }
+
+  const tags = Array.isArray(product?.tags) ? product.tags : [];
+  saveSuccessSummary.innerHTML = `
+    <strong>${escapeHtml(product?.name || "계산안")}</strong>
+    <p>${tags.length > 0 ? "선택한 태그" : "태그 없이 저장됨"}</p>
+    ${
+      tags.length > 0
+        ? `<div class="wc-save-tag-list">${tags.map((tag) => `<span>${escapeHtml(tag)}</span>`).join("")}</div>`
+        : ""
+    }
+  `;
+}
+
+function showSaveSuccessModal(product) {
+  renderSuccessSummary(product);
+  openSaveModal(saveSuccessModal);
+}
+
+async function handleSaveButtonClick() {
+  if (!accountFeatureEnabled) {
+    setSaveStatus("저장 기능은 현재 제공하지 않습니다.", "warning", { toast: true });
+    return;
+  }
+
+  if (!currentUser) {
+    showSaveLoginModal();
+    return;
+  }
+
+  showSaveInputModal();
+}
+
+function getSaveModalPayload() {
+  return {
+    name: saveNameInput?.value.trim() || "",
+    memo: saveMemoInput?.value.trim() || "",
+    tags: Array.from(selectedSaveTags),
+  };
+}
+
 function resolveProductName() {
   const typedName = productNameInput.value.trim();
   return typedName || getNextProductName();
 }
 
-async function saveCurrentProduct() {
+async function saveCurrentProduct(options = {}) {
   if (!accountFeatureEnabled) {
     setSaveStatus("저장 기능은 현재 제공하지 않습니다.", "warning", {
       toast: true,
@@ -3952,7 +4407,13 @@ async function saveCurrentProduct() {
     return;
   }
 
-  const name = resolveProductName();
+  const name = String(options.name || resolveProductName()).trim() || getNextProductName();
+  const memo = String(options.memo ?? currentProduct.memo ?? "").trim();
+  const tags = Array.isArray(options.tags)
+    ? options.tags.map((tag) => String(tag).trim()).filter(Boolean)
+    : Array.isArray(currentProduct.tags)
+      ? currentProduct.tags
+      : [];
   const currentSavedProduct = findSavedProductById(currentProductId);
   const existingProduct = findSavedProductByName(name);
   const isSameAsCurrentProduct =
@@ -3991,6 +4452,8 @@ async function saveCurrentProduct() {
   }
 
   currentProduct.name = name;
+  currentProduct.memo = memo;
+  currentProduct.tags = tags;
 
   try {
     const data = await requestJson("/api/products", {
@@ -3998,6 +4461,8 @@ async function saveCurrentProduct() {
       body: JSON.stringify({
         id: requestId,
         name,
+        memo,
+        tags,
         stages: clone(currentProduct.stages),
         finalSummary: clone(currentProduct.finalSummary),
       }),
@@ -4012,6 +4477,7 @@ async function saveCurrentProduct() {
     renderLoginStatus();
     const actionText = saveMode === "updated" ? "업데이트 완료" : "저장 완료";
     setSaveStatus(`${savedProduct.name} ${actionText}. 저장 목록에서 다시 불러올 수 있습니다.`, "success", { toast: true });
+    return savedProduct;
   } catch (error) {
     if (error.status === 401) {
       currentUser = null;
@@ -4541,7 +5007,7 @@ productNameInput.addEventListener("input", () => {
 });
 
 saveProductButton?.addEventListener("click", async () => {
-  await saveCurrentProduct();
+  await handleSaveButtonClick();
 });
 
 saveConfirmSubmit?.addEventListener("click", () => {
@@ -4559,6 +5025,11 @@ saveConfirm?.querySelector("[data-save-confirm-cancel]")?.addEventListener("clic
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape" && saveConfirm && !saveConfirm.hidden) {
     closeSaveConfirm(false);
+    return;
+  }
+
+  if (event.key === "Escape" && activeSaveModal) {
+    closeSaveModal();
   }
 });
 
@@ -4590,6 +5061,79 @@ newProductButton.addEventListener("click", () => {
 
 loginButton.addEventListener("click", async () => {
   await handleLoginButtonClick();
+});
+
+saveKakaoButton?.addEventListener("click", () => {
+  persistPendingSaveDraft();
+  window.location.href = "/auth/kakao/start";
+});
+
+saveEmailButton?.addEventListener("click", () => {
+  setSaveStatus("이메일 로그인은 서비스 확장 예정입니다. 현재는 카카오로 시작할 수 있습니다.", "warning", { toast: true });
+});
+
+document.querySelectorAll("[data-wc-save-close]").forEach((element) => {
+  element.addEventListener("click", () => {
+    closeSaveModal();
+  });
+});
+
+saveNameInput?.addEventListener("input", updateSaveSubmitState);
+
+saveTagButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    const tag = button.dataset.saveTag;
+    if (selectedSaveTags.has(tag)) {
+      selectedSaveTags.delete(tag);
+    } else {
+      selectedSaveTags.add(tag);
+    }
+    setSaveTagSelection(Array.from(selectedSaveTags));
+  });
+});
+
+saveSubmitButton?.addEventListener("click", async () => {
+  const payload = getSaveModalPayload();
+  if (!payload.name) {
+    saveNameInput?.closest(".wc-save-field")?.setAttribute("data-error", "true");
+    if (saveNameError) {
+      saveNameError.hidden = false;
+    }
+    return;
+  }
+
+  saveSubmitButton.classList.add("wc-save-submit-loading");
+  saveSubmitButton.disabled = true;
+  try {
+    closeSaveModal();
+    const savedProduct = await saveCurrentProduct({ ...payload, showSuccessModal: true });
+    if (savedProduct) {
+      showSaveSuccessModal(savedProduct);
+    }
+  } finally {
+    saveSubmitButton.classList.remove("wc-save-submit-loading");
+    updateSaveSubmitState();
+  }
+});
+
+saveOpenListButton?.addEventListener("click", () => {
+  closeSaveModal();
+  isSavedListExpanded = true;
+  renderSavedProducts();
+  sessionBar?.scrollIntoView({ behavior: "smooth", block: "start" });
+});
+
+finalMarginActions?.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-action-category]");
+  if (!button) {
+    return;
+  }
+  const category = button.dataset.actionCategory;
+  const calculatorId = standaloneCalculatorByCategory[category];
+  if (calculatorId) {
+    renderCalculator(calculatorId);
+    window.history.replaceState(null, "", `?category=${category}`);
+  }
 });
 
 quickHomeInputs.forEach((input) => {
@@ -4629,6 +5173,7 @@ initializeApp();
 
 async function initializeApp() {
   await refreshAuthState();
+  const pendingSaveDraft = restorePendingSaveDraft();
   updateQuickHomeCalculator();
   window.setTimeout(scrollActiveCategoryIntoView, 120);
 
@@ -4636,7 +5181,9 @@ async function initializeApp() {
   const initialCategory = initialParams.get("category");
   const initialCalculator = initialParams.get("calc");
 
-  if (initialCategory && standaloneCalculatorByCategory[initialCategory]) {
+  if (pendingSaveDraft?.calculator && calculators[pendingSaveDraft.calculator]) {
+    renderCalculator(pendingSaveDraft.calculator, { scroll: false });
+  } else if (initialCategory && standaloneCalculatorByCategory[initialCategory]) {
     const calculatorId = standaloneCalculatorByCategory[initialCategory];
     const canonicalCategory = initialCategory === "agency-margin" ? "ad-break-even" : initialCategory;
     renderCalculator(calculatorId, { scroll: false });
@@ -4650,4 +5197,9 @@ async function initializeApp() {
   }
 
   handleAuthQueryMessage();
+  if (pendingSaveDraft && currentUser) {
+    showSaveInputModal();
+  } else if (pendingSaveDraft && !currentUser) {
+    setSaveStatus("로그인 후 계산안을 저장할 수 있습니다.", "warning", { toast: true });
+  }
 }

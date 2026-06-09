@@ -28,6 +28,10 @@ app.disable("x-powered-by");
 app.use(express.json({ limit: "1mb" }));
 app.use(express.urlencoded({ extended: false }));
 
+fs.mkdirSync(path.dirname(DATABASE_PATH), { recursive: true });
+const db = new DatabaseSync(DATABASE_PATH);
+initializeDatabase();
+
 app.use(async (req, res, next) => {
   const session = getSessionFromRequest(req);
   req.currentUser = session?.user || null;
@@ -126,7 +130,7 @@ app.post("/auth/logout", requireLogin, (req, res) => {
 app.get("/api/products", requireLogin, (req, res) => {
   const rows = db
     .prepare(
-      `SELECT id, name, stages_json, final_summary_json, created_at, updated_at
+      `SELECT id, name, memo, tags_json, stages_json, final_summary_json, created_at, updated_at
        FROM products
        WHERE user_id = ?
        ORDER BY updated_at DESC`,
@@ -141,6 +145,10 @@ app.get("/api/products", requireLogin, (req, res) => {
 app.post("/api/products", requireLogin, (req, res) => {
   const name = String(req.body?.name || "").trim() || "상품 1";
   const nameKey = normalizeProductNameKey(name);
+  const memo = String(req.body?.memo || "").trim().slice(0, 1000);
+  const tags = Array.isArray(req.body?.tags)
+    ? req.body.tags.map((tag) => String(tag).trim()).filter(Boolean).slice(0, 12)
+    : [];
   const requestedId = String(req.body?.id || "").trim();
   const stages = req.body?.stages || {};
   const finalSummary = req.body?.finalSummary || {};
@@ -166,19 +174,19 @@ app.post("/api/products", requireLogin, (req, res) => {
   if (existing) {
     db.prepare(
       `UPDATE products
-       SET name = ?, name_key = ?, stages_json = ?, final_summary_json = ?, updated_at = ?
+       SET name = ?, name_key = ?, memo = ?, tags_json = ?, stages_json = ?, final_summary_json = ?, updated_at = ?
        WHERE id = ? AND user_id = ?`,
-    ).run(name, nameKey, JSON.stringify(stages), JSON.stringify(finalSummary), now, id, req.currentUser.id);
+    ).run(name, nameKey, memo, JSON.stringify(tags), JSON.stringify(stages), JSON.stringify(finalSummary), now, id, req.currentUser.id);
   } else {
     db.prepare(
-      `INSERT INTO products (id, user_id, name, name_key, stages_json, final_summary_json, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-    ).run(id, req.currentUser.id, name, nameKey, JSON.stringify(stages), JSON.stringify(finalSummary), now, now);
+      `INSERT INTO products (id, user_id, name, name_key, memo, tags_json, stages_json, final_summary_json, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    ).run(id, req.currentUser.id, name, nameKey, memo, JSON.stringify(tags), JSON.stringify(stages), JSON.stringify(finalSummary), now, now);
   }
 
   const row = db
     .prepare(
-      `SELECT id, name, stages_json, final_summary_json, created_at, updated_at
+      `SELECT id, name, memo, tags_json, stages_json, final_summary_json, created_at, updated_at
        FROM products
        WHERE id = ? AND user_id = ?`,
     )
@@ -800,6 +808,60 @@ function normalizeProductNameKey(name) {
     .toLowerCase();
 }
 
+function initializeDatabase() {
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS users (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      kakao_id TEXT NOT NULL UNIQUE,
+      nickname TEXT,
+      email TEXT,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS sessions (
+      id TEXT PRIMARY KEY,
+      user_id INTEGER NOT NULL,
+      expires_at TEXT NOT NULL,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    );
+
+    CREATE TABLE IF NOT EXISTS products (
+      id TEXT PRIMARY KEY,
+      user_id INTEGER NOT NULL,
+      name TEXT NOT NULL,
+      name_key TEXT,
+      memo TEXT DEFAULT '',
+      tags_json TEXT DEFAULT '[]',
+      stages_json TEXT NOT NULL,
+      final_summary_json TEXT NOT NULL,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    );
+
+    CREATE INDEX IF NOT EXISTS sessions_user_id_idx ON sessions (user_id);
+    CREATE INDEX IF NOT EXISTS products_user_updated_idx ON products (user_id, updated_at);
+  `);
+
+  migrateProductMetadataColumns();
+  migrateProductNameKeys();
+}
+
+function migrateProductMetadataColumns() {
+  const columns = db.prepare("PRAGMA table_info(products)").all();
+  const hasMemo = columns.some((column) => column.name === "memo");
+  const hasTags = columns.some((column) => column.name === "tags_json");
+
+  if (!hasMemo) {
+    db.exec("ALTER TABLE products ADD COLUMN memo TEXT DEFAULT ''");
+  }
+
+  if (!hasTags) {
+    db.exec("ALTER TABLE products ADD COLUMN tags_json TEXT DEFAULT '[]'");
+  }
+}
+
 function migrateProductNameKeys() {
   const columns = db.prepare("PRAGMA table_info(products)").all();
   const hasNameKey = columns.some((column) => column.name === "name_key");
@@ -914,6 +976,8 @@ function productFromRow(row) {
   return {
     id: row.id,
     name: row.name,
+    memo: row.memo || "",
+    tags: parseJson(row.tags_json, []),
     stages: parseJson(row.stages_json, {}),
     finalSummary: parseJson(row.final_summary_json, {}),
     createdAt: row.created_at,

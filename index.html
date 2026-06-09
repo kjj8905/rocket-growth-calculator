@@ -249,6 +249,17 @@
               <p class="eyebrow">예상 결과</p>
               <span data-quick-status>판매 전 예상치</span>
             </div>
+            <div class="wc-result-hero" data-quick-hero>
+              <div class="wc-result-hero-head">
+                <span>총 예상마진</span>
+                <b data-quick-result="marginRate">0%</b>
+              </div>
+              <strong data-quick-result="totalMargin">0원</strong>
+              <div class="wc-margin-progress" aria-hidden="true">
+                <i data-quick-margin-progress></i>
+              </div>
+              <p class="wc-margin-message" data-quick-margin-message>값을 입력하면 마진 상태를 보여드립니다.</p>
+            </div>
             <div class="quick-home-result-grid">
               <div>
                 <span>1개당 상품원가</span>
@@ -259,18 +270,10 @@
                 <strong data-quick-result="unitMargin">0원</strong>
               </div>
               <div>
-                <span>총 예상마진</span>
-                <strong data-quick-result="totalMargin">0원</strong>
-              </div>
-              <div>
-                <span>마진율</span>
-                <strong data-quick-result="marginRate">0%</strong>
-              </div>
-              <div>
                 <span>최종 예상 총비용</span>
                 <strong data-quick-result="totalCost">0원</strong>
               </div>
-              <div>
+              <div class="quick-home-roas-row">
                 <span>최소 ROAS</span>
                 <strong data-quick-result="minimumRoas">0%</strong>
               </div>
@@ -500,6 +503,9 @@
             <button type="button" data-calculator="final">최종 비용</button>
           </div>
         </div>
+        <div class="wc-step-progress" id="stage-progress-summary" aria-live="polite">
+          0/5 단계 완료 · 누계 비용 0 원
+        </div>
 
         <div class="calculator-layout">
           <aside class="form-panel" aria-labelledby="form-title">
@@ -534,29 +540,38 @@
               </div>
 
               <div class="final-profit-card" aria-label="1개 기준 마진 요약">
-                <div>
-                  <span>1개당 판매가액</span>
-                  <strong data-profit-metric="unitSalePrice">0 원</strong>
-                </div>
-                <div>
-                  <span>1개당 상품원가</span>
-                  <strong data-profit-metric="unitProductCost">0 원</strong>
-                </div>
-                <div>
-                  <span>1개당 예상 마진</span>
-                  <strong data-profit-metric="unitMargin">0 원</strong>
-                </div>
-                <div>
-                  <span>마진율</span>
-                  <strong data-profit-metric="marginRate">0%</strong>
-                </div>
-                <div>
-                  <span>총 예상마진</span>
+                <div class="wc-result-hero final-profit-hero" data-final-profit-hero>
+                  <div class="wc-result-hero-head">
+                    <span>총 예상마진</span>
+                    <b data-profit-metric="marginRate">0%</b>
+                  </div>
                   <strong data-profit-metric="totalExpectedMargin">0 원</strong>
+                  <div class="wc-margin-progress" aria-hidden="true">
+                    <i data-final-margin-progress></i>
+                  </div>
+                  <p class="wc-margin-message" data-final-margin-message>판매가와 수량을 입력하면 마진 상태를 보여드립니다.</p>
+                  <div class="wc-margin-actions" data-final-margin-actions hidden>
+                    <button type="button" data-action-category="margin">판매가 역산 계산하기</button>
+                    <button type="button" data-action-category="ad-break-even">광고 손익분기 확인하기</button>
+                  </div>
                 </div>
-                <div>
-                  <span>최소 ROAS</span>
-                  <strong data-profit-metric="minimumRoas">0%</strong>
+                <div class="final-profit-grid">
+                  <div>
+                    <span>1개당 판매가액</span>
+                    <strong data-profit-metric="unitSalePrice">0 원</strong>
+                  </div>
+                  <div>
+                    <span>1개당 상품원가</span>
+                    <strong data-profit-metric="unitProductCost">0 원</strong>
+                  </div>
+                  <div>
+                    <span>1개당 예상 마진</span>
+                    <strong data-profit-metric="unitMargin">0 원</strong>
+                  </div>
+                  <div class="final-profit-roas">
+                    <span>최소 ROAS</span>
+                    <strong data-profit-metric="minimumRoas">0%</strong>
+                  </div>
                 </div>
               </div>
 
@@ -667,6 +682,75 @@
         <div class="save-confirm-actions">
           <button class="ghost-small-button" type="button" id="save-confirm-cancel">취소</button>
           <button class="primary-small-button" type="button" id="save-confirm-submit">저장하기</button>
+        </div>
+      </article>
+    </div>
+
+    <div class="wc-save-modal" id="wc-save-login-modal" role="dialog" aria-modal="true" aria-labelledby="wc-save-login-title" hidden>
+      <div class="wc-save-backdrop" data-wc-save-close></div>
+      <article class="wc-save-card">
+        <button class="wc-save-close" type="button" data-wc-save-close aria-label="닫기"></button>
+        <p class="eyebrow">계산안 저장</p>
+        <h2 id="wc-save-login-title">계산안을 저장하려면 로그인이 필요합니다</h2>
+        <p class="wc-save-description">저장된 계산안은 언제든 불러올 수 있습니다.</p>
+        <div class="wc-save-preview" data-save-preview="login"></div>
+        <button class="wc-save-kakao" type="button" id="wc-save-kakao-button">
+          <span>K</span>
+          카카오로 시작하기
+        </button>
+        <div class="wc-save-divider"><span>또는</span></div>
+        <button class="wc-save-secondary" type="button" id="wc-save-email-button">이메일 로그인/가입</button>
+        <p class="wc-save-footnote">로그인하지 않아도 계산은 계속할 수 있습니다.</p>
+      </article>
+    </div>
+
+    <div class="wc-save-modal" id="wc-save-input-modal" role="dialog" aria-modal="true" aria-labelledby="wc-save-input-title" hidden>
+      <div class="wc-save-backdrop" data-wc-save-close></div>
+      <article class="wc-save-card wc-save-card-wide">
+        <button class="wc-save-close" type="button" data-wc-save-close aria-label="닫기"></button>
+        <p class="eyebrow">계산안 저장</p>
+        <h2 id="wc-save-input-title">계산안 저장</h2>
+        <p class="wc-save-description">이름과 태그를 붙이면 나중에 쉽게 찾을 수 있습니다.</p>
+        <div class="wc-save-preview" data-save-preview="input"></div>
+        <div class="wc-save-field">
+          <label for="wc-save-name">계산안 이름</label>
+          <input id="wc-save-name" type="text" placeholder="예) 무선이어폰 1차 발주안" />
+          <p id="wc-save-name-error" hidden>이름을 입력해주세요</p>
+        </div>
+        <div class="wc-save-field">
+          <label for="wc-save-memo">메모</label>
+          <textarea id="wc-save-memo" rows="2" placeholder="특이사항, 참고 조건 등 자유롭게 입력하세요"></textarea>
+        </div>
+        <div class="wc-save-tags" aria-label="계산안 태그 선택">
+          <button type="button" data-save-tag="전자제품">전자제품</button>
+          <button type="button" data-save-tag="중국사입">중국사입</button>
+          <button type="button" data-save-tag="시즌상품">시즌상품</button>
+          <button type="button" data-save-tag="재발주">재발주</button>
+          <button type="button" data-save-tag="신규상품">신규상품</button>
+          <button type="button" data-save-tag="광고필요">광고필요</button>
+        </div>
+        <div class="wc-save-actions">
+          <button class="ghost-small-button" type="button" data-wc-save-close>취소</button>
+          <button class="primary-small-button" type="button" id="wc-save-submit-button" disabled>저장하기</button>
+        </div>
+      </article>
+    </div>
+
+    <div class="wc-save-modal" id="wc-save-success-modal" role="dialog" aria-modal="true" aria-labelledby="wc-save-success-title" hidden>
+      <div class="wc-save-backdrop" data-wc-save-close></div>
+      <article class="wc-save-card">
+        <button class="wc-save-close" type="button" data-wc-save-close aria-label="닫기"></button>
+        <div class="wc-save-success-icon" aria-hidden="true"></div>
+        <h2 id="wc-save-success-title">계산안이 저장되었습니다</h2>
+        <p class="wc-save-description">언제든 계산안 목록에서 불러올 수 있습니다. 수정이 필요하면 다시 불러온 뒤 재저장하세요.</p>
+        <div class="wc-save-saved-summary" id="wc-save-success-summary"></div>
+        <div class="wc-save-info">
+          <span aria-hidden="true"></span>
+          <p>수수료율이나 환율이 바뀌면 알림을 드릴 수 있도록 확장할 예정입니다.</p>
+        </div>
+        <div class="wc-save-actions">
+          <button class="ghost-small-button" type="button" id="wc-save-open-list-button">계산안 목록 보기</button>
+          <button class="primary-small-button" type="button" data-wc-save-close>계속 계산하기</button>
         </div>
       </article>
     </div>
