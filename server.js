@@ -22,7 +22,7 @@ const DATABASE_PATH = path.resolve(__dirname, process.env.DATABASE_PATH || "./da
 const KAKAO_REST_API_KEY = process.env.KAKAO_REST_API_KEY || "";
 const KAKAO_CLIENT_SECRET = process.env.KAKAO_CLIENT_SECRET || "";
 const KAKAO_REDIRECT_URI = process.env.KAKAO_REDIRECT_URI || `http://localhost:${PORT}/auth/kakao/callback`;
-const ACCOUNT_FEATURE_ENABLED = process.env.ACCOUNT_FEATURE_ENABLED !== "false";
+const ACCOUNT_FEATURE_ENABLED = !["off", "disabled", "hidden"].includes(String(process.env.ACCOUNT_FEATURE_ENABLED || "").toLowerCase());
 const app = express();
 app.disable("x-powered-by");
 app.use(express.json({ limit: "1mb" }));
@@ -130,7 +130,7 @@ app.post("/auth/logout", requireLogin, (req, res) => {
 app.get("/api/products", requireLogin, (req, res) => {
   const rows = db
     .prepare(
-      `SELECT id, name, memo, tags_json, stages_json, final_summary_json, created_at, updated_at
+      `SELECT id, name, memo, tags_json, calc_data_json, stages_json, final_summary_json, created_at, updated_at
        FROM products
        WHERE user_id = ?
        ORDER BY updated_at DESC`,
@@ -149,6 +149,7 @@ app.post("/api/products", requireLogin, (req, res) => {
   const tags = Array.isArray(req.body?.tags)
     ? req.body.tags.map((tag) => String(tag).trim()).filter(Boolean).slice(0, 12)
     : [];
+  const calcData = req.body?.calcData || req.body?.calc_data || {};
   const requestedId = String(req.body?.id || "").trim();
   const stages = req.body?.stages || {};
   const finalSummary = req.body?.finalSummary || {};
@@ -174,19 +175,42 @@ app.post("/api/products", requireLogin, (req, res) => {
   if (existing) {
     db.prepare(
       `UPDATE products
-       SET name = ?, name_key = ?, memo = ?, tags_json = ?, stages_json = ?, final_summary_json = ?, updated_at = ?
+       SET name = ?, name_key = ?, memo = ?, tags_json = ?, calc_data_json = ?, stages_json = ?, final_summary_json = ?, updated_at = ?
        WHERE id = ? AND user_id = ?`,
-    ).run(name, nameKey, memo, JSON.stringify(tags), JSON.stringify(stages), JSON.stringify(finalSummary), now, id, req.currentUser.id);
+    ).run(
+      name,
+      nameKey,
+      memo,
+      JSON.stringify(tags),
+      JSON.stringify(calcData),
+      JSON.stringify(stages),
+      JSON.stringify(finalSummary),
+      now,
+      id,
+      req.currentUser.id,
+    );
   } else {
     db.prepare(
-      `INSERT INTO products (id, user_id, name, name_key, memo, tags_json, stages_json, final_summary_json, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    ).run(id, req.currentUser.id, name, nameKey, memo, JSON.stringify(tags), JSON.stringify(stages), JSON.stringify(finalSummary), now, now);
+      `INSERT INTO products (id, user_id, name, name_key, memo, tags_json, calc_data_json, stages_json, final_summary_json, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    ).run(
+      id,
+      req.currentUser.id,
+      name,
+      nameKey,
+      memo,
+      JSON.stringify(tags),
+      JSON.stringify(calcData),
+      JSON.stringify(stages),
+      JSON.stringify(finalSummary),
+      now,
+      now,
+    );
   }
 
   const row = db
     .prepare(
-      `SELECT id, name, memo, tags_json, stages_json, final_summary_json, created_at, updated_at
+      `SELECT id, name, memo, tags_json, calc_data_json, stages_json, final_summary_json, created_at, updated_at
        FROM products
        WHERE id = ? AND user_id = ?`,
     )
@@ -212,6 +236,10 @@ app.delete("/api/products/:id", requireLogin, (req, res) => {
 });
 
 app.get(["/", "/index.html"], (req, res) => {
+  res.type("html").send(renderIndexHtml());
+});
+
+app.get("/saved", (req, res) => {
   res.type("html").send(renderIndexHtml());
 });
 
@@ -833,6 +861,7 @@ function initializeDatabase() {
       name_key TEXT,
       memo TEXT DEFAULT '',
       tags_json TEXT DEFAULT '[]',
+      calc_data_json TEXT DEFAULT '{}',
       stages_json TEXT NOT NULL,
       final_summary_json TEXT NOT NULL,
       created_at TEXT NOT NULL,
@@ -852,6 +881,7 @@ function migrateProductMetadataColumns() {
   const columns = db.prepare("PRAGMA table_info(products)").all();
   const hasMemo = columns.some((column) => column.name === "memo");
   const hasTags = columns.some((column) => column.name === "tags_json");
+  const hasCalcData = columns.some((column) => column.name === "calc_data_json");
 
   if (!hasMemo) {
     db.exec("ALTER TABLE products ADD COLUMN memo TEXT DEFAULT ''");
@@ -859,6 +889,10 @@ function migrateProductMetadataColumns() {
 
   if (!hasTags) {
     db.exec("ALTER TABLE products ADD COLUMN tags_json TEXT DEFAULT '[]'");
+  }
+
+  if (!hasCalcData) {
+    db.exec("ALTER TABLE products ADD COLUMN calc_data_json TEXT DEFAULT '{}'");
   }
 }
 
@@ -978,6 +1012,7 @@ function productFromRow(row) {
     name: row.name,
     memo: row.memo || "",
     tags: parseJson(row.tags_json, []),
+    calcData: parseJson(row.calc_data_json, {}),
     stages: parseJson(row.stages_json, {}),
     finalSummary: parseJson(row.final_summary_json, {}),
     createdAt: row.created_at,

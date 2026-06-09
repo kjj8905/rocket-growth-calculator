@@ -226,6 +226,7 @@ h1 {
   font-size: 18px;
   font-weight: 700;
   line-height: 26px;
+  overflow-wrap: anywhere;
 }
 
 .product-save-meta {
@@ -812,7 +813,7 @@ body.wc-save-lock {
 
 .product-controls {
   align-items: end;
-  grid-template-columns: minmax(260px, 1fr) auto auto;
+  grid-template-columns: minmax(260px, 1fr) auto auto auto;
 }
 
 .product-box input,
@@ -1114,6 +1115,189 @@ body.wc-save-lock {
   outline: none;
 }
 
+.saved-copy-button {
+  background: var(--grey-100);
+  color: var(--grey-700);
+}
+
+.saved-copy-button:hover,
+.saved-copy-button:focus-visible {
+  background: var(--blue-50);
+  color: var(--blue-600);
+  outline: none;
+}
+
+.wc-save-list-page {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-6);
+  border-radius: var(--radius-16);
+  background: var(--white);
+  box-shadow: var(--shadow-2);
+}
+
+.wc-save-list-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.wc-save-list-head h2 {
+  margin: var(--space-1) 0 0;
+  color: var(--grey-900);
+  font-size: 24px;
+  font-weight: 900;
+  line-height: 34px;
+}
+
+.wc-save-list-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
+.wc-save-list-actions .is-active {
+  background: var(--blue-50);
+  color: var(--blue-600);
+}
+
+.wc-save-list-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border-radius: var(--radius-12);
+  background: var(--grey-50);
+}
+
+.wc-save-list-toolbar > span {
+  color: var(--grey-700);
+  font-size: 13px;
+  font-weight: 900;
+  line-height: 20px;
+}
+
+.wc-save-list-toolbar label {
+  width: min(220px, 100%);
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.wc-save-list-toolbar label span {
+  color: var(--grey-600);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.wc-save-list-toolbar select {
+  height: 38px;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.wc-save-list-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.wc-save-list-page.is-compare-mode .wc-save-list-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.wc-save-page-card {
+  cursor: pointer;
+}
+
+.wc-save-empty {
+  grid-column: 1 / -1;
+  min-height: 220px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: var(--space-3);
+  padding: var(--space-8);
+  border: 1px dashed var(--grey-300);
+  border-radius: var(--radius-16);
+  background: var(--grey-50);
+  text-align: center;
+}
+
+.wc-save-empty > span {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: var(--blue-50);
+  position: relative;
+}
+
+.wc-save-empty > span::after {
+  content: "";
+  position: absolute;
+  inset: 16px;
+  border: 3px solid var(--blue-500);
+  border-top: 0;
+  border-left: 0;
+  transform: rotate(45deg);
+}
+
+.wc-save-empty strong {
+  color: var(--grey-800);
+  font-size: 18px;
+  font-weight: 900;
+  line-height: 27px;
+}
+
+.calculator-save-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  border: 1px solid rgba(49, 130, 246, 0.12);
+  border-radius: var(--radius-16);
+  background: var(--white);
+  box-shadow: var(--shadow-1);
+}
+
+.calculator-save-footer div {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.calculator-save-footer strong {
+  color: var(--grey-900);
+  font-size: 17px;
+  font-weight: 900;
+  line-height: 25px;
+}
+
+.calculator-save-footer span {
+  color: var(--grey-600);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 20px;
+}
+
+.final-save-button {
+  min-width: 104px;
+  height: 42px;
+  flex: 0 0 auto;
+  border: 0;
+  border-radius: var(--radius-12);
+  background: var(--blue-500);
+  color: var(--white);
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 22px;
+}
+
 .quick-home-results .wc-result-hero {
   margin: var(--space-3) 0 var(--space-3);
 }
@@ -1335,6 +1519,17 @@ body.wc-save-lock {
   text-align: center;
 }
 
+.wc-save-kakao:disabled {
+  background: var(--grey-200);
+  color: var(--grey-500);
+  cursor: not-allowed;
+}
+
+.wc-save-kakao:disabled span {
+  background: var(--grey-400);
+  color: var(--grey-100);
+}
+
 .wc-save-secondary {
   background: var(--grey-100);
   color: var(--grey-800);
@@ -1447,6 +1642,25 @@ body.wc-save-lock {
 .wc-save-submit-loading {
   opacity: 0.72;
   pointer-events: none;
+}
+
+.wc-save-submit-loading::before {
+  content: "";
+  width: 14px;
+  height: 14px;
+  display: inline-block;
+  margin-right: 6px;
+  border: 2px solid rgba(255, 255, 255, 0.55);
+  border-top-color: var(--white);
+  border-radius: 50%;
+  vertical-align: -2px;
+  animation: wcSaveSpin 700ms linear infinite;
+}
+
+@keyframes wcSaveSpin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .wc-save-success-icon {
@@ -4127,6 +4341,21 @@ em {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .wc-save-list-grid,
+  .wc-save-list-page.is-compare-mode .wc-save-list-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .wc-save-list-head,
+  .calculator-save-footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .wc-save-list-actions {
+    justify-content: flex-start;
+  }
+
   .quick-home-card,
   .home-seo-explain-section {
     grid-template-columns: 1fr;
@@ -4205,13 +4434,55 @@ em {
   }
 
   .calculator-category-nav {
-    width: auto;
+    width: 100%;
     max-width: none;
-    margin-right: calc(var(--space-3) * -1);
-    margin-left: calc(var(--space-3) * -1);
+    display: grid;
+    grid-template-columns: 1fr;
+    margin-right: 0;
+    margin-left: 0;
     padding-right: var(--space-3);
     padding-left: var(--space-3);
-    border-radius: 0;
+    border-radius: var(--radius-16);
+    overflow: visible;
+  }
+
+  .calculator-category-nav button {
+    width: 100%;
+    white-space: normal;
+  }
+
+  .intro {
+    gap: var(--space-4);
+  }
+
+  .header-account-box {
+    grid-template-columns: 1fr;
+    gap: var(--space-3);
+  }
+
+  .header-account-box .login-controls,
+  .header-account-box button {
+    width: 100%;
+  }
+
+  .header-account-box p,
+  .product-head h2,
+  .save-status {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    word-break: normal;
+  }
+
+  .product-box {
+    padding: var(--space-4);
+  }
+
+  .product-head {
+    gap: var(--space-3);
+  }
+
+  .product-save-meta {
+    width: 100%;
   }
 
   .banner-grid,
@@ -4223,9 +4494,29 @@ em {
   .login-controls,
   .product-controls,
   .saved-products-list,
+  .wc-save-list-grid,
+  .wc-save-list-page.is-compare-mode .wc-save-list-grid,
   .result-card.result-card-multi,
   .field-grid.two {
     grid-template-columns: 1fr;
+  }
+
+  .wc-save-list-page {
+    padding: var(--space-5);
+  }
+
+  .wc-save-list-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .wc-save-list-toolbar label {
+    width: 100%;
+  }
+
+  .calculator-save-footer .primary-small-button,
+  .final-save-button {
+    width: 100%;
   }
 
   .overview-section {

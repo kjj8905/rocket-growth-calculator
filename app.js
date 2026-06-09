@@ -1658,6 +1658,7 @@ const homeSeoExplainSection = document.querySelector(".home-seo-explain-section"
 const workspace = document.querySelector(".workspace");
 const sessionBar = document.querySelector(".session-bar");
 const comingSoonSection = document.querySelector("#coming-soon-section");
+const savedPageSection = document.querySelector("#saved-page-section");
 const comingSoonTitle = document.querySelector("#coming-soon-title");
 const comingSoonDescription = document.querySelector("#coming-soon-description");
 const introSection = document.querySelector(".intro");
@@ -1681,6 +1682,9 @@ const savedProductsSelect = document.querySelector("#saved-products");
 const saveProductButton = document.querySelector("#save-product-button");
 const loadProductButton = document.querySelector("#load-product-button");
 const newProductButton = document.querySelector("#new-product-button");
+const openSavedPageButton = document.querySelector("#open-saved-page-button");
+const footerSaveButton = document.querySelector("#footer-save-button");
+const finalSaveButton = document.querySelector("#final-save-button");
 const saveStatus = document.querySelector("#save-status");
 const savedProductsCount = document.querySelector("#saved-products-count");
 const savedListToggle = document.querySelector("#saved-list-toggle");
@@ -1749,6 +1753,11 @@ const saveSubmitButton = document.querySelector("#wc-save-submit-button");
 const saveTagButtons = document.querySelectorAll("[data-save-tag]");
 const saveSuccessSummary = document.querySelector("#wc-save-success-summary");
 const saveOpenListButton = document.querySelector("#wc-save-open-list-button");
+const savedPageCount = document.querySelector("#saved-page-count");
+const savedPageList = document.querySelector("#saved-page-list");
+const savedSortSelect = document.querySelector("#saved-sort-select");
+const savedCompareToggle = document.querySelector("#saved-compare-toggle");
+const savedNewButton = document.querySelector("#saved-new-button");
 const finalChartItems = [
   { key: "china", label: "중국사입", totalKey: "china", color: "#3182F6", emptyColor: "#D9EAFF" },
   { key: "china-korea", label: "중국→한국", totalKey: "china-korea", color: "#03B26C", emptyColor: "#D9F4E8" },
@@ -1805,6 +1814,8 @@ let selectedSaveTags = new Set();
 const saveButtonLabel = "저장하기";
 const saveActionButtons = [
   { button: saveProductButton, label: saveButtonLabel },
+  { button: footerSaveButton, label: "계산안 저장" },
+  { button: finalSaveButton, label: "계산안 저장" },
 ].filter(({ button }) => button);
 let currentHelpKey = "customsExchangeRate";
 
@@ -1813,6 +1824,7 @@ function createProduct(name) {
     name,
     memo: "",
     tags: [],
+    calcData: {},
     stages: clone(defaultStages),
     finalSummary: clone(defaultFinalSummary),
   };
@@ -1835,6 +1847,7 @@ function normalizeProduct(product) {
     name: product?.name || getNextProductName(),
     memo: String(product?.memo || ""),
     tags: Array.isArray(product?.tags) ? product.tags.map((tag) => String(tag)).filter(Boolean) : [],
+    calcData: clone(product?.calcData || {}),
     stages: Object.fromEntries(
       Object.entries(defaultStages).map(([stage, defaults]) => [
         stage,
@@ -3774,6 +3787,7 @@ function showComingSoon(category, options = {}) {
   homeSeoExplainSection.hidden = true;
   overviewSection.hidden = true;
   seoSection.hidden = true;
+  savedPageSection.hidden = true;
   workspace.hidden = true;
   comingSoonSection.hidden = false;
 
@@ -3824,11 +3838,32 @@ function renderCalculator(id, options = {}) {
   homeSeoExplainSection.hidden = true;
   overviewSection.hidden = true;
   seoSection.hidden = true;
+  savedPageSection.hidden = true;
   workspace.hidden = false;
   updateCalculationUI();
 
   if (shouldScroll) {
     workspace.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+}
+
+function showSavedPage(options = {}) {
+  const shouldScroll = options.scroll !== false;
+  setActiveCategory("rocket-growth");
+  sessionBar.hidden = true;
+  comingSoonSection.hidden = true;
+  workspace.hidden = true;
+  bannerGrid.hidden = true;
+  homeGuideStrip.hidden = true;
+  homeQuickCalculator.hidden = true;
+  homeSeoExplainSection.hidden = true;
+  overviewSection.hidden = true;
+  seoSection.hidden = true;
+  savedPageSection.hidden = false;
+  renderSavedPage();
+  window.history.replaceState(null, "", "?view=saved");
+  if (shouldScroll) {
+    savedPageSection.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 }
 
@@ -3898,6 +3933,7 @@ function normalizeProductRecord(product) {
     name: product.name,
     memo: String(product.memo || ""),
     tags: Array.isArray(product.tags) ? product.tags.map((tag) => String(tag)).filter(Boolean) : [],
+    calcData: clone(product.calcData || {}),
     stages: clone(product.stages || {}),
     finalSummary: normalizeFinalSummary(product.finalSummary),
     createdAt: product.createdAt,
@@ -4015,43 +4051,7 @@ function renderSavedProductCards(savedProducts) {
     return;
   }
 
-  savedProductsList.innerHTML = savedProducts
-    .map((product) => {
-      const isCurrent = product.id === currentProductId;
-      const currentPill = isCurrent ? '<span class="saved-current-pill">열려 있음</span>' : "";
-      const loadLabel = isCurrent ? "열려 있음" : "불러오기";
-      const loadDisabled = isCurrent ? " disabled" : "";
-      const metrics = getSavedProductMetrics(product);
-      const marginTone = metrics.totalExpectedMargin < 0 ? "danger" : getMarginBadgeTone(metrics.marginRate);
-      const lossBadge = metrics.totalExpectedMargin < 0 ? '<span class="saved-loss-pill">손실</span>' : "";
-      const tags = Array.isArray(product.tags) ? product.tags : [];
-      const tagHtml =
-        tags.length > 0
-          ? `<div class="saved-product-tags">${tags.map((tag) => `<span>${escapeHtml(tag)}</span>`).join("")}</div>`
-          : "";
-      return `
-        <article class="saved-product-card${isCurrent ? " is-current" : ""}" data-saved-card="${escapeHtml(product.id)}">
-          <div class="saved-product-card-head">
-            <div>
-              <h3>${escapeHtml(product.name)}</h3>
-              <time datetime="${escapeHtml(product.updatedAt || "")}">최근 저장 ${escapeHtml(formatSavedDate(product.updatedAt))}</time>
-            </div>
-            <div class="saved-card-pills">${currentPill}${lossBadge}</div>
-          </div>
-          <div class="saved-product-metrics" data-tone="${escapeHtml(marginTone)}">
-            <span>마진율 <strong>${escapeHtml(formatPercent(metrics.marginRate))}</strong></span>
-            <span>총마진 <strong>${escapeHtml(formatCurrency(metrics.totalExpectedMargin))}</strong></span>
-            <span>수량 <strong>${escapeHtml(formatNumber(Math.max(0, parseNumber(product.stages?.china?.quantity))))}개</strong></span>
-          </div>
-          ${tagHtml}
-          <div class="saved-product-actions">
-            <button class="saved-load-button" type="button" data-load-product="${escapeHtml(product.id)}"${loadDisabled}>${loadLabel}</button>
-            <button class="saved-delete-button" type="button" data-delete-product="${escapeHtml(product.id)}">삭제</button>
-          </div>
-        </article>
-      `;
-    })
-    .join("");
+  savedProductsList.innerHTML = savedProducts.map((product) => renderSavedCard(product)).join("");
 }
 
 function renderSavedListToggle(savedProducts) {
@@ -4089,6 +4089,103 @@ function getMarginBadgeTone(marginRate) {
   return "danger";
 }
 
+function getProductQuantity(product) {
+  return Math.max(0, parseNumber(product?.stages?.china?.quantity));
+}
+
+function renderSavedCard(product, options = {}) {
+  const isCurrent = product.id === currentProductId;
+  const currentPill = isCurrent ? '<span class="saved-current-pill">열려 있음</span>' : "";
+  const loadLabel = isCurrent ? "열려 있음" : "불러오기";
+  const loadDisabled = isCurrent ? " disabled" : "";
+  const metrics = getSavedProductMetrics(product);
+  const marginTone = metrics.totalExpectedMargin < 0 ? "danger" : getMarginBadgeTone(metrics.marginRate);
+  const lossBadge = metrics.totalExpectedMargin < 0 ? '<span class="saved-loss-pill">손실</span>' : "";
+  const tags = Array.isArray(product.tags) ? product.tags : [];
+  const tagHtml =
+    tags.length > 0
+      ? `<div class="saved-product-tags">${tags.map((tag) => `<span>${escapeHtml(tag)}</span>`).join("")}</div>`
+      : "";
+  const cardClass = options.page ? "saved-product-card wc-save-page-card" : "saved-product-card";
+
+  return `
+    <article class="${cardClass}${isCurrent ? " is-current" : ""}" data-saved-card="${escapeHtml(product.id)}">
+      <div class="saved-product-card-head">
+        <div>
+          <h3>${escapeHtml(product.name)}</h3>
+          <time datetime="${escapeHtml(product.updatedAt || "")}">최근 저장 ${escapeHtml(formatSavedDate(product.updatedAt))}</time>
+        </div>
+        <div class="saved-card-pills">${currentPill}${lossBadge}</div>
+      </div>
+      <div class="saved-product-metrics" data-tone="${escapeHtml(marginTone)}">
+        <span>마진율 <strong>${escapeHtml(formatPercent(metrics.marginRate))}</strong></span>
+        <span>총마진 <strong>${escapeHtml(formatCurrency(metrics.totalExpectedMargin))}</strong></span>
+        <span>수량 <strong>${escapeHtml(formatNumber(getProductQuantity(product)))}개</strong></span>
+      </div>
+      ${tagHtml}
+      <div class="saved-product-actions">
+        <button class="saved-load-button" type="button" data-load-product="${escapeHtml(product.id)}"${loadDisabled}>${loadLabel}</button>
+        <button class="saved-copy-button" type="button" data-copy-product="${escapeHtml(product.id)}">복사</button>
+        <button class="saved-delete-button" type="button" data-delete-product="${escapeHtml(product.id)}">삭제</button>
+      </div>
+    </article>
+  `;
+}
+
+function getSortedSavedProducts() {
+  const products = [...readSavedProducts()];
+  const sortValue = savedSortSelect?.value || "latest";
+
+  if (sortValue === "oldest") {
+    return products.sort((a, b) => new Date(a.updatedAt || 0).getTime() - new Date(b.updatedAt || 0).getTime());
+  }
+
+  if (sortValue === "margin-high" || sortValue === "margin-low") {
+    return products.sort((a, b) => {
+      const aRate = getSavedProductMetrics(a).marginRate;
+      const bRate = getSavedProductMetrics(b).marginRate;
+      return sortValue === "margin-high" ? bRate - aRate : aRate - bRate;
+    });
+  }
+
+  return products.sort((a, b) => new Date(b.updatedAt || 0).getTime() - new Date(a.updatedAt || 0).getTime());
+}
+
+function renderSavedPage() {
+  if (!savedPageList) {
+    return;
+  }
+
+  const products = getSortedSavedProducts();
+  if (savedPageCount) {
+    savedPageCount.textContent = `저장 계산안 ${products.length}개`;
+  }
+
+  if (!currentUser) {
+    savedPageList.innerHTML = `
+      <article class="wc-save-empty">
+        <span aria-hidden="true"></span>
+        <strong>로그인하면 저장한 계산안을 볼 수 있습니다</strong>
+        <button class="primary-small-button" type="button" data-login-start>카카오로 시작하기</button>
+      </article>
+    `;
+    return;
+  }
+
+  if (products.length === 0) {
+    savedPageList.innerHTML = `
+      <article class="wc-save-empty">
+        <span aria-hidden="true"></span>
+        <strong>아직 저장된 계산안이 없습니다</strong>
+        <button class="primary-small-button" type="button" data-first-save-start>+ 첫 계산안 만들기</button>
+      </article>
+    `;
+    return;
+  }
+
+  savedPageList.innerHTML = products.map((product) => renderSavedCard(product, { page: true })).join("");
+}
+
 function renderSavedProducts() {
   const savedProducts = readSavedProducts();
   const countLabel = `저장 상품 ${savedProducts.length}개`;
@@ -4103,6 +4200,9 @@ function renderSavedProducts() {
   renderProductModeStatus();
   renderSavedProductCards(savedProducts);
   renderSavedListToggle(savedProducts);
+  if (savedPageSection && !savedPageSection.hidden) {
+    renderSavedPage();
+  }
 
   if (!currentUser) {
     savedProductsSelect.innerHTML = '<option value="">로그인 후 저장 목록을 볼 수 있습니다</option>';
@@ -4216,6 +4316,45 @@ function getCurrentSavePreview() {
   };
 }
 
+function buildSaveCalcData(product = currentProduct) {
+  const originalProduct = currentProduct;
+  try {
+    currentProduct = normalizeProduct(product);
+    const calculations = calculateAll();
+    const displayCalculations = getFinalDisplayCalculations(calculations);
+    const profitMetrics = calculateProfitMetrics(displayCalculations);
+    const costTotals = getFinalCostTotals(displayCalculations);
+    const quantity = Math.max(0, parseNumber(currentProduct.stages.china.quantity));
+
+    return {
+      version: "wc-save-v1",
+      saved_at: new Date().toISOString(),
+      active_calculator: currentCalculator,
+      sale_price_krw: profitMetrics.unitSalePrice,
+      quantity,
+      coupang_fee_rate: parseNumber(currentProduct.stages.coupang.coupangFeeRate),
+      unit_product_cost_krw: profitMetrics.unitProductCost,
+      unit_margin_krw: profitMetrics.unitMargin,
+      margin_rate: profitMetrics.marginRate,
+      minimum_roas: profitMetrics.minimumRoas,
+      total_sales_krw: profitMetrics.totalSalesAmount,
+      total_expected_cost_krw: profitMetrics.totalExpectedCost,
+      total_expected_margin_krw: profitMetrics.totalExpectedMargin,
+      stage_totals_krw: {
+        china: costTotals.china,
+        china_korea: costTotals["china-korea"],
+        korea_coupang: costTotals["korea-coupang"],
+        coupang: costTotals.coupang,
+      },
+      logistics_total_krw: costTotals["china-korea"] + costTotals["korea-coupang"],
+      ad_cost_krw: parseNumber(currentProduct.stages.coupang.adCostKrw),
+      final_summary_mode: currentProduct.finalSummary?.mode || "calculated",
+    };
+  } finally {
+    currentProduct = originalProduct;
+  }
+}
+
 function renderSavePreview(target) {
   if (!target) {
     return;
@@ -4309,6 +4448,10 @@ function restorePendingSaveDraft() {
 
 function showSaveLoginModal() {
   renderSavePreview(saveLoginPreview);
+  if (saveKakaoButton) {
+    saveKakaoButton.disabled = !isKakaoConfigured;
+    saveKakaoButton.setAttribute("aria-disabled", String(!isKakaoConfigured));
+  }
   openSaveModal(saveLoginModal);
 }
 
@@ -4454,6 +4597,7 @@ async function saveCurrentProduct(options = {}) {
   currentProduct.name = name;
   currentProduct.memo = memo;
   currentProduct.tags = tags;
+  currentProduct.calcData = buildSaveCalcData(currentProduct);
 
   try {
     const data = await requestJson("/api/products", {
@@ -4463,6 +4607,7 @@ async function saveCurrentProduct(options = {}) {
         name,
         memo,
         tags,
+        calcData: clone(currentProduct.calcData),
         stages: clone(currentProduct.stages),
         finalSummary: clone(currentProduct.finalSummary),
       }),
@@ -4497,7 +4642,7 @@ async function saveCurrentProduct(options = {}) {
       return;
     }
 
-    setSaveStatus("저장하지 못했습니다. 잠시 후 다시 시도해 주세요.", "warning", { toast: true });
+    setSaveStatus("저장에 실패했습니다. 다시 시도해주세요.", "warning", { toast: true });
   }
 }
 
@@ -4529,6 +4674,55 @@ function loadProductById(productId) {
 
 function loadSelectedProduct() {
   loadProductById(savedProductsSelect.value);
+}
+
+function getCopyProductName(baseName) {
+  const cleanBase = String(baseName || "계산안").replace(/\s+복사본(?:\s*\d+)?$/, "").trim() || "계산안";
+  let candidate = `${cleanBase} 복사본`;
+  let index = 2;
+  while (findSavedProductByName(candidate)) {
+    candidate = `${cleanBase} 복사본 ${index}`;
+    index += 1;
+  }
+  return candidate;
+}
+
+async function copyProductById(productId) {
+  if (!currentUser) {
+    setSaveStatus(LOGIN_REQUIRED_MESSAGE, "warning", { toast: true });
+    return;
+  }
+
+  const sourceProduct = findSavedProductById(productId);
+  if (!sourceProduct) {
+    setSaveStatus("복사할 계산안을 찾지 못했습니다.", "warning", { toast: true });
+    return;
+  }
+
+  const copiedName = getCopyProductName(sourceProduct.name);
+  try {
+    const data = await requestJson("/api/products", {
+      method: "POST",
+      body: JSON.stringify({
+        name: copiedName,
+        memo: sourceProduct.memo || "",
+        tags: Array.isArray(sourceProduct.tags) ? sourceProduct.tags : [],
+        calcData: clone(sourceProduct.calcData || buildSaveCalcData(sourceProduct)),
+        stages: clone(sourceProduct.stages),
+        finalSummary: clone(sourceProduct.finalSummary),
+      }),
+    });
+    const copiedProduct = normalizeProductRecord(data.product);
+    savedProductsCache = [copiedProduct, ...savedProductsCache.filter((product) => product.id !== copiedProduct.id)];
+    currentProductId = copiedProduct.id;
+    currentProduct = normalizeProduct(copiedProduct);
+    productNameInput.value = copiedProduct.name;
+    renderSavedProducts();
+    renderLoginStatus();
+    setSaveStatus(`${copiedProduct.name} 계산안을 복사했습니다.`, "success", { toast: true });
+  } catch {
+    setSaveStatus("계산안을 복사하지 못했습니다. 다시 시도해주세요.", "warning", { toast: true });
+  }
 }
 
 async function deleteSavedProduct(productId) {
@@ -4621,7 +4815,7 @@ function renderLoginStatus() {
 
   if (!isAuthReady) {
     loginStatus.textContent = "계정 상태 확인 중";
-    accountStatusDescription.textContent = "계산기는 바로 사용할 수 있고, 저장은 로그인 후 가능합니다.";
+    accountStatusDescription.textContent = "계산기는 바로 사용할 수 있습니다.";
     loginButton.textContent = "카카오로 시작하기";
     loginButton.disabled = true;
     return;
@@ -4629,7 +4823,7 @@ function renderLoginStatus() {
 
   if (currentUser) {
     loginStatus.textContent = currentUser.nickname ? `${currentUser.nickname} 계정 연결됨` : "카카오 계정 연결됨";
-    accountStatusDescription.textContent = `저장한 계산안은 내 계정에서 다시 불러올 수 있습니다. ${savedCountLabel}`;
+    accountStatusDescription.textContent = `저장 계산안 ${savedCount}개를 다시 불러올 수 있습니다.`;
     loginButton.textContent = "로그아웃";
     loginButton.disabled = false;
     return;
@@ -4637,8 +4831,8 @@ function renderLoginStatus() {
 
   loginStatus.textContent = isKakaoConfigured ? "상품 저장을 위해 로그인이 필요합니다" : "계정 기능 점검 중";
   accountStatusDescription.textContent = isKakaoConfigured
-    ? "카카오로 시작하면 상품별 계산안을 저장하고 다시 불러올 수 있습니다."
-    : "계산기는 바로 사용할 수 있고, 저장 기능은 잠시 후 다시 확인해 주세요.";
+    ? "로그인하면 계산안을 저장할 수 있습니다."
+    : "계산기는 바로 사용할 수 있습니다.";
   loginButton.textContent = "카카오로 시작하기";
   loginButton.disabled = !isKakaoConfigured;
 }
@@ -5010,6 +5204,14 @@ saveProductButton?.addEventListener("click", async () => {
   await handleSaveButtonClick();
 });
 
+footerSaveButton?.addEventListener("click", async () => {
+  await handleSaveButtonClick();
+});
+
+finalSaveButton?.addEventListener("click", async () => {
+  await handleSaveButtonClick();
+});
+
 saveConfirmSubmit?.addEventListener("click", () => {
   closeSaveConfirm(true);
 });
@@ -5037,17 +5239,48 @@ loadProductButton.addEventListener("click", () => {
   loadSelectedProduct();
 });
 
-savedProductsList?.addEventListener("click", async (event) => {
+async function handleSavedProductListClick(event) {
   const loadButton = event.target.closest("[data-load-product]");
   if (loadButton && !loadButton.disabled) {
     loadProductById(loadButton.dataset.loadProduct);
     return;
   }
 
+  const copyButton = event.target.closest("[data-copy-product]");
+  if (copyButton) {
+    await copyProductById(copyButton.dataset.copyProduct);
+    return;
+  }
+
   const deleteButton = event.target.closest("[data-delete-product]");
   if (deleteButton) {
     await deleteSavedProduct(deleteButton.dataset.deleteProduct);
+    return;
   }
+
+  const card = event.target.closest("[data-saved-card]");
+  if (card) {
+    loadProductById(card.dataset.savedCard);
+  }
+}
+
+savedProductsList?.addEventListener("click", handleSavedProductListClick);
+
+savedPageList?.addEventListener("click", async (event) => {
+  const loginStart = event.target.closest("[data-login-start]");
+  if (loginStart) {
+    await handleLoginButtonClick();
+    return;
+  }
+
+  const firstSaveStart = event.target.closest("[data-first-save-start]");
+  if (firstSaveStart) {
+    createNewProduct();
+    renderCalculator("china");
+    return;
+  }
+
+  await handleSavedProductListClick(event);
 });
 
 savedListToggle?.addEventListener("click", () => {
@@ -5059,11 +5292,35 @@ newProductButton.addEventListener("click", () => {
   createNewProduct();
 });
 
+openSavedPageButton?.addEventListener("click", () => {
+  showSavedPage();
+});
+
+savedNewButton?.addEventListener("click", () => {
+  createNewProduct();
+  renderCalculator("china");
+});
+
+savedSortSelect?.addEventListener("change", () => {
+  renderSavedPage();
+});
+
+savedCompareToggle?.addEventListener("click", () => {
+  const pressed = savedCompareToggle.getAttribute("aria-pressed") === "true";
+  savedCompareToggle.setAttribute("aria-pressed", String(!pressed));
+  savedCompareToggle.classList.toggle("is-active", !pressed);
+  savedPageSection?.classList.toggle("is-compare-mode", !pressed);
+});
+
 loginButton.addEventListener("click", async () => {
   await handleLoginButtonClick();
 });
 
 saveKakaoButton?.addEventListener("click", () => {
+  if (!isKakaoConfigured) {
+    setSaveStatus("계정 기능을 점검하고 있습니다. 잠시 후 다시 시도해 주세요.", "warning", { toast: true });
+    return;
+  }
   persistPendingSaveDraft();
   window.location.href = "/auth/kakao/start";
 });
@@ -5103,6 +5360,7 @@ saveSubmitButton?.addEventListener("click", async () => {
   }
 
   saveSubmitButton.classList.add("wc-save-submit-loading");
+  saveSubmitButton.textContent = "저장 중...";
   saveSubmitButton.disabled = true;
   try {
     closeSaveModal();
@@ -5112,15 +5370,14 @@ saveSubmitButton?.addEventListener("click", async () => {
     }
   } finally {
     saveSubmitButton.classList.remove("wc-save-submit-loading");
+    saveSubmitButton.textContent = "저장하기";
     updateSaveSubmitState();
   }
 });
 
 saveOpenListButton?.addEventListener("click", () => {
   closeSaveModal();
-  isSavedListExpanded = true;
-  renderSavedProducts();
-  sessionBar?.scrollIntoView({ behavior: "smooth", block: "start" });
+  showSavedPage();
 });
 
 finalMarginActions?.addEventListener("click", (event) => {
@@ -5155,6 +5412,7 @@ function showHome(scrollTarget = bannerGrid) {
   sessionBar.hidden = true;
   comingSoonSection.hidden = true;
   workspace.hidden = true;
+  savedPageSection.hidden = true;
   bannerGrid.hidden = false;
   homeGuideStrip.hidden = false;
   homeQuickCalculator.hidden = false;
@@ -5180,9 +5438,12 @@ async function initializeApp() {
   const initialParams = new URLSearchParams(window.location.search);
   const initialCategory = initialParams.get("category");
   const initialCalculator = initialParams.get("calc");
+  const initialView = initialParams.get("view");
 
   if (pendingSaveDraft?.calculator && calculators[pendingSaveDraft.calculator]) {
     renderCalculator(pendingSaveDraft.calculator, { scroll: false });
+  } else if (initialView === "saved" || window.location.pathname === "/saved") {
+    showSavedPage({ scroll: false });
   } else if (initialCategory && standaloneCalculatorByCategory[initialCategory]) {
     const calculatorId = standaloneCalculatorByCategory[initialCategory];
     const canonicalCategory = initialCategory === "agency-margin" ? "ad-break-even" : initialCategory;
