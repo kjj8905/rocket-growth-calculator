@@ -1309,39 +1309,6 @@ body.wc-save-lock {
   line-height: 27px;
 }
 
-.calculator-save-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-4);
-  padding: var(--space-5);
-  border: 0;
-  border-top: 1px solid var(--grey-200);
-  border-radius: 0;
-  background: var(--white);
-  box-shadow: none;
-}
-
-.calculator-save-footer div {
-  min-width: 0;
-  display: grid;
-  gap: 4px;
-}
-
-.calculator-save-footer strong {
-  color: var(--grey-900);
-  font-size: 17px;
-  font-weight: 900;
-  line-height: 25px;
-}
-
-.calculator-save-footer span {
-  color: var(--grey-600);
-  font-size: 13px;
-  font-weight: 700;
-  line-height: 20px;
-}
-
 .final-save-button {
   min-width: 104px;
   height: 42px;
@@ -3465,9 +3432,12 @@ body.wc-save-lock {
 .stage-help-summary {
   display: grid;
   gap: var(--space-4);
+  margin: var(--space-8) var(--space-6) var(--space-6);
   padding: var(--space-6);
-  border-top: 1px solid var(--grey-200);
-  background: var(--white);
+  border: 1px solid rgba(2, 32, 71, 0.08);
+  border-radius: var(--radius-16);
+  background: linear-gradient(180deg, #fbfcfe 0%, var(--white) 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75);
 }
 
 .stage-help-summary[hidden] {
@@ -3895,6 +3865,16 @@ em {
 .computed-output-item:disabled {
   cursor: default;
   opacity: 1;
+}
+
+.live-result-save-button {
+  width: 100%;
+  min-height: 52px;
+  margin-top: var(--space-2);
+  border-radius: var(--radius-12);
+  font-size: 15px;
+  font-weight: 900;
+  box-shadow: 0 8px 18px rgba(49, 130, 246, 0.18);
 }
 
 .computed-output-item span {
@@ -4806,8 +4786,7 @@ em {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .wc-save-list-head,
-  .calculator-save-footer {
+  .wc-save-list-head {
     align-items: stretch;
     flex-direction: column;
   }
@@ -4995,7 +4974,6 @@ em {
     width: 100%;
   }
 
-  .calculator-save-footer .primary-small-button,
   .final-save-button {
     width: 100%;
   }
