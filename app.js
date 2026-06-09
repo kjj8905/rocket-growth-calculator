@@ -1671,6 +1671,8 @@ const formTitle = document.querySelector("#form-title");
 const stageSummary = document.querySelector("#stage-summary");
 const formulaTitle = document.querySelector("#formula-title");
 const formulaList = document.querySelector("#formula-list");
+const computedOutputPanel = document.querySelector("#computed-output-panel");
+const stageHelpSummary = document.querySelector("#stage-help-summary");
 const previewVisual = document.querySelector(".preview-visual");
 const formulaCard = document.querySelector(".formula-card");
 const quickSwitch = document.querySelector(".quick-switch");
@@ -1694,6 +1696,13 @@ const productModeStatus = document.querySelector("#product-mode-status");
 const saveToast = document.querySelector("#save-toast");
 const saveToastTitle = document.querySelector("#save-toast-title");
 const saveToastMessage = document.querySelector("#save-toast-message");
+const fieldHelpModal = document.querySelector("#field-help-modal");
+const fieldHelpEyebrow = document.querySelector("#field-help-eyebrow");
+const fieldHelpTitle = document.querySelector("#field-help-title");
+const fieldHelpBody = document.querySelector("#field-help-body");
+const fieldHelpPoints = document.querySelector("#field-help-points");
+const fieldHelpFormula = document.querySelector("#field-help-formula");
+const fieldHelpHighlight = document.querySelector("#field-help-highlight");
 const saveConfirm = document.querySelector("#save-confirm");
 const saveConfirmEyebrow = document.querySelector("#save-confirm-eyebrow");
 const saveConfirmTitle = document.querySelector("#save-confirm-title");
@@ -3253,6 +3262,30 @@ function getDefaultHelpKey(stage) {
   return Object.keys(fieldHelp[stage] || {})[0] || "";
 }
 
+function isOutputOnlyField(field) {
+  return Boolean(field.computed);
+}
+
+function getStageInputFields(fieldset, stageValues) {
+  return fieldset.fields.filter((field) => !isOutputOnlyField(field, stageValues));
+}
+
+function getStageOutputFields(stage) {
+  const schema = stageSchemas[stage];
+  if (!schema) {
+    return [];
+  }
+
+  return schema.fieldsets.flatMap((fieldset) =>
+    fieldset.fields
+      .filter((field) => isOutputOnlyField(field))
+      .map((field) => ({
+        ...field,
+        fieldset: fieldset.legend,
+      })),
+  );
+}
+
 function renderField(field, stageValues, calculatedValues) {
   const labelClasses = [];
   const isComputed = field.type === "select" ? Boolean(field.computed) : isFieldComputed(field, stageValues);
@@ -3272,6 +3305,13 @@ function renderField(field, stageValues, calculatedValues) {
   const labelContent = `
     <span class="field-label-text">
       ${escapeHtml(field.label)}
+      ${
+        hasHelp
+          ? `<button class="field-help-button" type="button" data-help-open="${escapeHtml(field.key)}" aria-label="${escapeHtml(
+              field.label,
+            )} 설명 보기">?</button>`
+          : ""
+      }
     </span>
   `;
 
@@ -3311,11 +3351,122 @@ function renderField(field, stageValues, calculatedValues) {
   `;
 }
 
+function getFieldOutputFormat(field) {
+  if (field.unit === "%") {
+    return "percent";
+  }
+
+  if (field.unit === "¥") {
+    return "cny";
+  }
+
+  if (["CBM", "KG"].includes(field.unit)) {
+    return "decimal";
+  }
+
+  return field.unit === "원" ? "currency" : "number";
+}
+
+function formatOutputFieldValue(field, value) {
+  const format = getFieldOutputFormat(field);
+  if (["currency", "percent", "cny", "text"].includes(format)) {
+    return formatMetricValue(value, format, field.decimals ?? 1);
+  }
+
+  const text = formatMetricValue(value, format, field.decimals ?? 1);
+  return field.unit ? `${text} ${field.unit}` : text;
+}
+
+function renderComputedOutputs(stage, calculatedValues = {}) {
+  if (!computedOutputPanel) {
+    return;
+  }
+
+  if (stage === "final" || categoryByStandaloneCalculator[stage]) {
+    computedOutputPanel.innerHTML = "";
+    computedOutputPanel.hidden = true;
+    return;
+  }
+
+  const outputFields = getStageOutputFields(stage);
+  computedOutputPanel.hidden = outputFields.length === 0;
+  if (outputFields.length === 0) {
+    computedOutputPanel.innerHTML = "";
+    return;
+  }
+
+  computedOutputPanel.innerHTML = `
+    <div class="computed-output-head">
+      <strong>자동 산출값</strong>
+      <span>왼쪽 입력값으로 계산됩니다.</span>
+    </div>
+    <div class="computed-output-list">
+      ${outputFields
+        .map((field) => {
+          const hasHelp = Boolean(getStageHelp(stage, field.key));
+          const value = formatOutputFieldValue(field, calculatedValues[field.key]);
+          return `
+            <button class="computed-output-item" type="button" ${
+              hasHelp ? `data-output-help="${escapeHtml(field.key)}"` : "disabled"
+            }>
+              <span>
+                <em>${escapeHtml(field.fieldset)}</em>
+                ${escapeHtml(field.label)}
+              </span>
+              <strong>${escapeHtml(value)}</strong>
+            </button>
+          `;
+        })
+        .join("")}
+    </div>
+  `;
+}
+
+function renderStageHelpSummary(stage) {
+  if (!stageHelpSummary) {
+    return;
+  }
+
+  if (stage === "final" || categoryByStandaloneCalculator[stage]) {
+    stageHelpSummary.innerHTML = "";
+    stageHelpSummary.hidden = true;
+    return;
+  }
+
+  const entries = Object.entries(fieldHelp[stage] || {});
+  stageHelpSummary.hidden = entries.length === 0;
+  if (entries.length === 0) {
+    stageHelpSummary.innerHTML = "";
+    return;
+  }
+
+  stageHelpSummary.innerHTML = `
+    <div class="stage-help-summary-head">
+      <p class="eyebrow">입력 기준 정리</p>
+      <h3>헷갈리는 항목은 여기서 다시 확인하세요.</h3>
+    </div>
+    <div class="stage-help-summary-list">
+      ${entries
+        .map(
+          ([key, help]) => `
+            <button class="stage-help-summary-item" type="button" data-help-summary="${escapeHtml(key)}">
+              <strong>${escapeHtml(help.title)}</strong>
+              <span>${escapeHtml(help.body)}</span>
+            </button>
+          `,
+        )
+        .join("")}
+    </div>
+  `;
+}
+
 function renderStageForm(id) {
   applyInitialStagePrefills();
 
   if (id === "final") {
     mockForm.innerHTML = "";
+    renderComputedOutputs(id, {});
+    renderStageHelpSummary(id);
     renderFinalChart(getFinalDisplayCalculations(calculateAll()), currentFinalChartKey);
     return;
   }
@@ -3325,17 +3476,24 @@ function renderStageForm(id) {
   const calculatedValues = calculateAll()[id];
 
   mockForm.innerHTML = schema.fieldsets
-    .map(
-      (fieldset) => `
+    .map((fieldset) => {
+      const fields = getStageInputFields(fieldset, stageValues);
+      if (fields.length === 0) {
+        return "";
+      }
+
+      return `
         <fieldset>
           <legend>${escapeHtml(fieldset.legend)}</legend>
           <div class="field-grid two">
-            ${fieldset.fields.map((field) => renderField(field, stageValues, calculatedValues)).join("")}
+            ${fields.map((field) => renderField(field, stageValues, calculatedValues)).join("")}
           </div>
         </fieldset>
-      `,
-    )
+      `;
+    })
     .join("");
+  renderComputedOutputs(id, calculatedValues);
+  renderStageHelpSummary(id);
 
   const defaultHelpKey = getDefaultHelpKey(id);
   if (defaultHelpKey) {
@@ -3601,6 +3759,42 @@ function renderStageHelp(stage, helpKey) {
   });
 }
 
+function openFieldHelpModal(stage, helpKey) {
+  const help = getStageHelp(stage, helpKey);
+  if (!help || !fieldHelpModal) {
+    return;
+  }
+
+  currentHelpKey = helpKey;
+  fieldHelpEyebrow.textContent = help.eyebrow || "입력 항목";
+  fieldHelpTitle.textContent = help.title;
+  fieldHelpBody.textContent = help.body;
+  fieldHelpPoints.textContent = help.points.join(" · ");
+  fieldHelpFormula.textContent = help.formula;
+  if (help.highlight) {
+    fieldHelpHighlight.textContent = help.highlight;
+    fieldHelpHighlight.hidden = false;
+  } else {
+    fieldHelpHighlight.textContent = "";
+    fieldHelpHighlight.hidden = true;
+  }
+
+  fieldHelpModal.hidden = false;
+  document.body.classList.add("wc-save-lock");
+  fieldHelpModal.querySelector("button")?.focus();
+}
+
+function closeFieldHelpModal() {
+  if (!fieldHelpModal || fieldHelpModal.hidden) {
+    return;
+  }
+
+  fieldHelpModal.hidden = true;
+  if (!activeSaveModal && (!saveConfirm || saveConfirm.hidden)) {
+    document.body.classList.remove("wc-save-lock");
+  }
+}
+
 function renderChinaHelp(helpKey) {
   renderStageHelp("china", helpKey);
 }
@@ -3747,6 +3941,7 @@ function updateCalculationUI() {
   if (currentCalculator !== "final") {
     updateComputedFields(calculations[currentCalculator]);
     updateResultCard(calculations);
+    renderComputedOutputs(currentCalculator, calculations[currentCalculator]);
     updateRenderedFieldFeedback();
   } else {
     renderFinalChart(finalCalculations, currentFinalChartKey);
@@ -5091,21 +5286,31 @@ mockForm.addEventListener("submit", (event) => {
 });
 
 mockForm.addEventListener("click", (event) => {
-  const helpTarget = event.target.closest("[data-help-key]");
-  if (!helpTarget || !getStageHelp(currentCalculator, helpTarget.dataset.helpKey)) {
+  const helpTarget = event.target.closest("[data-help-open]");
+  if (!helpTarget || !getStageHelp(currentCalculator, helpTarget.dataset.helpOpen)) {
     return;
   }
 
-  renderStageHelp(currentCalculator, helpTarget.dataset.helpKey);
+  event.preventDefault();
+  openFieldHelpModal(currentCalculator, helpTarget.dataset.helpOpen);
 });
 
-mockForm.addEventListener("focusin", (event) => {
-  const helpTarget = event.target.closest("[data-help-key]");
-  if (!helpTarget || !getStageHelp(currentCalculator, helpTarget.dataset.helpKey)) {
+computedOutputPanel?.addEventListener("click", (event) => {
+  const helpTarget = event.target.closest("[data-output-help]");
+  if (!helpTarget || !getStageHelp(currentCalculator, helpTarget.dataset.outputHelp)) {
     return;
   }
 
-  renderStageHelp(currentCalculator, helpTarget.dataset.helpKey);
+  openFieldHelpModal(currentCalculator, helpTarget.dataset.outputHelp);
+});
+
+stageHelpSummary?.addEventListener("click", (event) => {
+  const helpTarget = event.target.closest("[data-help-summary]");
+  if (!helpTarget || !getStageHelp(currentCalculator, helpTarget.dataset.helpSummary)) {
+    return;
+  }
+
+  openFieldHelpModal(currentCalculator, helpTarget.dataset.helpSummary);
 });
 
 formulaCard.addEventListener("click", (event) => {
@@ -5163,6 +5368,7 @@ finalSummaryPanel.addEventListener("click", (event) => {
     return;
   }
 
+  openFieldHelpModal("final", helpTarget.dataset.finalHelp);
   renderFinalChart(getFinalDisplayCalculations(calculateAll()), helpTarget.dataset.finalHelp);
 });
 
@@ -5171,13 +5377,6 @@ finalSummaryPanel.addEventListener("focusin", (event) => {
   if (directInput) {
     directInput.select();
   }
-
-  const helpTarget = event.target.closest("[data-final-help]");
-  if (!helpTarget || !getStageHelp("final", helpTarget.dataset.finalHelp)) {
-    return;
-  }
-
-  renderFinalChart(getFinalDisplayCalculations(calculateAll()), helpTarget.dataset.finalHelp);
 });
 
 finalSummaryPanel.addEventListener("keydown", (event) => {
@@ -5191,6 +5390,7 @@ finalSummaryPanel.addEventListener("keydown", (event) => {
   }
 
   event.preventDefault();
+  openFieldHelpModal("final", helpTarget.dataset.finalHelp);
   renderFinalChart(getFinalDisplayCalculations(calculateAll()), helpTarget.dataset.finalHelp);
 });
 
@@ -5224,7 +5424,16 @@ saveConfirm?.querySelector("[data-save-confirm-cancel]")?.addEventListener("clic
   closeSaveConfirm(false);
 });
 
+fieldHelpModal?.querySelectorAll("[data-help-modal-close]").forEach((button) => {
+  button.addEventListener("click", closeFieldHelpModal);
+});
+
 document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && fieldHelpModal && !fieldHelpModal.hidden) {
+    closeFieldHelpModal();
+    return;
+  }
+
   if (event.key === "Escape" && saveConfirm && !saveConfirm.hidden) {
     closeSaveConfirm(false);
     return;

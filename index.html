@@ -665,6 +665,7 @@
             </div>
 
             <form class="mock-form" id="stage-form" novalidate></form>
+            <section class="stage-help-summary" id="stage-help-summary" aria-label="현재 단계 입력 항목 설명"></section>
           </aside>
 
           <section class="preview-panel" aria-label="실시간 예상 결과와 선택한 계산기 설명">
@@ -686,6 +687,7 @@
                   <strong>0 원</strong>
                 </div>
               </div>
+              <div class="computed-output-panel" id="computed-output-panel" aria-label="자동 산출값"></div>
             </div>
             <div class="preview-visual">
               <div class="visual-window">
@@ -728,6 +730,27 @@
     <div class="save-toast" id="save-toast" data-tone="neutral" role="status" aria-live="polite" hidden>
       <strong id="save-toast-title">저장 안내</strong>
       <p id="save-toast-message">입력값이 계산기에 반영되었습니다.</p>
+    </div>
+
+    <div class="help-modal" id="field-help-modal" role="dialog" aria-modal="true" aria-labelledby="field-help-title" hidden>
+      <div class="help-modal-backdrop" data-help-modal-close></div>
+      <article class="help-modal-card">
+        <button class="help-modal-close" type="button" data-help-modal-close aria-label="닫기"></button>
+        <p class="eyebrow" id="field-help-eyebrow">입력 항목</p>
+        <h2 id="field-help-title">항목 설명</h2>
+        <p id="field-help-body"></p>
+        <div class="help-modal-list" aria-label="계산 기준">
+          <div>
+            <strong>확인 기준</strong>
+            <span id="field-help-points"></span>
+          </div>
+          <div>
+            <strong>계산 연결</strong>
+            <span id="field-help-formula"></span>
+          </div>
+        </div>
+        <p class="help-modal-highlight" id="field-help-highlight" hidden></p>
+      </article>
     </div>
 
     <div class="save-confirm" id="save-confirm" role="dialog" aria-modal="true" aria-labelledby="save-confirm-title" hidden>
