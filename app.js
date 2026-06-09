@@ -275,8 +275,8 @@ const importSettlementRate = {
 
 const defaultStages = {
   china: {
-    customsExchangeRate: 197.27,
-    vendorExchangeRate: 196.34,
+    customsExchangeRate: 0,
+    vendorExchangeRate: 0,
     productUnitCny: 0,
     quantity: 0,
     totalWeightKg: 0,
@@ -348,8 +348,8 @@ const defaultStages = {
     targetMarginRate: 20,
   },
   purchaseCalculator: {
-    customsExchangeRate: 197.27,
-    vendorExchangeRate: 196.34,
+    customsExchangeRate: 0,
+    vendorExchangeRate: 0,
     productUnitCny: 0,
     quantity: 0,
     totalWeightKg: 0,
@@ -1823,8 +1823,8 @@ let selectedSaveTags = new Set();
 const saveButtonLabel = "저장하기";
 const saveActionButtons = [
   { button: saveProductButton, label: saveButtonLabel },
-  { button: footerSaveButton, label: "계산안 저장" },
-  { button: finalSaveButton, label: "계산안 저장" },
+  { button: footerSaveButton, label: "계산 저장" },
+  { button: finalSaveButton, label: "계산 저장" },
 ].filter(({ button }) => button);
 let currentHelpKey = "customsExchangeRate";
 
@@ -2238,6 +2238,31 @@ function updateQuickHomeCalculator() {
   }
 
   const values = readQuickHomeValues();
+  const hasAnyInput = Object.values(values).some((value) => parseNumber(value) > 0);
+  if (!hasAnyInput) {
+    quickHomeInputs.forEach((input) => setQuickHomeFieldState(input.dataset.quickField, ""));
+    setQuickHomeResult("unitCost", 0);
+    setQuickHomeResult("unitMargin", 0);
+    setQuickHomeResult("totalMargin", 0);
+    setQuickHomeResult("marginRate", 0, formatPercent);
+    setQuickHomeResult("totalCost", 0);
+    setQuickHomeResult("minimumRoas", 0, formatPercent);
+    if (quickHomeMarginProgress) {
+      quickHomeMarginProgress.style.width = "0%";
+    }
+    if (quickHomeMarginMessage) {
+      quickHomeMarginMessage.textContent = "값을 입력하면 마진 상태를 보여드립니다.";
+    }
+    if (quickHomeHero) {
+      quickHomeHero.dataset.tone = "neutral";
+    }
+    if (quickHomeStatus) {
+      quickHomeStatus.textContent = "판매 전 예상치";
+      quickHomeStatus.classList.remove("is-loss");
+    }
+    return;
+  }
+
   updateQuickHomeFieldFeedback(values);
   const quantity = Math.max(0, Math.round(values.quantity || 0));
   const salePriceKrw = Math.max(0, values.salePriceKrw || 0);
@@ -3422,6 +3447,41 @@ function renderComputedOutputs(stage, calculatedValues = {}) {
   `;
 }
 
+function getStageSeoSummary(stage) {
+  const summaries = {
+    china: {
+      title: "중국사입 원가 계산 기준",
+      body:
+        "로켓그로스 계산기에서 중국사입 단계는 제품단가, 수량, 환율, 중국 내륙 운송비, 카드수수료, 기타 사입비를 기준으로 제품별 매입단가와 중국사입 총 비용을 계산합니다. 1688 사입, 중국 구매대행, 배송대행을 준비하는 셀러가 판매 전 원가를 확인할 때 먼저 입력하는 구간입니다.",
+      keywords: ["로켓그로스 계산기", "중국사입 계산기", "1688 사입 원가", "제품별 매입단가"],
+    },
+    "china-korea": {
+      title: "중국에서 한국까지 LCL 물류비 계산 기준",
+      body:
+        "중국→한국 단계는 LCL 해상운임, 터미널 운송료, 수출통관비, 대행 수수료, 원산지증명서, 관세, 수입 부가세, 통관수수료를 합산해 국제 물류 총 비용을 계산합니다. CBM, 중량, 통관 조건에 따라 실제 청구 비용이 달라질 수 있으므로 판매 전 예상치로 확인하는 구간입니다.",
+      keywords: ["LCL 물류비", "중국 한국 물류비", "CBM 계산", "수입 부가세", "원산지증명서 관세"],
+    },
+    "korea-coupang": {
+      title: "한국 도착 후 쿠팡 입고 비용 계산 기준",
+      body:
+        "한국→쿠팡 단계는 국내 일반트럭 운송비, 파레트 수량, 박스 수량, 라벨비, 포장비, 입고 작업비를 기준으로 쿠팡센터 입고 전 비용을 계산합니다. 파레트 없이 입고하거나 일반트럭으로 쿠팡 인천센터에 보내는 경우에도 예상 비용을 나눠 볼 수 있습니다.",
+      keywords: ["쿠팡 입고 비용", "쿠팡 파레트 비용", "일반트럭 운송비", "로켓그로스 입고"],
+    },
+    coupang: {
+      title: "쿠팡 판매 수수료와 판매 후 비용 계산 기준",
+      body:
+        "쿠팡 소모 비용 단계는 판매가, 쿠팡 판매 수수료율, 출고·배송비, 예상 부가세 부담률, 광고비, 반품비, 기타 판매비를 반영해 판매 후 빠지는 비용을 계산합니다. 로켓그로스 마진을 확인할 때 판매 수수료와 광고비를 함께 보는 것이 중요합니다.",
+      keywords: ["쿠팡 수수료", "쿠팡 판매 수수료", "로켓그로스 마진 계산기", "쿠팡 광고비"],
+    },
+  };
+
+  return summaries[stage] || {
+    title: `${calculators[stage]?.title || "계산기"} 입력 기준`,
+    body: "판매 전 예상 비용과 마진을 계산하기 위한 입력 기준입니다. 실제 정산 전에는 플랫폼 정책, 세금, 물류 청구서를 함께 확인해야 합니다.",
+    keywords: ["셀러 계산기", "마진 계산", "판매 전 비용 계산"],
+  };
+}
+
 function renderStageHelpSummary(stage) {
   if (!stageHelpSummary) {
     return;
@@ -3440,10 +3500,15 @@ function renderStageHelpSummary(stage) {
     return;
   }
 
+  const seoSummary = getStageSeoSummary(stage);
   stageHelpSummary.innerHTML = `
     <div class="stage-help-summary-head">
       <p class="eyebrow">입력 기준 정리</p>
-      <h3>헷갈리는 항목은 여기서 다시 확인하세요.</h3>
+      <h3>${escapeHtml(seoSummary.title)}</h3>
+      <p>${escapeHtml(seoSummary.body)}</p>
+      <div class="stage-keyword-row" aria-label="관련 검색 기준">
+        ${seoSummary.keywords.map((keyword) => `<span>${escapeHtml(keyword)}</span>`).join("")}
+      </div>
     </div>
     <div class="stage-help-summary-list">
       ${entries
@@ -3451,7 +3516,7 @@ function renderStageHelpSummary(stage) {
           ([key, help]) => `
             <button class="stage-help-summary-item" type="button" data-help-summary="${escapeHtml(key)}">
               <strong>${escapeHtml(help.title)}</strong>
-              <span>${escapeHtml(help.body)}</span>
+              <span>${escapeHtml(help.body)} ${escapeHtml(help.formula)}</span>
             </button>
           `,
         )
