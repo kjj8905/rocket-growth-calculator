@@ -359,6 +359,13 @@
       </section>
 
       <section class="wc-save-list-page" id="saved-page-section" hidden aria-labelledby="saved-page-title">
+        <div class="wc-save-flow" aria-label="저장 흐름">
+          <span>화면 흐름</span>
+          <b>1 로그인 확인</b>
+          <b>2 저장 정보 입력</b>
+          <b>3 저장 완료</b>
+          <b>4 계산안 목록</b>
+        </div>
         <div class="wc-save-list-head">
           <div>
             <p class="eyebrow">내 계산안</p>
@@ -550,17 +557,6 @@
               </div>
             </div>
 
-            <div class="result-card">
-              <div class="result-row">
-                <span>제품별 매입단가</span>
-                <strong>0 원</strong>
-              </div>
-              <div class="result-row">
-                <span>총 매입예상비용</span>
-                <strong>0 원</strong>
-              </div>
-            </div>
-
             <div class="final-summary-panel" hidden>
               <div class="final-mode-bar" aria-label="최종 비용 요약 방식">
                 <div>
@@ -671,7 +667,26 @@
             <form class="mock-form" id="stage-form" novalidate></form>
           </aside>
 
-          <section class="preview-panel" aria-label="선택한 계산기 설명">
+          <section class="preview-panel" aria-label="실시간 예상 결과와 선택한 계산기 설명">
+            <div class="live-result-panel">
+              <div class="live-result-head">
+                <div>
+                  <p class="eyebrow">실시간 예상 결과</p>
+                  <strong>입력할 때마다 바로 반영됩니다.</strong>
+                </div>
+                <span>판매 전 예상치</span>
+              </div>
+              <div class="result-card">
+                <div class="result-row">
+                  <span>제품별 매입단가</span>
+                  <strong>0 원</strong>
+                </div>
+                <div class="result-row">
+                  <span>총 매입예상비용</span>
+                  <strong>0 원</strong>
+                </div>
+              </div>
+            </div>
             <div class="preview-visual">
               <div class="visual-window">
                 <div class="visual-toolbar">

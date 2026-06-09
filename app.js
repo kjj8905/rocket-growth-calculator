@@ -3830,7 +3830,7 @@ function renderCalculator(id, options = {}) {
   mockForm.hidden = isFinal;
   finalSummaryPanel.hidden = !isFinal;
   renderFinalSummaryMode();
-  sessionBar.hidden = !accountFeatureEnabled;
+  sessionBar.hidden = true;
   comingSoonSection.hidden = true;
   bannerGrid.hidden = true;
   homeGuideStrip.hidden = true;

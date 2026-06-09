@@ -571,15 +571,16 @@ body.wc-save-lock {
   justify-content: space-between;
   gap: var(--space-3);
   min-height: 42px;
-  padding: 0 var(--space-4);
-  border: 1px solid rgba(49, 130, 246, 0.12);
-  border-radius: var(--radius-12);
+  padding: 0 var(--space-5);
+  border: 0;
+  border-bottom: 1px solid var(--grey-200);
+  border-radius: 0;
   background: var(--white);
   color: var(--grey-700);
   font-size: 13px;
   font-weight: 800;
   line-height: 20px;
-  box-shadow: var(--shadow-1);
+  box-shadow: none;
 }
 
 .quick-switch button.is-done:not(.is-active) {
@@ -1136,6 +1137,34 @@ body.wc-save-lock {
   box-shadow: var(--shadow-2);
 }
 
+.wc-save-flow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--grey-600);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 18px;
+}
+
+.wc-save-flow span {
+  color: var(--grey-900);
+}
+
+.wc-save-flow b {
+  min-height: 30px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--grey-200);
+  border-radius: 999px;
+  background: var(--white);
+  color: var(--grey-700);
+  font-size: 12px;
+  font-weight: 800;
+}
+
 .wc-save-list-head {
   display: flex;
   align-items: flex-start;
@@ -1202,16 +1231,43 @@ body.wc-save-lock {
 
 .wc-save-list-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: 1fr;
   gap: var(--space-3);
 }
 
 .wc-save-list-page.is-compare-mode .wc-save-list-grid {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: 1fr;
 }
 
 .wc-save-page-card {
   cursor: pointer;
+  grid-template-columns: minmax(0, 1.1fr) minmax(260px, 0.9fr) auto;
+  align-items: center;
+}
+
+.wc-save-page-card .saved-product-card-head,
+.wc-save-page-card .saved-product-metrics,
+.wc-save-page-card .saved-product-tags,
+.wc-save-page-card .saved-product-actions {
+  min-width: 0;
+}
+
+.wc-save-page-card .saved-product-metrics {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: center;
+}
+
+.wc-save-page-card .saved-product-metrics span {
+  display: grid;
+  gap: 2px;
+}
+
+.wc-save-page-card .saved-product-actions {
+  min-width: 220px;
+}
+
+.wc-save-page-card .saved-product-tags {
+  grid-column: 1 / -1;
 }
 
 .wc-save-empty {
@@ -1259,10 +1315,11 @@ body.wc-save-lock {
   justify-content: space-between;
   gap: var(--space-4);
   padding: var(--space-5);
-  border: 1px solid rgba(49, 130, 246, 0.12);
-  border-radius: var(--radius-16);
+  border: 0;
+  border-top: 1px solid var(--grey-200);
+  border-radius: 0;
   background: var(--white);
-  box-shadow: var(--shadow-1);
+  box-shadow: none;
 }
 
 .calculator-save-footer div {
@@ -2878,14 +2935,18 @@ body.wc-save-lock {
 .workspace {
   display: flex;
   flex-direction: column;
-  gap: var(--space-5);
+  gap: 0;
+  border: 1px solid rgba(2, 32, 71, 0.08);
+  border-radius: var(--radius-16);
+  background: var(--white);
+  box-shadow: var(--shadow-2);
+  overflow: hidden;
 }
 
 .selected-banner {
-  display: grid;
-  grid-template-columns: minmax(280px, 360px) 1fr;
-  gap: var(--space-4);
-  align-items: stretch;
+  display: block;
+  border-bottom: 1px solid var(--grey-200);
+  background: var(--grey-50);
 }
 
 .workspace.is-standalone .selected-banner {
@@ -2897,31 +2958,32 @@ body.wc-save-lock {
 }
 
 .calc-banner-active {
-  min-height: 104px;
+  display: none;
 }
 
 .quick-switch {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: var(--space-2);
-  padding: var(--space-2);
-  border-radius: var(--radius-16);
-  background: var(--grey-100);
-  box-shadow: inset 0 0 0 1px rgba(2, 32, 71, 0.03);
+  gap: 0;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 .quick-switch button {
   position: relative;
   min-width: 0;
-  min-height: 48px;
+  min-height: 64px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
   padding: 0 var(--space-3);
-  border: 1px solid transparent;
-  border-radius: var(--radius-12);
-  background: rgba(255, 255, 255, 0.34);
+  border: 0;
+  border-right: 1px solid var(--grey-200);
+  border-radius: 0;
+  background: transparent;
   color: var(--grey-600);
   font-size: 14px;
   font-weight: 600;
@@ -2933,6 +2995,10 @@ body.wc-save-lock {
     color var(--motion-fast) var(--ease-standard),
     box-shadow var(--motion-fast) var(--ease-standard),
     transform var(--motion-fast) var(--ease-standard);
+}
+
+.quick-switch button:last-child {
+  border-right: 0;
 }
 
 .quick-switch button::after {
@@ -2958,12 +3024,12 @@ body.wc-save-lock {
 
 .quick-switch button:hover,
 .quick-switch button:focus-visible {
-  border-color: rgba(49, 130, 246, 0.12);
-  background: rgba(255, 255, 255, 0.84);
+  border-color: var(--grey-200);
+  background: var(--white);
   color: var(--grey-900);
-  box-shadow: 0 1px 3px rgba(25, 31, 40, 0.05);
+  box-shadow: inset 0 -2px 0 rgba(49, 130, 246, 0.18);
   outline: none;
-  transform: translateY(-1px);
+  transform: none;
 }
 
 .quick-switch button:hover::after,
@@ -2974,15 +3040,11 @@ body.wc-save-lock {
 }
 
 .quick-switch button.is-active {
-  border-color: rgba(49, 130, 246, 0.34);
+  border-color: var(--grey-200);
   background: var(--white);
-  color: var(--grey-900);
-  box-shadow:
-    var(--shadow-1),
-    0 0 0 2px rgba(49, 130, 246, 0.12),
-    0 0 22px rgba(49, 130, 246, 0.22),
-    inset 0 0 0 1px rgba(49, 130, 246, 0.08);
-  animation: activeStepGlow 2200ms var(--ease-standard) infinite;
+  color: var(--blue-600);
+  box-shadow: inset 0 -3px 0 var(--blue-500);
+  animation: none;
 }
 
 .quick-switch button.is-active::after {
@@ -2992,9 +3054,9 @@ body.wc-save-lock {
 
 .calculator-layout {
   display: grid;
-  grid-template-columns: 420px minmax(0, 1fr);
-  gap: var(--space-5);
-  align-items: start;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 0;
+  align-items: stretch;
 }
 
 .workspace.is-final .calculator-layout {
@@ -3014,12 +3076,13 @@ body.wc-save-lock {
 .preview-panel {
   min-width: 0;
   border: 0;
-  border-radius: var(--radius-16);
+  border-radius: 0;
   background: var(--white);
-  box-shadow: var(--shadow-2);
+  box-shadow: none;
 }
 
 .form-panel {
+  border-right: 1px solid var(--grey-200);
   overflow: hidden;
 }
 
@@ -3068,7 +3131,7 @@ body.wc-save-lock {
 .result-card {
   display: grid;
   gap: var(--space-3);
-  margin: 0 var(--space-5);
+  margin: 0;
   padding: var(--space-5);
   border-radius: var(--radius-12);
   background: var(--grey-50);
@@ -3470,16 +3533,88 @@ em {
 }
 
 .preview-panel {
-  min-height: 720px;
+  min-height: 0;
+  align-self: stretch;
   overflow: hidden;
+  background: var(--grey-50);
+}
+
+.live-result-panel {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  border-bottom: 1px solid var(--grey-200);
+  background: var(--grey-50);
+}
+
+.workspace.is-final .live-result-panel {
+  display: none;
+}
+
+.live-result-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.live-result-head strong {
+  display: block;
+  margin-top: var(--space-1);
+  color: var(--grey-900);
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 22px;
+}
+
+.live-result-head > span {
+  flex: 0 0 auto;
+  min-height: 28px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 var(--space-3);
+  border-radius: 999px;
+  background: var(--white);
+  color: var(--grey-600);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 18px;
+}
+
+.preview-panel .result-card {
+  padding: 0;
+  background: transparent;
+}
+
+.preview-panel .result-card.result-card-multi {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.preview-panel .result-row,
+.preview-panel .result-card-multi .result-row {
+  min-height: 84px;
+  display: grid;
+  gap: var(--space-1);
+  align-content: center;
+  padding: var(--space-4);
+  border-radius: var(--radius-12);
+  background: var(--white);
+}
+
+.preview-panel .result-row strong,
+.preview-panel .result-card-multi .result-row strong {
+  font-size: 22px;
+  line-height: 30px;
+  text-align: left;
+  white-space: normal;
 }
 
 .preview-visual {
-  min-height: 392px;
+  min-height: 220px;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--space-10);
+  padding: var(--space-5);
   background: var(--grey-50);
 }
 
@@ -3871,6 +4006,11 @@ em {
 .formula-card {
   padding: var(--space-8) var(--space-10);
   border-top: 1px solid var(--grey-200);
+}
+
+.preview-panel .formula-card {
+  padding: var(--space-5);
+  background: var(--white);
 }
 
 .formula-card h3 {
@@ -4407,6 +4547,11 @@ em {
     grid-template-columns: 1fr;
   }
 
+  .form-panel {
+    border-right: 0;
+    border-bottom: 1px solid var(--grey-200);
+  }
+
   .workspace.is-final .calculator-layout {
     grid-template-columns: 1fr;
   }
@@ -4422,6 +4567,14 @@ em {
   .preview-panel {
     min-height: 0;
   }
+
+  .wc-save-page-card {
+    grid-template-columns: 1fr;
+  }
+
+  .wc-save-page-card .saved-product-actions {
+    min-width: 0;
+  }
 }
 
 @media (max-width: 560px) {
@@ -4436,19 +4589,19 @@ em {
   .calculator-category-nav {
     width: 100%;
     max-width: none;
-    display: grid;
-    grid-template-columns: 1fr;
+    display: flex;
     margin-right: 0;
     margin-left: 0;
     padding-right: var(--space-3);
     padding-left: var(--space-3);
     border-radius: var(--radius-16);
-    overflow: visible;
+    overflow-x: auto;
   }
 
   .calculator-category-nav button {
-    width: 100%;
-    white-space: normal;
+    width: auto;
+    min-width: max-content;
+    white-space: nowrap;
   }
 
   .intro {
@@ -4490,7 +4643,6 @@ em {
   .seo-content-section,
   .quick-home-inputs,
   .quick-home-result-grid,
-  .quick-switch,
   .login-controls,
   .product-controls,
   .saved-products-list,
@@ -4499,6 +4651,15 @@ em {
   .result-card.result-card-multi,
   .field-grid.two {
     grid-template-columns: 1fr;
+  }
+
+  .quick-switch {
+    display: flex;
+    overflow-x: auto;
+  }
+
+  .quick-switch button {
+    min-width: 128px;
   }
 
   .wc-save-list-page {
