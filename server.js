@@ -444,6 +444,8 @@ function renderDocumentShell({ title, description, canonicalUrl, body, jsonLd })
     <title>${escapeHtml(title)}</title>
     <meta name="description" content="${escapeHtml(description)}" />
     <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1" />
+    <link rel="icon" href="/assets/rocket-favicon.svg?v=20260611" type="image/svg+xml" />
+    <link rel="shortcut icon" href="/assets/rocket-favicon.svg?v=20260611" />
     <link rel="canonical" href="${escapeHtml(canonicalUrl)}" />
     <meta property="og:type" content="article" />
     <meta property="og:locale" content="ko_KR" />

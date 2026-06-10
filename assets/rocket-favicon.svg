@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="로켓그로스 계산기 아이콘">
+  <defs>
+    <linearGradient id="bg" x1="8" y1="8" x2="56" y2="56" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#3182F6"/>
+      <stop offset="1" stop-color="#2272EB"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="18" fill="url(#bg)"/>
+  <circle cx="32" cy="32" r="18" fill="none" stroke="#FFFFFF" stroke-opacity=".22" stroke-width="4"/>
+  <path d="M22 36.5 30.5 26l5.8 5.8 8.2-14.4v8l-8.2 14.4-5.8-5.8L24 44z" fill="#FFFFFF"/>
+  <path d="M24 47h16" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="45" cy="20" r="3.5" fill="#F04452"/>
+</svg>
