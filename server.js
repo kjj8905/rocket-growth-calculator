@@ -511,6 +511,7 @@ function renderCommunityIndexPage() {
     canonicalUrl,
     body: `<main class="community-shell">
       ${renderCommunityHeader("community")}
+      ${renderCommunityCategoryNav("community")}
       <section class="community-hero" aria-labelledby="community-title">
         <div>
           <p class="eyebrow">셀러 꿀팁 커뮤니티</p>
@@ -526,17 +527,6 @@ function renderCommunityIndexPage() {
           <strong>평균 참여시간 90초+</strong>
           <p>계산기 입력, 글 탐색, 질문 작성 흐름을 GA4 이벤트로 측정합니다.</p>
         </aside>
-      </section>
-      <section class="community-category-grid" aria-label="커뮤니티 카테고리">
-        ${Object.values(COMMUNITY_CATEGORIES)
-          .map(
-            (category) => `<a href="/community/${category.slug}">
-              <span>${escapeHtml(category.label)}</span>
-              <strong>${escapeHtml(category.title)}</strong>
-              <em>${escapeHtml(category.description)}</em>
-            </a>`,
-          )
-          .join("")}
       </section>
       <section class="community-layout">
         <div class="community-main-stack">
@@ -574,6 +564,7 @@ function renderCommunityCategoryPage(categorySlug) {
         </div>
         <a class="guide-secondary-link" href="/community">커뮤니티 홈</a>
       </section>
+      ${renderCommunityCategoryNav(category.slug)}
       <section class="community-layout">
         <div class="community-main-stack">
           ${renderCommunityPostSection(`${category.label} 글`, posts)}
@@ -601,6 +592,7 @@ function renderCommunityPostPage(post) {
     canonicalUrl,
     body: `<main class="community-shell">
       ${renderCommunityHeader(post.category)}
+      ${renderCommunityCategoryNav(post.category, "compact")}
       <article class="community-post-article" data-community-post="${escapeHtml(post.slug)}">
         <nav class="guide-breadcrumb" aria-label="breadcrumb">
           <a href="/">계산기</a>
@@ -690,6 +682,49 @@ function renderCommunityHeader(activeKey) {
         .join("")}
     </nav>
   </header>`;
+}
+
+function renderCommunityCategoryNav(activeKey = "community", mode = "default") {
+  const counts = getCommunityCategoryCounts();
+  const totalCount = Object.values(counts).reduce((sum, count) => sum + count, 0);
+  const items = [
+    {
+      slug: "community",
+      label: "전체",
+      title: "전체 글",
+      description: "셀러 꿀팁, 질문, 자료를 한 번에 봅니다.",
+      count: totalCount,
+      href: "/community",
+    },
+    ...Object.values(COMMUNITY_CATEGORIES).map((category) => ({
+      ...category,
+      count: counts[category.slug] || 0,
+      href: `/community/${category.slug}`,
+    })),
+  ];
+
+  return `<section class="community-category-nav ${mode === "compact" ? "is-compact" : ""}" aria-labelledby="community-category-title">
+    <div class="community-category-nav-head">
+      <div>
+        <span>카테고리별 보기</span>
+        <h2 id="community-category-title">필요한 주제를 바로 선택하세요.</h2>
+      </div>
+      <p>비용 사례, 질문답변, 자료실처럼 목적별로 나눠서 볼 수 있습니다.</p>
+    </div>
+    <div class="community-category-tabs" role="list">
+      ${items
+        .map((item) => {
+          const isActive = item.slug === activeKey || (activeKey === "community" && item.slug === "community");
+          return `<a class="community-category-chip ${isActive ? "is-active" : ""}" href="${item.href}" ${isActive ? 'aria-current="page"' : ""} role="listitem">
+            <span>${escapeHtml(item.label)}</span>
+            <strong>${escapeHtml(item.title)}</strong>
+            <small>${escapeHtml(item.description)}</small>
+            <em>${formatInteger(item.count)}개 글 보기</em>
+          </a>`;
+        })
+        .join("")}
+    </div>
+  </section>`;
 }
 
 function renderCommunityPostSection(title, posts, mode = "default") {
@@ -1977,6 +2012,16 @@ function getCommunityPosts(options = {}) {
     )
     .all(...params)
     .map(communityPostFromRow);
+}
+
+function getCommunityCategoryCounts() {
+  return db
+    .prepare("SELECT category, COUNT(*) AS count FROM community_posts WHERE status = 'published' GROUP BY category")
+    .all()
+    .reduce((acc, row) => {
+      acc[row.category] = Number(row.count || 0);
+      return acc;
+    }, {});
 }
 
 function getCommunityPostBySlug(slug) {
