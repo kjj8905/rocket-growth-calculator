@@ -604,7 +604,6 @@ function renderCommunityPostPage(post) {
   const comments = getCommunityComments(post.id);
   const relatedPosts = getCommunityPosts({ category: post.category, limit: 5 }).filter((item) => item.id !== post.id).slice(0, 4);
   const category = COMMUNITY_CATEGORIES[post.category] || COMMUNITY_CATEGORIES["final-margin"];
-  const isBoardPost = COMMUNITY_BOARD_SLUGS.includes(post.category);
 
   return renderDocumentShell({
     title: `${post.title} | 로켓그로스 계산기 커뮤니티`,
@@ -612,30 +611,13 @@ function renderCommunityPostPage(post) {
     canonicalUrl,
     body: `<main class="community-shell">
       ${renderCommunityHeader(post.category)}
-      ${isBoardPost ? renderCommunityBoardNav(post.category) : renderCommunityCategoryNav(post.category, "compact")}
       <article class="community-post-article" data-community-post="${escapeHtml(post.slug)}">
-        <nav class="guide-breadcrumb" aria-label="breadcrumb">
-          <a href="/">계산기</a>
-          <span>/</span>
-          <a href="/community">커뮤니티</a>
-          <span>/</span>
+        <div class="community-post-kicker">
           <a href="/community/${escapeHtml(category.slug)}">${escapeHtml(category.label)}</a>
-        </nav>
-        <p class="eyebrow">${escapeHtml(category.label)}</p>
-        <h1>${escapeHtml(post.title)}</h1>
-        <p class="guide-lede">${escapeHtml(post.summary)}</p>
-        <div class="community-post-meta">
-          <span>${escapeHtml(post.authorName)}</span>
           <span>조회 ${formatInteger(post.views)}</span>
-          <span>추천 ${formatInteger(post.likesCount)}</span>
-          <span>댓글 ${formatInteger(post.commentsCount)}</span>
+          <span>댓글 ${formatInteger(comments.length)}</span>
         </div>
-        <div class="community-tag-row">${post.tags.map((tag) => `<a href="/community?tag=${encodeURIComponent(tag)}">#${escapeHtml(tag)}</a>`).join("")}</div>
-        <div class="community-post-actions">
-          <button type="button" data-community-reaction="like" data-post-slug="${escapeHtml(post.slug)}">추천하기</button>
-          <button type="button" data-community-reaction="bookmark" data-post-slug="${escapeHtml(post.slug)}">꿀팁 저장</button>
-          <a href="/?calc=final">계산기로 확인</a>
-        </div>
+        <h1>${escapeHtml(post.title)}</h1>
         <div class="guide-section-list">
           ${post.sections
             .map(
@@ -646,19 +628,19 @@ function renderCommunityPostPage(post) {
             )
             .join("")}
         </div>
-        ${renderCommunityFaq(post)}
-      </article>
-      <section class="community-comments" aria-labelledby="community-comments-title">
-        <div class="community-comments-head">
-          <div>
-            <p class="eyebrow">댓글</p>
-            <h2 id="community-comments-title">질문과 경험을 남겨주세요.</h2>
-          </div>
-          <a href="/auth/kakao/start">카카오로 시작하기</a>
+        <div class="community-post-actions is-minimal">
+          <a href="/?calc=final">계산기로 확인</a>
         </div>
+      </article>
+      <details class="community-comments" aria-labelledby="community-comments-title">
+        <summary class="community-comments-head">
+          <strong id="community-comments-title">댓글 ${formatInteger(comments.length)}개</strong>
+          <span>질문 남기기</span>
+        </summary>
         <form class="community-comment-form" data-community-comment-form data-post-slug="${escapeHtml(post.slug)}">
           <textarea name="body" rows="4" maxlength="1500" placeholder="추가 질문, 실제 견적 차이, 본인 사례를 남겨주세요."></textarea>
           <button class="primary-small-button" type="submit">댓글 남기기</button>
+          <a class="community-comment-login" href="/auth/kakao/start">카카오로 시작하기</a>
           <p data-community-message></p>
         </form>
         <div class="community-comment-list">
@@ -670,11 +652,11 @@ function renderCommunityPostPage(post) {
               </article>`).join("")
             : `<p class="community-empty">아직 댓글이 없습니다. 첫 질문을 남겨보세요.</p>`}
         </div>
-      </section>
-      <aside class="guide-related community-related" aria-label="관련 글">
-        <p class="eyebrow">관련 꿀팁</p>
+      </details>
+      ${relatedPosts.length ? `<details class="guide-related community-related">
+        <summary>관련 글 ${formatInteger(relatedPosts.length)}개</summary>
         <div>${relatedPosts.map((item) => `<a href="/community/${item.slug}">${escapeHtml(item.title)}</a>`).join("")}</div>
-      </aside>
+      </details>` : ""}
     </main>`,
     jsonLd: buildCommunityPostJsonLd(post, canonicalUrl, comments),
     script: renderCommunityScript(post.slug),
