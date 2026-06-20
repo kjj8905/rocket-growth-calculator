@@ -523,32 +523,34 @@ function renderCommunityIndexPage() {
     canonicalUrl,
     body: `<main class="community-shell">
       ${renderCommunityHeader("community")}
-      ${renderCommunityCategoryNav("community")}
-      <section class="community-forum-hero" aria-labelledby="community-title">
-        <div>
-          <span class="community-live-label">셀러 커뮤니티</span>
-          <h1 id="community-title">계산기 5단계와 같은 흐름으로 묻고 답합니다.</h1>
-          <p>중국사입부터 최종 비용까지, 셀러들이 실제로 막히는 비용·물류·수수료 질문을 단계별 게시판으로 정리했습니다.</p>
-          <div class="community-quick-actions">
+      <section class="community-workspace">
+        <aside class="community-left-rail">
+          ${renderCommunityCategoryNav("community", "rail")}
+        </aside>
+        <section class="community-feed-panel" aria-labelledby="community-title">
+          <div class="community-feed-head">
+            <div>
+              <span class="community-page-label">셀러 커뮤니티</span>
+              <h1 id="community-title">로켓그로스 비용 게시판</h1>
+              <p>계산기 5단계 순서로 질문과 사례를 모았습니다.</p>
+            </div>
+            <a class="community-head-action" href="/community/qna">질문하기</a>
+          </div>
+          <nav class="community-feed-tabs" aria-label="커뮤니티 빠른 이동">
+            <a class="is-active" href="/community">전체</a>
+            <a href="/community/final-margin">비용 사례</a>
             <a href="/community/qna">질문답변</a>
             <a href="/community/resources">자료실</a>
-            <a href="/">계산기로 돌아가기</a>
-          </div>
-        </div>
-        <aside class="community-snapshot">
+          </nav>
+          ${renderCommunityPostSection("전체 글", recentPosts, "feed")}
+          ${renderCommunityPostSection("고정 글", featuredPosts, "compact")}
+        </section>
+        <aside class="community-right-rail">
           ${renderCommunityStats()}
-        </aside>
-      </section>
-      <section class="community-layout">
-        <div class="community-main-stack">
-          ${renderCommunityPostSection("최신 셀러 피드", recentPosts)}
-          ${renderCommunityPostSection("운영자가 고정한 글", featuredPosts)}
-        </div>
-        <aside class="community-side-stack">
           ${renderCommunityWritePanel()}
           ${renderCommunityBoardNav("community")}
           ${renderCommunityPostSection("최근 질문", qnaPosts, "compact")}
-          ${renderCommunityPostSection("자료실 업데이트", resourcePosts, "compact")}
+          ${renderCommunityPostSection("자료실", resourcePosts, "compact")}
           ${renderCommunityTagPanel()}
         </aside>
       </section>
@@ -570,21 +572,24 @@ function renderCommunityCategoryPage(categorySlug) {
     canonicalUrl,
     body: `<main class="community-shell">
       ${renderCommunityHeader(category.slug)}
-      <section class="community-list-head">
-        <div>
-          <p class="eyebrow">${escapeHtml(category.label)}</p>
-          <h1>${escapeHtml(category.title)}</h1>
-          <p>${escapeHtml(category.description)}</p>
-        </div>
-        <a class="guide-secondary-link" href="/community">커뮤니티 홈</a>
-      </section>
-      ${isBoard ? renderCommunityBoardNav(category.slug) : renderCommunityCategoryNav(category.slug)}
-      <section class="community-layout">
-        <div class="community-main-stack">
-          ${renderCommunityPostSection(`${category.label} 글`, posts)}
-        </div>
-        <aside class="community-side-stack">
+      <section class="community-workspace">
+        <aside class="community-left-rail">
+          ${isBoard ? renderCommunityBoardNav(category.slug) : renderCommunityCategoryNav(category.slug, "rail")}
+        </aside>
+        <section class="community-feed-panel" aria-labelledby="community-category-title">
+          <div class="community-feed-head">
+            <div>
+              <span class="community-page-label">${escapeHtml(category.label)}</span>
+              <h1 id="community-category-title">${escapeHtml(category.title)}</h1>
+              <p>${escapeHtml(category.description)}</p>
+            </div>
+            <a class="community-head-action" href="/community">전체 보기</a>
+          </div>
+          ${renderCommunityPostSection(`${category.label} 글`, posts, "feed")}
+        </section>
+        <aside class="community-right-rail">
           ${renderCommunityWritePanel(category.slug)}
+          ${isBoard ? renderCommunityCategoryNav("community", "rail") : renderCommunityBoardNav(category.slug)}
           ${renderCommunityTagPanel()}
         </aside>
       </section>
@@ -700,6 +705,7 @@ function renderCommunityHeader(activeKey) {
 }
 
 function renderCommunityCategoryNav(activeKey = "community", mode = "default") {
+  const isRail = mode === "rail";
   const counts = getCommunityCategoryCounts();
   const stageCount = COMMUNITY_STAGE_SLUGS.reduce((sum, slug) => sum + (counts[slug] || 0), 0);
   const items = [
@@ -721,13 +727,13 @@ function renderCommunityCategoryNav(activeKey = "community", mode = "default") {
     }),
   ];
 
-  return `<section class="community-category-nav ${mode === "compact" ? "is-compact" : ""}" aria-labelledby="community-category-title">
+  return `<section class="community-category-nav ${mode === "compact" ? "is-compact" : ""} ${isRail ? "is-rail" : ""}" aria-labelledby="community-category-title">
     <div class="community-category-nav-head">
       <div>
-        <span>로켓그로스 단계 카테고리</span>
-        <h2 id="community-category-title">계산기와 같은 5단계로 탐색하세요.</h2>
+        <span>카테고리</span>
+        <h2 id="community-category-title">${isRail ? "로켓그로스 5단계" : "계산기와 같은 5단계"}</h2>
       </div>
-      <p>중국사입부터 최종 비용까지, 계산기에서 보던 순서 그대로 글을 나눴습니다.</p>
+      ${isRail ? "" : "<p>중국사입부터 최종 비용까지 계산기 순서 그대로 나눴습니다.</p>"}
     </div>
     <div class="community-category-tabs" role="list">
       ${items
@@ -736,8 +742,8 @@ function renderCommunityCategoryNav(activeKey = "community", mode = "default") {
           return `<a class="community-category-chip ${isActive ? "is-active" : ""}" href="${item.href}" ${isActive ? 'aria-current="page"' : ""} role="listitem">
             <span>${escapeHtml(item.label)}</span>
             <strong>${escapeHtml(item.title)}</strong>
-            <small>${escapeHtml(item.description)}</small>
-            <em>${formatInteger(item.count)}개 글 보기</em>
+            ${isRail ? "" : `<small>${escapeHtml(item.description)}</small>`}
+            <em>${formatInteger(item.count)}개</em>
           </a>`;
         })
         .join("")}
@@ -758,8 +764,8 @@ function renderCommunityBoardNav(activeKey = "community") {
 
   return `<section class="community-board-nav" aria-labelledby="community-board-title">
     <div>
-      <span>커뮤니티 게시판</span>
-      <h2 id="community-board-title">질문과 자료는 따로 모았습니다.</h2>
+      <span>보드</span>
+      <h2 id="community-board-title">질문·자료</h2>
     </div>
     <div class="community-board-links">
       ${boards
@@ -777,7 +783,9 @@ function renderCommunityStats() {
   const counts = getCommunityCategoryCounts();
   const total = Object.values(counts).reduce((sum, count) => sum + count, 0);
   const stageTotal = COMMUNITY_STAGE_SLUGS.reduce((sum, slug) => sum + (counts[slug] || 0), 0);
-  return `<dl class="community-stat-list">
+  return `<section class="community-stat-card" aria-label="커뮤니티 현황">
+    <strong>커뮤니티 현황</strong>
+    <dl class="community-stat-list">
     <div>
       <dt>전체 글</dt>
       <dd>${formatInteger(total)}</dd>
@@ -794,7 +802,8 @@ function renderCommunityStats() {
       <dt>자료</dt>
       <dd>${formatInteger(counts.resources || 0)}</dd>
     </div>
-  </dl>`;
+  </dl>
+  </section>`;
 }
 
 function renderCommunityPostSection(title, posts, mode = "default") {
@@ -812,10 +821,12 @@ function renderCommunityPostSection(title, posts, mode = "default") {
 function renderCommunityPostCard(post) {
   const category = COMMUNITY_CATEGORIES[post.category] || COMMUNITY_CATEGORIES["final-margin"];
   return `<a class="community-post-card" href="/community/${post.slug}">
-    <span>${escapeHtml(category.label)}</span>
-    <strong>${escapeHtml(post.title)}</strong>
-    <p>${escapeHtml(post.summary)}</p>
-    <em>조회 ${formatInteger(post.views)} · 추천 ${formatInteger(post.likesCount)} · 댓글 ${formatInteger(post.commentsCount)}</em>
+    <span class="community-post-badge">${escapeHtml(category.label)}</span>
+    <div>
+      <strong>${escapeHtml(post.title)}</strong>
+      <p>${escapeHtml(post.summary)}</p>
+    </div>
+    <em>조회 ${formatInteger(post.views)} · 댓글 ${formatInteger(post.commentsCount)}</em>
   </a>`;
 }
 
@@ -823,10 +834,11 @@ function renderCommunityWritePanel(defaultCategory = "final-margin") {
   const stageOptions = COMMUNITY_STAGE_SLUGS.map((slug) => COMMUNITY_CATEGORIES[slug]);
   const boardOptions = COMMUNITY_BOARD_SLUGS.map((slug) => COMMUNITY_CATEGORIES[slug]);
 
-  return `<section class="community-write-panel" aria-labelledby="community-write-title">
-    <p class="eyebrow">글쓰기</p>
-    <h2 id="community-write-title">꿀팁이나 질문을 남겨보세요.</h2>
-    <p>읽기는 모두 가능하고, 글쓰기와 댓글은 카카오 로그인 후 사용할 수 있습니다.</p>
+  return `<details class="community-write-panel" aria-labelledby="community-write-title">
+    <summary>
+      <span>글쓰기</span>
+      <strong id="community-write-title">질문 남기기</strong>
+    </summary>
     <form data-community-post-form>
       <label>
         <span>분류</span>
@@ -862,7 +874,7 @@ function renderCommunityWritePanel(defaultCategory = "final-margin") {
       <button class="primary-small-button" type="submit">글 등록</button>
       <p data-community-message></p>
     </form>
-  </section>`;
+  </details>`;
 }
 
 function renderCommunityTagPanel() {
@@ -1008,50 +1020,37 @@ function renderGuideIndexPage() {
     canonicalUrl,
     body: `<main class="community-shell">
       ${renderCommunityHeader("guides")}
-      <section class="community-forum-hero guide-library-hero" aria-labelledby="guide-library-title">
-        <div>
-          <span class="community-live-label">계산 기준 자료실</span>
-          <h1 id="guide-library-title">검색엔진과 셀러가 같이 읽는 비용 기준입니다.</h1>
-          <p>계산기 화면은 짧게 유지하고, 세금·수수료·물류 기준은 별도 문서로 정리했습니다. 궁금한 기준을 읽고 다시 계산기로 돌아갈 수 있습니다.</p>
-          <div class="community-quick-actions">
-            <a href="/">계산기로 돌아가기</a>
-            <a href="/community">커뮤니티 보기</a>
-            <a href="/community/resources">자료실 글 보기</a>
-          </div>
-        </div>
-        <aside class="community-snapshot guide-library-snapshot">
-          <dl class="community-stat-list">
-            <div>
-              <dt>문서</dt>
-              <dd>${formatInteger(SEO_GUIDES.length)}</dd>
-            </div>
-            <div>
-              <dt>핵심 단계</dt>
-              <dd>5</dd>
-            </div>
-            <div>
-              <dt>FAQ</dt>
-              <dd>${formatInteger(SEO_GUIDES.reduce((sum, guide) => sum + guide.faq.length, 0))}</dd>
-            </div>
-            <div>
-              <dt>대상</dt>
-              <dd>셀러</dd>
-            </div>
-          </dl>
+      <section class="community-workspace">
+        <aside class="community-left-rail">
+          ${renderCommunityCategoryNav("community", "rail")}
         </aside>
-      </section>
-      <section class="community-layout guide-library-layout">
-        <div class="community-main-stack">
+        <section class="community-feed-panel" aria-labelledby="guide-library-title">
+          <div class="community-feed-head">
+            <div>
+              <span class="community-page-label">계산 기준</span>
+              <h1 id="guide-library-title">셀러 비용 자료실</h1>
+              <p>세금·수수료·물류 기준을 짧게 찾아보고 계산기로 돌아갑니다.</p>
+            </div>
+            <a class="community-head-action" href="/">계산기 홈</a>
+          </div>
           <section class="community-post-section guide-resource-section">
             <div class="community-section-head">
-              <h2>계산 기준 문서</h2>
+              <h2>문서 목록</h2>
               <span>${formatInteger(SEO_GUIDES.length)}개</span>
             </div>
             <div class="guide-library-grid">${guideLinks}</div>
           </section>
-        </div>
-        <aside class="community-side-stack">
-          ${renderCommunityCategoryNav("community", "compact")}
+        </section>
+        <aside class="community-right-rail">
+          <section class="community-stat-card" aria-label="자료실 현황">
+            <strong>자료실 현황</strong>
+            <dl class="community-stat-list">
+              <div><dt>문서</dt><dd>${formatInteger(SEO_GUIDES.length)}</dd></div>
+              <div><dt>단계</dt><dd>5</dd></div>
+              <div><dt>FAQ</dt><dd>${formatInteger(SEO_GUIDES.reduce((sum, guide) => sum + guide.faq.length, 0))}</dd></div>
+              <div><dt>대상</dt><dd>셀러</dd></div>
+            </dl>
+          </section>
           ${renderCommunityBoardNav("resources")}
           ${renderCommunityTagPanel()}
         </aside>
