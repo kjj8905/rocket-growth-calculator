@@ -5723,7 +5723,7 @@ function showHome(scrollTarget = bannerGrid) {
   workspace.hidden = true;
   savedPageSection.hidden = true;
   bannerGrid.hidden = false;
-  homeGuideStrip.hidden = false;
+  homeGuideStrip.hidden = true;
   homeQuickCalculator.hidden = false;
   if (homeCommunitySection) {
     homeCommunitySection.hidden = false;
