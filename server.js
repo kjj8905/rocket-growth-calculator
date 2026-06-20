@@ -532,7 +532,7 @@ function renderCommunityIndexPage() {
             <div>
               <span class="community-page-label">셀러 커뮤니티</span>
               <h1 id="community-title">로켓그로스 비용 게시판</h1>
-              <p>계산기 5단계 순서로 질문과 사례를 모았습니다.</p>
+              <p>5단계 비용 질문과 사례를 모았습니다.</p>
             </div>
             <a class="community-head-action" href="/community/qna">질문하기</a>
           </div>
@@ -549,8 +549,8 @@ function renderCommunityIndexPage() {
           ${renderCommunityStats()}
           ${renderCommunityWritePanel()}
           ${renderCommunityBoardNav("community")}
-          ${renderCommunityPostSection("최근 질문", qnaPosts, "compact")}
-          ${renderCommunityPostSection("자료실", resourcePosts, "compact")}
+          ${renderCommunityCollapsedPostPanel("최근 질문", qnaPosts)}
+          ${renderCommunityCollapsedPostPanel("자료실", resourcePosts)}
           ${renderCommunityTagPanel()}
         </aside>
       </section>
@@ -581,7 +581,7 @@ function renderCommunityCategoryPage(categorySlug) {
             <div>
               <span class="community-page-label">${escapeHtml(category.label)}</span>
               <h1 id="community-category-title">${escapeHtml(category.title)}</h1>
-              <p>${escapeHtml(category.description)}</p>
+              <p>${escapeHtml(shortenText(category.description, 24))}</p>
             </div>
             <a class="community-head-action" href="/community">전체 보기</a>
           </div>
@@ -731,7 +731,7 @@ function renderCommunityCategoryNav(activeKey = "community", mode = "default") {
     <div class="community-category-nav-head">
       <div>
         <span>카테고리</span>
-        <h2 id="community-category-title">${isRail ? "로켓그로스 5단계" : "계산기와 같은 5단계"}</h2>
+        <h2 id="community-category-title">${isRail ? "5단계" : "계산기와 같은 5단계"}</h2>
       </div>
       ${isRail ? "" : "<p>중국사입부터 최종 비용까지 계산기 순서 그대로 나눴습니다.</p>"}
     </div>
@@ -740,8 +740,8 @@ function renderCommunityCategoryNav(activeKey = "community", mode = "default") {
         .map((item) => {
           const isActive = item.slug === activeKey || (activeKey === "community" && item.slug === "community");
           return `<a class="community-category-chip ${isActive ? "is-active" : ""}" href="${item.href}" ${isActive ? 'aria-current="page"' : ""} role="listitem">
-            <span>${escapeHtml(item.label)}</span>
-            <strong>${escapeHtml(item.title)}</strong>
+            ${isRail ? "" : `<span>${escapeHtml(item.label)}</span>`}
+            <strong>${escapeHtml(isRail ? item.label : item.title)}</strong>
             ${isRail ? "" : `<small>${escapeHtml(item.description)}</small>`}
             <em>${formatInteger(item.count)}개</em>
           </a>`;
@@ -782,27 +782,9 @@ function renderCommunityBoardNav(activeKey = "community") {
 function renderCommunityStats() {
   const counts = getCommunityCategoryCounts();
   const total = Object.values(counts).reduce((sum, count) => sum + count, 0);
-  const stageTotal = COMMUNITY_STAGE_SLUGS.reduce((sum, slug) => sum + (counts[slug] || 0), 0);
-  return `<section class="community-stat-card" aria-label="커뮤니티 현황">
-    <strong>커뮤니티 현황</strong>
-    <dl class="community-stat-list">
-    <div>
-      <dt>전체 글</dt>
-      <dd>${formatInteger(total)}</dd>
-    </div>
-    <div>
-      <dt>단계 글</dt>
-      <dd>${formatInteger(stageTotal)}</dd>
-    </div>
-    <div>
-      <dt>질문</dt>
-      <dd>${formatInteger(counts.qna || 0)}</dd>
-    </div>
-    <div>
-      <dt>자료</dt>
-      <dd>${formatInteger(counts.resources || 0)}</dd>
-    </div>
-  </dl>
+  return `<section class="community-stat-card is-compact" aria-label="커뮤니티 현황">
+    <strong>현황</strong>
+    <p>전체 ${formatInteger(total)} · 질문 ${formatInteger(counts.qna || 0)} · 자료 ${formatInteger(counts.resources || 0)}</p>
   </section>`;
 }
 
@@ -813,20 +795,33 @@ function renderCommunityPostSection(title, posts, mode = "default") {
       <span>${formatInteger(posts.length)}개</span>
     </div>
     <div class="community-post-list">
-      ${posts.length ? posts.map(renderCommunityPostCard).join("") : `<p class="community-empty">아직 공개된 글이 없습니다.</p>`}
+      ${posts.length ? posts.map((post) => renderCommunityPostCard(post, mode)).join("") : `<p class="community-empty">아직 공개된 글이 없습니다.</p>`}
     </div>
   </section>`;
 }
 
-function renderCommunityPostCard(post) {
+function renderCommunityCollapsedPostPanel(title, posts) {
+  return `<details class="community-collapsible-panel">
+    <summary>
+      <strong>${escapeHtml(title)}</strong>
+      <span>${formatInteger(posts.length)}개</span>
+    </summary>
+    <div class="community-post-list">
+      ${posts.length ? posts.map((post) => renderCommunityPostCard(post, "compact")).join("") : `<p class="community-empty">아직 공개된 글이 없습니다.</p>`}
+    </div>
+  </details>`;
+}
+
+function renderCommunityPostCard(post, mode = "default") {
   const category = COMMUNITY_CATEGORIES[post.category] || COMMUNITY_CATEGORIES["final-margin"];
+  const showSummary = mode === "summary";
   return `<a class="community-post-card" href="/community/${post.slug}">
     <span class="community-post-badge">${escapeHtml(category.label)}</span>
     <div>
       <strong>${escapeHtml(post.title)}</strong>
-      <p>${escapeHtml(post.summary)}</p>
+      ${showSummary ? `<p>${escapeHtml(post.summary)}</p>` : ""}
     </div>
-    <em>조회 ${formatInteger(post.views)} · 댓글 ${formatInteger(post.commentsCount)}</em>
+    <em>댓글 ${formatInteger(post.commentsCount)}</em>
   </a>`;
 }
 
@@ -879,10 +874,13 @@ function renderCommunityWritePanel(defaultCategory = "final-margin") {
 
 function renderCommunityTagPanel() {
   const tags = ["로켓그로스", "중국사입", "LCL", "쿠팡수수료", "파레트", "광고", "세금", "초보셀러"];
-  return `<section class="community-tag-panel">
-    <p class="eyebrow">탐색 태그</p>
+  return `<details class="community-tag-panel community-collapsible-panel">
+    <summary>
+      <strong>태그</strong>
+      <span>${formatInteger(tags.length)}개</span>
+    </summary>
     <div>${tags.map((tag) => `<a href="/community?tag=${encodeURIComponent(tag)}">#${escapeHtml(tag)}</a>`).join("")}</div>
-  </section>`;
+  </details>`;
 }
 
 function renderCommunityFaq(post) {
@@ -1005,14 +1003,20 @@ function renderGuideIndexPage() {
   const description =
     "로켓그로스 계산기, LCL 물류비, 수입 부가세, 쿠팡 파레트 비용, 쿠팡 판매 수수료처럼 초보 셀러가 헷갈리는 계산 기준을 문서로 정리한 지식 허브입니다.";
   const canonicalUrl = `${PUBLIC_SITE_URL}/guides`;
-  const guideLinks = SEO_GUIDES.map(
-    (guide) => `<a class="guide-library-card" href="/guides/${guide.slug}">
-        <span>계산 기준</span>
+  const guideCard = (guide) => `<a class="guide-library-card" href="/guides/${guide.slug}">
         <strong>${escapeHtml(guide.title)}</strong>
-        <p>${escapeHtml(guide.description)}</p>
-        <em>${escapeHtml(guide.keyword)}</em>
-      </a>`,
-  ).join("");
+        <em>보기</em>
+      </a>`;
+  const primaryGuides = SEO_GUIDES.slice(0, 5).map(guideCard).join("");
+  const secondaryGuides = SEO_GUIDES.slice(5).map(guideCard).join("");
+  const guideLinks = `${primaryGuides}${
+    secondaryGuides
+      ? `<details class="guide-more-panel">
+          <summary><strong>나머지 문서</strong><span>${formatInteger(SEO_GUIDES.length - 5)}개</span></summary>
+          <div>${secondaryGuides}</div>
+        </details>`
+      : ""
+  }`;
 
   return renderDocumentShell({
     title,
@@ -1029,7 +1033,7 @@ function renderGuideIndexPage() {
             <div>
               <span class="community-page-label">계산 기준</span>
               <h1 id="guide-library-title">셀러 비용 자료실</h1>
-              <p>세금·수수료·물류 기준을 짧게 찾아보고 계산기로 돌아갑니다.</p>
+              <p>세금·수수료·물류 기준을 정리했습니다.</p>
             </div>
             <a class="community-head-action" href="/">계산기 홈</a>
           </div>
@@ -1042,14 +1046,9 @@ function renderGuideIndexPage() {
           </section>
         </section>
         <aside class="community-right-rail">
-          <section class="community-stat-card" aria-label="자료실 현황">
-            <strong>자료실 현황</strong>
-            <dl class="community-stat-list">
-              <div><dt>문서</dt><dd>${formatInteger(SEO_GUIDES.length)}</dd></div>
-              <div><dt>단계</dt><dd>5</dd></div>
-              <div><dt>FAQ</dt><dd>${formatInteger(SEO_GUIDES.reduce((sum, guide) => sum + guide.faq.length, 0))}</dd></div>
-              <div><dt>대상</dt><dd>셀러</dd></div>
-            </dl>
+          <section class="community-stat-card is-compact" aria-label="자료실 현황">
+            <strong>자료실</strong>
+            <p>문서 ${formatInteger(SEO_GUIDES.length)} · FAQ ${formatInteger(SEO_GUIDES.reduce((sum, guide) => sum + guide.faq.length, 0))}</p>
           </section>
           ${renderCommunityBoardNav("resources")}
           ${renderCommunityTagPanel()}
@@ -1654,6 +1653,12 @@ function escapeHtml(value) {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
+}
+
+function shortenText(value, maxLength = 40) {
+  const text = String(value || "").trim();
+  if (text.length <= maxLength) return text;
+  return `${text.slice(0, Math.max(0, maxLength - 1)).trim()}…`;
 }
 
 function escapeXml(value) {
