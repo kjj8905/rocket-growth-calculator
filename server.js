@@ -5,7 +5,13 @@ import { fileURLToPath } from "node:url";
 import { DatabaseSync } from "node:sqlite";
 import express from "express";
 import { SEO_GUIDES } from "./seo-guides.js";
-import { COMMUNITY_CATEGORIES, SEED_COMMUNITY_POSTS } from "./community-posts.js";
+import {
+  COMMUNITY_BOARD_SLUGS,
+  COMMUNITY_CATEGORIES,
+  COMMUNITY_STAGE_SLUGS,
+  LEGACY_COMMUNITY_CATEGORY_REDIRECTS,
+  SEED_COMMUNITY_POSTS,
+} from "./community-posts.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -254,7 +260,7 @@ app.get("/api/community/posts/:slug", (req, res) => {
 
 app.post("/api/community/posts", requireLogin, (req, res) => {
   const title = normalizeText(req.body?.title, 90);
-  const category = normalizeCommunityCategory(req.body?.category) || "tips";
+  const category = normalizeCommunityCategory(req.body?.category) || "final-margin";
   const summary = normalizeText(req.body?.summary, 180);
   const bodyText = normalizeText(req.body?.body, 5000);
   const tags = normalizeTags(req.body?.tags);
@@ -403,7 +409,12 @@ app.get(["/community", "/community/"], (req, res) => {
   res.type("html").send(renderCommunityIndexPage());
 });
 
-app.get("/community/:category(tips|cases|operations|logistics|qna|resources)", (req, res) => {
+app.get("/community/:legacyCategory(tips|cases|operations|logistics)", (req, res) => {
+  const target = LEGACY_COMMUNITY_CATEGORY_REDIRECTS[req.params.legacyCategory] || "final-margin";
+  res.redirect(301, `/community/${target}`);
+});
+
+app.get("/community/:category(china-sourcing|china-korea-logistics|korea-coupang-inbound|coupang-selling-cost|final-margin|qna|resources)", (req, res) => {
   res.type("html").send(renderCommunityCategoryPage(req.params.category));
 });
 
@@ -497,13 +508,14 @@ function renderIndexHtml() {
 }
 
 function renderCommunityIndexPage() {
-  const title = "쿠팡셀러 꿀팁 커뮤니티 | 로켓그로스 계산기";
+  const title = "쿠팡셀러 커뮤니티 | 로켓그로스 계산기";
   const description =
-    "쿠팡셀러와 개인셀러를 위한 로켓그로스, 중국사입, LCL 물류, 쿠팡 수수료, 광고비, 마진 계산 꿀팁 커뮤니티입니다.";
+    "쿠팡셀러와 개인셀러를 위한 로켓그로스 5단계 커뮤니티입니다. 중국사입, 중국→한국 물류, 한국→쿠팡 입고, 쿠팡 소모 비용, 최종 비용을 단계별로 묻고 답합니다.";
   const canonicalUrl = `${PUBLIC_SITE_URL}/community`;
-  const featuredPosts = getCommunityPosts({ featured: true, limit: 6 });
+  const recentPosts = getCommunityPosts({ limit: 12 });
+  const featuredPosts = getCommunityPosts({ featured: true, limit: 5 });
   const qnaPosts = getCommunityPosts({ category: "qna", limit: 4 });
-  const casePosts = getCommunityPosts({ category: "cases", limit: 4 });
+  const resourcePosts = getCommunityPosts({ category: "resources", limit: 4 });
 
   return renderDocumentShell({
     title,
@@ -512,30 +524,31 @@ function renderCommunityIndexPage() {
     body: `<main class="community-shell">
       ${renderCommunityHeader("community")}
       ${renderCommunityCategoryNav("community")}
-      <section class="community-hero" aria-labelledby="community-title">
+      <section class="community-forum-hero" aria-labelledby="community-title">
         <div>
-          <p class="eyebrow">셀러 꿀팁 커뮤니티</p>
-          <h1 id="community-title">계산만 하고 떠나지 않게, 실제 셀러 꿀팁을 함께 봅니다.</h1>
-          <p>로켓그로스 비용, 중국사입, LCL 물류, 쿠팡 수수료, 광고비처럼 초보 셀러가 자주 막히는 주제를 사례와 질문답변으로 모았습니다.</p>
-          <div class="community-hero-actions">
-            <a class="guide-primary-link" href="/">계산기로 돌아가기</a>
-            <a class="guide-secondary-link" href="/community/qna">질문답변 보기</a>
+          <span class="community-live-label">셀러 커뮤니티</span>
+          <h1 id="community-title">계산기 5단계와 같은 흐름으로 묻고 답합니다.</h1>
+          <p>중국사입부터 최종 비용까지, 셀러들이 실제로 막히는 비용·물류·수수료 질문을 단계별 게시판으로 정리했습니다.</p>
+          <div class="community-quick-actions">
+            <a href="/community/qna">질문답변</a>
+            <a href="/community/resources">자료실</a>
+            <a href="/">계산기로 돌아가기</a>
           </div>
         </div>
-        <aside>
-          <span>1차 목표</span>
-          <strong>평균 참여시간 90초+</strong>
-          <p>계산기 입력, 글 탐색, 질문 작성 흐름을 GA4 이벤트로 측정합니다.</p>
+        <aside class="community-snapshot">
+          ${renderCommunityStats()}
         </aside>
       </section>
       <section class="community-layout">
         <div class="community-main-stack">
-          ${renderCommunityPostSection("많이 보는 셀러 꿀팁", featuredPosts)}
-          ${renderCommunityPostSection("로켓그로스 비용 사례", casePosts)}
+          ${renderCommunityPostSection("최신 셀러 피드", recentPosts)}
+          ${renderCommunityPostSection("운영자가 고정한 글", featuredPosts)}
         </div>
         <aside class="community-side-stack">
           ${renderCommunityWritePanel()}
+          ${renderCommunityBoardNav("community")}
           ${renderCommunityPostSection("최근 질문", qnaPosts, "compact")}
+          ${renderCommunityPostSection("자료실 업데이트", resourcePosts, "compact")}
           ${renderCommunityTagPanel()}
         </aside>
       </section>
@@ -546,9 +559,10 @@ function renderCommunityIndexPage() {
 }
 
 function renderCommunityCategoryPage(categorySlug) {
-  const category = COMMUNITY_CATEGORIES[categorySlug] || COMMUNITY_CATEGORIES.tips;
+  const category = COMMUNITY_CATEGORIES[categorySlug] || COMMUNITY_CATEGORIES["final-margin"];
   const posts = getCommunityPosts({ category: category.slug, limit: 40 });
   const canonicalUrl = `${PUBLIC_SITE_URL}/community/${category.slug}`;
+  const isBoard = COMMUNITY_BOARD_SLUGS.includes(category.slug);
 
   return renderDocumentShell({
     title: `${category.title} | 로켓그로스 계산기 커뮤니티`,
@@ -564,7 +578,7 @@ function renderCommunityCategoryPage(categorySlug) {
         </div>
         <a class="guide-secondary-link" href="/community">커뮤니티 홈</a>
       </section>
-      ${renderCommunityCategoryNav(category.slug)}
+      ${isBoard ? renderCommunityBoardNav(category.slug) : renderCommunityCategoryNav(category.slug)}
       <section class="community-layout">
         <div class="community-main-stack">
           ${renderCommunityPostSection(`${category.label} 글`, posts)}
@@ -584,7 +598,8 @@ function renderCommunityPostPage(post) {
   const canonicalUrl = `${PUBLIC_SITE_URL}/community/${post.slug}`;
   const comments = getCommunityComments(post.id);
   const relatedPosts = getCommunityPosts({ category: post.category, limit: 5 }).filter((item) => item.id !== post.id).slice(0, 4);
-  const category = COMMUNITY_CATEGORIES[post.category] || COMMUNITY_CATEGORIES.tips;
+  const category = COMMUNITY_CATEGORIES[post.category] || COMMUNITY_CATEGORIES["final-margin"];
+  const isBoardPost = COMMUNITY_BOARD_SLUGS.includes(post.category);
 
   return renderDocumentShell({
     title: `${post.title} | 로켓그로스 계산기 커뮤니티`,
@@ -592,7 +607,7 @@ function renderCommunityPostPage(post) {
     canonicalUrl,
     body: `<main class="community-shell">
       ${renderCommunityHeader(post.category)}
-      ${renderCommunityCategoryNav(post.category, "compact")}
+      ${isBoardPost ? renderCommunityBoardNav(post.category) : renderCommunityCategoryNav(post.category, "compact")}
       <article class="community-post-article" data-community-post="${escapeHtml(post.slug)}">
         <nav class="guide-breadcrumb" aria-label="breadcrumb">
           <a href="/">계산기</a>
@@ -663,8 +678,8 @@ function renderCommunityPostPage(post) {
 
 function renderCommunityHeader(activeKey) {
   const navItems = [
-    { key: "calculator", label: "로켓그로스 계산기", href: "/" },
-    { key: "community", label: "셀러 꿀팁", href: "/community" },
+    { key: "calculator", label: "계산기 홈", href: "/" },
+    { key: "community", label: "셀러 커뮤니티", href: "/community" },
     { key: "qna", label: "질문답변", href: "/community/qna" },
     { key: "resources", label: "자료실", href: "/community/resources" },
     { key: "guides", label: "계산 기준", href: "/guides" },
@@ -675,7 +690,7 @@ function renderCommunityHeader(activeKey) {
     <nav aria-label="커뮤니티 메뉴">
       ${navItems
         .map((item) => {
-          const isCommunityCategory = ["community", "tips", "cases", "operations", "logistics"].includes(activeKey);
+          const isCommunityCategory = activeKey === "community" || COMMUNITY_STAGE_SLUGS.includes(activeKey);
           const isActive = item.key === activeKey || (item.key === "community" && isCommunityCategory);
           return `<a class="${isActive ? "is-active" : ""}" href="${item.href}">${escapeHtml(item.label)}</a>`;
         })
@@ -686,30 +701,33 @@ function renderCommunityHeader(activeKey) {
 
 function renderCommunityCategoryNav(activeKey = "community", mode = "default") {
   const counts = getCommunityCategoryCounts();
-  const totalCount = Object.values(counts).reduce((sum, count) => sum + count, 0);
+  const stageCount = COMMUNITY_STAGE_SLUGS.reduce((sum, slug) => sum + (counts[slug] || 0), 0);
   const items = [
     {
       slug: "community",
       label: "전체",
-      title: "전체 글",
-      description: "셀러 꿀팁, 질문, 자료를 한 번에 봅니다.",
-      count: totalCount,
+      title: "전체 단계",
+      description: "로켓그로스 5단계 글을 한 번에 봅니다.",
+      count: stageCount,
       href: "/community",
     },
-    ...Object.values(COMMUNITY_CATEGORIES).map((category) => ({
-      ...category,
-      count: counts[category.slug] || 0,
-      href: `/community/${category.slug}`,
-    })),
+    ...COMMUNITY_STAGE_SLUGS.map((slug) => {
+      const category = COMMUNITY_CATEGORIES[slug];
+      return {
+        ...category,
+        count: counts[category.slug] || 0,
+        href: `/community/${category.slug}`,
+      };
+    }),
   ];
 
   return `<section class="community-category-nav ${mode === "compact" ? "is-compact" : ""}" aria-labelledby="community-category-title">
     <div class="community-category-nav-head">
       <div>
-        <span>카테고리별 보기</span>
-        <h2 id="community-category-title">필요한 주제를 바로 선택하세요.</h2>
+        <span>로켓그로스 단계 카테고리</span>
+        <h2 id="community-category-title">계산기와 같은 5단계로 탐색하세요.</h2>
       </div>
-      <p>비용 사례, 질문답변, 자료실처럼 목적별로 나눠서 볼 수 있습니다.</p>
+      <p>중국사입부터 최종 비용까지, 계산기에서 보던 순서 그대로 글을 나눴습니다.</p>
     </div>
     <div class="community-category-tabs" role="list">
       ${items
@@ -727,6 +745,58 @@ function renderCommunityCategoryNav(activeKey = "community", mode = "default") {
   </section>`;
 }
 
+function renderCommunityBoardNav(activeKey = "community") {
+  const counts = getCommunityCategoryCounts();
+  const boards = COMMUNITY_BOARD_SLUGS.map((slug) => {
+    const category = COMMUNITY_CATEGORIES[slug];
+    return {
+      ...category,
+      count: counts[slug] || 0,
+      href: `/community/${slug}`,
+    };
+  });
+
+  return `<section class="community-board-nav" aria-labelledby="community-board-title">
+    <div>
+      <span>커뮤니티 게시판</span>
+      <h2 id="community-board-title">질문과 자료는 따로 모았습니다.</h2>
+    </div>
+    <div class="community-board-links">
+      ${boards
+        .map((board) => `<a class="${board.slug === activeKey ? "is-active" : ""}" href="${board.href}" ${board.slug === activeKey ? 'aria-current="page"' : ""}>
+          <strong>${escapeHtml(board.label)}</strong>
+          <span>${escapeHtml(board.description)}</span>
+          <em>${formatInteger(board.count)}개</em>
+        </a>`)
+        .join("")}
+    </div>
+  </section>`;
+}
+
+function renderCommunityStats() {
+  const counts = getCommunityCategoryCounts();
+  const total = Object.values(counts).reduce((sum, count) => sum + count, 0);
+  const stageTotal = COMMUNITY_STAGE_SLUGS.reduce((sum, slug) => sum + (counts[slug] || 0), 0);
+  return `<dl class="community-stat-list">
+    <div>
+      <dt>전체 글</dt>
+      <dd>${formatInteger(total)}</dd>
+    </div>
+    <div>
+      <dt>단계 글</dt>
+      <dd>${formatInteger(stageTotal)}</dd>
+    </div>
+    <div>
+      <dt>질문</dt>
+      <dd>${formatInteger(counts.qna || 0)}</dd>
+    </div>
+    <div>
+      <dt>자료</dt>
+      <dd>${formatInteger(counts.resources || 0)}</dd>
+    </div>
+  </dl>`;
+}
+
 function renderCommunityPostSection(title, posts, mode = "default") {
   return `<section class="community-post-section ${mode === "compact" ? "is-compact" : ""}">
     <div class="community-section-head">
@@ -740,7 +810,7 @@ function renderCommunityPostSection(title, posts, mode = "default") {
 }
 
 function renderCommunityPostCard(post) {
-  const category = COMMUNITY_CATEGORIES[post.category] || COMMUNITY_CATEGORIES.tips;
+  const category = COMMUNITY_CATEGORIES[post.category] || COMMUNITY_CATEGORIES["final-margin"];
   return `<a class="community-post-card" href="/community/${post.slug}">
     <span>${escapeHtml(category.label)}</span>
     <strong>${escapeHtml(post.title)}</strong>
@@ -749,7 +819,10 @@ function renderCommunityPostCard(post) {
   </a>`;
 }
 
-function renderCommunityWritePanel(defaultCategory = "tips") {
+function renderCommunityWritePanel(defaultCategory = "final-margin") {
+  const stageOptions = COMMUNITY_STAGE_SLUGS.map((slug) => COMMUNITY_CATEGORIES[slug]);
+  const boardOptions = COMMUNITY_BOARD_SLUGS.map((slug) => COMMUNITY_CATEGORIES[slug]);
+
   return `<section class="community-write-panel" aria-labelledby="community-write-title">
     <p class="eyebrow">글쓰기</p>
     <h2 id="community-write-title">꿀팁이나 질문을 남겨보세요.</h2>
@@ -758,9 +831,16 @@ function renderCommunityWritePanel(defaultCategory = "tips") {
       <label>
         <span>분류</span>
         <select name="category">
-          ${Object.values(COMMUNITY_CATEGORIES)
-            .map((category) => `<option value="${category.slug}" ${category.slug === defaultCategory ? "selected" : ""}>${escapeHtml(category.label)}</option>`)
-            .join("")}
+          <optgroup label="로켓그로스 5단계">
+            ${stageOptions
+              .map((category) => `<option value="${category.slug}" ${category.slug === defaultCategory ? "selected" : ""}>${escapeHtml(category.label)}</option>`)
+              .join("")}
+          </optgroup>
+          <optgroup label="커뮤니티 게시판">
+            ${boardOptions
+              .map((category) => `<option value="${category.slug}" ${category.slug === defaultCategory ? "selected" : ""}>${escapeHtml(category.label)}</option>`)
+              .join("")}
+          </optgroup>
         </select>
       </label>
       <label>
@@ -909,33 +989,73 @@ function renderCommunityScript(postSlug = "") {
 }
 
 function renderGuideIndexPage() {
-  const title = "로켓그로스 계산기 지식 허브";
+  const title = "로켓그로스 계산 기준 자료실";
   const description =
     "로켓그로스 계산기, LCL 물류비, 수입 부가세, 쿠팡 파레트 비용, 쿠팡 판매 수수료처럼 초보 셀러가 헷갈리는 계산 기준을 문서로 정리한 지식 허브입니다.";
   const canonicalUrl = `${PUBLIC_SITE_URL}/guides`;
   const guideLinks = SEO_GUIDES.map(
-    (guide) => `<li>
-      <a href="/guides/${guide.slug}">
+    (guide) => `<a class="guide-library-card" href="/guides/${guide.slug}">
+        <span>계산 기준</span>
         <strong>${escapeHtml(guide.title)}</strong>
-        <span>${escapeHtml(guide.description)}</span>
-      </a>
-    </li>`,
+        <p>${escapeHtml(guide.description)}</p>
+        <em>${escapeHtml(guide.keyword)}</em>
+      </a>`,
   ).join("");
 
   return renderDocumentShell({
     title,
     description,
     canonicalUrl,
-    body: `<main class="guide-page-shell">
-      <article class="guide-article">
-        <p class="eyebrow">검색/GEO 문서</p>
-        <h1>${escapeHtml(title)}</h1>
-        <p class="guide-lede">${escapeHtml(description)}</p>
-        <ul class="guide-link-stack">${guideLinks}</ul>
-        <div class="guide-cta">
-          <a class="guide-primary-link" href="/">계산기로 돌아가기</a>
+    body: `<main class="community-shell">
+      ${renderCommunityHeader("guides")}
+      <section class="community-forum-hero guide-library-hero" aria-labelledby="guide-library-title">
+        <div>
+          <span class="community-live-label">계산 기준 자료실</span>
+          <h1 id="guide-library-title">검색엔진과 셀러가 같이 읽는 비용 기준입니다.</h1>
+          <p>계산기 화면은 짧게 유지하고, 세금·수수료·물류 기준은 별도 문서로 정리했습니다. 궁금한 기준을 읽고 다시 계산기로 돌아갈 수 있습니다.</p>
+          <div class="community-quick-actions">
+            <a href="/">계산기로 돌아가기</a>
+            <a href="/community">커뮤니티 보기</a>
+            <a href="/community/resources">자료실 글 보기</a>
+          </div>
         </div>
-      </article>
+        <aside class="community-snapshot guide-library-snapshot">
+          <dl class="community-stat-list">
+            <div>
+              <dt>문서</dt>
+              <dd>${formatInteger(SEO_GUIDES.length)}</dd>
+            </div>
+            <div>
+              <dt>핵심 단계</dt>
+              <dd>5</dd>
+            </div>
+            <div>
+              <dt>FAQ</dt>
+              <dd>${formatInteger(SEO_GUIDES.reduce((sum, guide) => sum + guide.faq.length, 0))}</dd>
+            </div>
+            <div>
+              <dt>대상</dt>
+              <dd>셀러</dd>
+            </div>
+          </dl>
+        </aside>
+      </section>
+      <section class="community-layout guide-library-layout">
+        <div class="community-main-stack">
+          <section class="community-post-section guide-resource-section">
+            <div class="community-section-head">
+              <h2>계산 기준 문서</h2>
+              <span>${formatInteger(SEO_GUIDES.length)}개</span>
+            </div>
+            <div class="guide-library-grid">${guideLinks}</div>
+          </section>
+        </div>
+        <aside class="community-side-stack">
+          ${renderCommunityCategoryNav("community", "compact")}
+          ${renderCommunityBoardNav("resources")}
+          ${renderCommunityTagPanel()}
+        </aside>
+      </section>
     </main>`,
     jsonLd: buildGuideIndexJsonLd(title, description, canonicalUrl),
   });
@@ -968,31 +1088,45 @@ function renderGuidePage(guide) {
     title: guide.metaTitle,
     description: guide.description,
     canonicalUrl,
-    body: `<main class="guide-page-shell">
-      <article class="guide-article">
-        <nav class="guide-breadcrumb" aria-label="breadcrumb">
-          <a href="/">계산기</a>
-          <span>/</span>
-          <a href="/guides">지식 허브</a>
-        </nav>
-        <p class="eyebrow">${escapeHtml(guide.keyword)}</p>
-        <h1>${escapeHtml(guide.title)}</h1>
-        <p class="guide-lede">${escapeHtml(guide.summary)}</p>
-        <div class="guide-cta">
-          <a class="guide-primary-link" href="${getCalculatorHref(guide.slug)}">계산기에서 확인하기</a>
-          <a class="guide-secondary-link" href="/guides">다른 기준 보기</a>
-        </div>
-        <div class="guide-section-list">${sections}</div>
-        <section class="guide-faq-block" aria-labelledby="guide-faq-title">
-          <p class="eyebrow">FAQ</p>
-          <h2 id="guide-faq-title">자주 묻는 질문</h2>
-          <div class="guide-faq-list">${faq}</div>
-        </section>
-        <aside class="guide-related" aria-label="관련 가이드">
-          <p class="eyebrow">관련 기준</p>
-          <div>${relatedLinks}</div>
+    body: `<main class="community-shell">
+      ${renderCommunityHeader("guides")}
+      <section class="guide-detail-layout">
+        <article class="guide-article community-guide-article">
+          <nav class="guide-breadcrumb" aria-label="breadcrumb">
+            <a href="/">계산기</a>
+            <span>/</span>
+            <a href="/guides">계산 기준</a>
+          </nav>
+          <p class="eyebrow">${escapeHtml(guide.keyword)}</p>
+          <h1>${escapeHtml(guide.title)}</h1>
+          <p class="guide-lede">${escapeHtml(guide.summary)}</p>
+          <div class="guide-cta">
+            <a class="guide-primary-link" href="${getCalculatorHref(guide.slug)}">계산기에서 확인하기</a>
+            <a class="guide-secondary-link" href="/guides">다른 기준 보기</a>
+          </div>
+          <div class="guide-section-list">${sections}</div>
+          <section class="guide-faq-block" aria-labelledby="guide-faq-title">
+            <p class="eyebrow">FAQ</p>
+            <h2 id="guide-faq-title">자주 묻는 질문</h2>
+            <div class="guide-faq-list">${faq}</div>
+          </section>
+        </article>
+        <aside class="community-side-stack guide-detail-sidebar">
+          <section class="community-board-nav guide-summary-panel">
+            <div>
+              <span>문서 요약</span>
+              <h2>${escapeHtml(guide.keyword)}</h2>
+            </div>
+            <p>${escapeHtml(guide.description)}</p>
+            <a class="guide-primary-link" href="${getCalculatorHref(guide.slug)}">계산기로 이동</a>
+          </section>
+          ${renderCommunityCategoryNav("community", "compact")}
+          <aside class="guide-related community-related" aria-label="관련 가이드">
+            <p class="eyebrow">관련 기준</p>
+            <div>${relatedLinks}</div>
+          </aside>
         </aside>
-      </article>
+      </section>
     </main>`,
     jsonLd: buildGuideJsonLd(guide, canonicalUrl),
   });
@@ -1003,8 +1137,9 @@ function renderNotFoundPage() {
     title: "페이지를 찾을 수 없습니다",
     description: "요청한 로켓그로스 계산기 가이드 페이지를 찾을 수 없습니다.",
     canonicalUrl: `${PUBLIC_SITE_URL}/guides`,
-    body: `<main class="guide-page-shell">
-      <article class="guide-article">
+    body: `<main class="community-shell">
+      ${renderCommunityHeader("guides")}
+      <article class="guide-article community-guide-article">
         <p class="eyebrow">404</p>
         <h1>페이지를 찾을 수 없습니다.</h1>
         <p class="guide-lede">주소를 다시 확인하거나 지식 허브에서 필요한 계산 기준을 선택하세요.</p>
@@ -1219,7 +1354,7 @@ function buildCommunityCategoryJsonLd(category, canonicalUrl, posts) {
           {
             "@type": "ListItem",
             position: 2,
-            name: "셀러 꿀팁 커뮤니티",
+            name: "셀러 커뮤니티",
             item: `${PUBLIC_SITE_URL}/community`,
           },
           {
@@ -1245,7 +1380,7 @@ function buildCommunityCategoryJsonLd(category, canonicalUrl, posts) {
 }
 
 function buildCommunityPostJsonLd(post, canonicalUrl, comments) {
-  const category = COMMUNITY_CATEGORIES[post.category] || COMMUNITY_CATEGORIES.tips;
+  const category = COMMUNITY_CATEGORIES[post.category] || COMMUNITY_CATEGORIES["final-margin"];
   const isQuestion = post.category === "qna";
   const mainEntity = isQuestion
     ? {
@@ -1318,7 +1453,7 @@ function buildCommunityPostJsonLd(post, canonicalUrl, comments) {
         {
           "@type": "ListItem",
           position: 2,
-          name: "셀러 꿀팁 커뮤니티",
+          name: "셀러 커뮤니티",
           item: `${PUBLIC_SITE_URL}/community`,
         },
         {
@@ -1371,9 +1506,9 @@ function buildOrganizationNode() {
 function getCalculatorHref(slug) {
   const routes = {
     "rocket-growth-calculator": "/",
-    "margin-price-calculator": "/community/cases",
-    "china-purchase-cost": "/community/logistics",
-    "ad-break-even-roas": "/community/tips",
+    "margin-price-calculator": "/community/final-margin",
+    "china-purchase-cost": "/community/china-sourcing",
+    "ad-break-even-roas": "/community/coupang-selling-cost",
     "cash-flow-calculator": "/community/resources",
     "lcl-logistics-cost": "china-korea",
     "import-vat-customs": "china-korea",
@@ -1415,7 +1550,7 @@ function renderSitemapXml() {
   const today = new Date().toISOString().slice(0, 10);
   const communityCategories = Object.values(COMMUNITY_CATEGORIES).map((category) => ({
     loc: `${PUBLIC_SITE_URL}/community/${category.slug}`,
-    priority: category.slug === "tips" || category.slug === "qna" ? "0.9" : "0.8",
+    priority: COMMUNITY_STAGE_SLUGS.includes(category.slug) || category.slug === "qna" ? "0.9" : "0.8",
     changefreq: "weekly",
   }));
   const communityPosts = getCommunityPosts({ limit: 100 }).map((post) => ({
@@ -1460,7 +1595,7 @@ function renderLlmsTxt() {
   ].join("\n")).join("\n");
   const communityList = getCommunityPosts({ limit: 30 }).map((post) => [
     `- ${post.title}: ${PUBLIC_SITE_URL}/community/${post.slug}`,
-    `  - 분류: ${(COMMUNITY_CATEGORIES[post.category] || COMMUNITY_CATEGORIES.tips).label}`,
+    `  - 분류: ${(COMMUNITY_CATEGORIES[post.category] || COMMUNITY_CATEGORIES["final-margin"]).label}`,
     `  - 요약: ${post.summary}`,
   ].join("\n")).join("\n");
 
@@ -1488,8 +1623,13 @@ function renderLlmsTxt() {
     `- 지식 허브: ${PUBLIC_SITE_URL}/guides`,
     guideList,
     "",
-    "## 셀러 꿀팁 커뮤니티",
+    "## 셀러 커뮤니티",
     `- 커뮤니티 홈: ${PUBLIC_SITE_URL}/community`,
+    `- 중국사입 단계: ${PUBLIC_SITE_URL}/community/china-sourcing`,
+    `- 중국→한국 물류: ${PUBLIC_SITE_URL}/community/china-korea-logistics`,
+    `- 한국→쿠팡 입고: ${PUBLIC_SITE_URL}/community/korea-coupang-inbound`,
+    `- 쿠팡 소모 비용: ${PUBLIC_SITE_URL}/community/coupang-selling-cost`,
+    `- 최종 비용·마진: ${PUBLIC_SITE_URL}/community/final-margin`,
     `- 질문답변: ${PUBLIC_SITE_URL}/community/qna`,
     `- 자료실: ${PUBLIC_SITE_URL}/community/resources`,
     communityList,

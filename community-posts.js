@@ -1,27 +1,33 @@
 export const COMMUNITY_CATEGORIES = {
-  tips: {
-    slug: "tips",
-    label: "꿀팁 공유",
-    title: "쿠팡셀러 꿀팁 공유",
-    description: "초보 셀러가 바로 써먹을 수 있는 로켓그로스, 사입, 물류, 판매 운영 팁을 모았습니다.",
+  "china-sourcing": {
+    slug: "china-sourcing",
+    label: "중국사입",
+    title: "중국사입 단계",
+    description: "제품단가, 수량, 환율, 중국 내륙 운송비처럼 사입 원가의 출발점을 다룹니다.",
   },
-  cases: {
-    slug: "cases",
-    label: "비용·마진 사례",
-    title: "로켓그로스 비용·마진 사례",
-    description: "LCL, 쿠팡 입고, 수수료, 광고비처럼 숫자로 봐야 하는 셀러 비용 사례를 정리합니다.",
+  "china-korea-logistics": {
+    slug: "china-korea-logistics",
+    label: "중국→한국",
+    title: "중국→한국 물류",
+    description: "LCL, CBM, 해상운임, 통관, 수입 부가세, 원산지증명서 관련 질문과 사례를 모았습니다.",
   },
-  operations: {
-    slug: "operations",
-    label: "로켓그로스 운영",
-    title: "로켓그로스 운영 꿀팁",
-    description: "쿠팡 로켓그로스 입고, 바코드, 파레트, 판매 후 비용을 실무 관점으로 정리합니다.",
+  "korea-coupang-inbound": {
+    slug: "korea-coupang-inbound",
+    label: "한국→쿠팡",
+    title: "한국→쿠팡 입고",
+    description: "국내 운송, 파레트, 바코드, 라벨, 센터 입고 전 작업비를 다룹니다.",
   },
-  logistics: {
-    slug: "logistics",
-    label: "사입·물류",
-    title: "중국사입·물류 꿀팁",
-    description: "중국사입, 배송대행, 통관, CBM, LCL 운임을 초보 셀러 기준으로 풀이합니다.",
+  "coupang-selling-cost": {
+    slug: "coupang-selling-cost",
+    label: "쿠팡 소모 비용",
+    title: "쿠팡 소모 비용",
+    description: "쿠팡 판매 수수료, 광고비, 반품비, 판매 후 빠지는 비용을 계산 관점으로 정리합니다.",
+  },
+  "final-margin": {
+    slug: "final-margin",
+    label: "최종 비용",
+    title: "최종 비용·마진",
+    description: "1개당 원가, 판매가, 예상마진, 최소 ROAS, 정산 후 남는 돈을 함께 봅니다.",
   },
   qna: {
     slug: "qna",
@@ -35,6 +41,23 @@ export const COMMUNITY_CATEGORIES = {
     title: "셀러 자료실",
     description: "체크리스트, 계산 기준, 비교표, 외부 확인 경로를 모아두는 자료실입니다.",
   },
+};
+
+export const COMMUNITY_STAGE_SLUGS = [
+  "china-sourcing",
+  "china-korea-logistics",
+  "korea-coupang-inbound",
+  "coupang-selling-cost",
+  "final-margin",
+];
+
+export const COMMUNITY_BOARD_SLUGS = ["qna", "resources"];
+
+export const LEGACY_COMMUNITY_CATEGORY_REDIRECTS = {
+  tips: "final-margin",
+  cases: "final-margin",
+  operations: "korea-coupang-inbound",
+  logistics: "china-korea-logistics",
 };
 
 export const COMMUNITY_TAGS = [
@@ -51,7 +74,7 @@ export const COMMUNITY_TAGS = [
 export const SEED_COMMUNITY_POSTS = [
   {
     slug: "rocket-growth-cost-checklist-7",
-    category: "tips",
+    category: "final-margin",
     title: "로켓그로스 입고 전 꼭 확인할 비용 7가지",
     summary: "사입가만 보고 판매가를 정하면 정산 후 손실이 날 수 있습니다. 입고 전 반드시 볼 비용을 정리했습니다.",
     tags: ["로켓그로스", "쿠팡수수료", "초보셀러"],
@@ -82,7 +105,7 @@ export const SEED_COMMUNITY_POSTS = [
   },
   {
     slug: "cbm-mistake-china-sourcing",
-    category: "logistics",
+    category: "china-korea-logistics",
     title: "중국사입에서 CBM을 잘못 넣으면 생기는 문제",
     summary: "CBM은 LCL 해상운임과 터미널 비용의 기준이 됩니다. 대충 입력하면 물류비 예상이 흔들립니다.",
     tags: ["중국사입", "LCL", "초보셀러"],
@@ -112,7 +135,7 @@ export const SEED_COMMUNITY_POSTS = [
   },
   {
     slug: "lcl-forwarder-questions",
-    category: "logistics",
+    category: "china-korea-logistics",
     title: "LCL 해상운임 견적 받을 때 물어볼 질문",
     summary: "운임만 묻지 말고 서류비, 터미널 비용, 국내 운송비 포함 여부를 같이 확인해야 합니다.",
     tags: ["LCL", "중국사입", "세금"],
@@ -135,7 +158,7 @@ export const SEED_COMMUNITY_POSTS = [
   },
   {
     slug: "coupang-fee-and-margin",
-    category: "cases",
+    category: "coupang-selling-cost",
     title: "쿠팡 수수료와 마진율을 같이 봐야 하는 이유",
     summary: "판매가와 매입가 차이만 보면 마진이 커 보입니다. 쿠팡 수수료는 판매 후 바로 빠지는 핵심 비용입니다.",
     tags: ["쿠팡수수료", "로켓그로스", "초보셀러"],
@@ -159,7 +182,7 @@ export const SEED_COMMUNITY_POSTS = [
   },
   {
     slug: "no-pallet-coupang-inbound",
-    category: "operations",
+    category: "korea-coupang-inbound",
     title: "파레트 없이 쿠팡 입고할 때 확인할 것",
     summary: "모든 상품이 파레트 입고를 전제로 움직이지는 않습니다. 박스 단위 입고 가능 여부를 먼저 확인해야 합니다.",
     tags: ["파레트", "로켓그로스", "초보셀러"],
@@ -182,7 +205,7 @@ export const SEED_COMMUNITY_POSTS = [
   },
   {
     slug: "ad-cost-margin-mistake",
-    category: "tips",
+    category: "coupang-selling-cost",
     title: "초보 셀러가 광고비를 마진 계산에서 빼먹는 이유",
     summary: "광고비는 판매 후 남는 금액을 가장 빠르게 줄이는 비용입니다. 주문당 광고비 기준으로 봐야 합니다.",
     tags: ["광고", "쿠팡수수료", "초보셀러"],
@@ -205,7 +228,7 @@ export const SEED_COMMUNITY_POSTS = [
   },
   {
     slug: "origin-certificate-duty",
-    category: "logistics",
+    category: "china-korea-logistics",
     title: "원산지증명서가 관세에 미치는 영향",
     summary: "중국 원산지증명서를 준비하면 관세 판단이 달라질 수 있지만 수입 부가세와 통관비는 별도로 남습니다.",
     tags: ["세금", "중국사입", "초보셀러"],
@@ -228,7 +251,7 @@ export const SEED_COMMUNITY_POSTS = [
   },
   {
     slug: "before-setting-rocket-growth-price",
-    category: "resources",
+    category: "final-margin",
     title: "로켓그로스 판매가 정하기 전 체크리스트",
     summary: "판매가를 정하기 전 원가, 물류비, 수수료, 광고비, 반품비를 한 번에 확인하는 체크리스트입니다.",
     tags: ["로켓그로스", "쿠팡수수료", "광고"],
@@ -288,7 +311,7 @@ export const SEED_COMMUNITY_POSTS = [
   },
   {
     slug: "coupang-return-cost-margin",
-    category: "cases",
+    category: "final-margin",
     title: "반품비를 넣으면 마진이 얼마나 줄어들까",
     summary: "반품이 적어 보여도 반복 판매 상품에서는 평균 비용으로 반영해야 실제 마진에 가깝습니다.",
     tags: ["로켓그로스", "초보셀러"],
@@ -306,7 +329,7 @@ export const SEED_COMMUNITY_POSTS = [
   },
   {
     slug: "china-inland-shipping-check",
-    category: "logistics",
+    category: "china-sourcing",
     title: "중국 내륙 운송비를 꼭 확인해야 하는 이유",
     summary: "공장 가격이 싸도 중국 내륙 운송비가 크면 실제 사입 원가가 올라갑니다.",
     tags: ["중국사입", "초보셀러"],
@@ -324,7 +347,7 @@ export const SEED_COMMUNITY_POSTS = [
   },
   {
     slug: "rocket-growth-barcode-label",
-    category: "operations",
+    category: "korea-coupang-inbound",
     title: "로켓그로스 입고 전 바코드와 라벨에서 자주 막히는 지점",
     summary: "입고 작업비는 단순 포장비가 아니라 바코드, 라벨, 박스 작업까지 포함될 수 있습니다.",
     tags: ["로켓그로스", "초보셀러"],
@@ -342,7 +365,7 @@ export const SEED_COMMUNITY_POSTS = [
   },
   {
     slug: "minimum-roas-meaning",
-    category: "tips",
+    category: "coupang-selling-cost",
     title: "최소 ROAS는 무엇을 의미하나요?",
     summary: "최소 ROAS는 광고비를 써도 손익분기를 넘기기 위해 필요한 광고 효율 기준입니다.",
     tags: ["광고", "초보셀러"],
@@ -378,7 +401,7 @@ export const SEED_COMMUNITY_POSTS = [
   },
   {
     slug: "seller-cost-template",
-    category: "resources",
+    category: "final-margin",
     title: "초보 셀러 비용 계산 기본 양식",
     summary: "판매 전 비용을 빠뜨리지 않도록 상품별로 기록할 기본 항목을 정리했습니다.",
     tags: ["초보셀러", "로켓그로스"],
@@ -395,7 +418,7 @@ export const SEED_COMMUNITY_POSTS = [
   },
   {
     slug: "first-order-small-quantity",
-    category: "tips",
+    category: "china-sourcing",
     title: "첫 발주는 왜 작게 시작하는 게 안전할까",
     summary: "처음부터 큰 수량을 넣으면 단가가 낮아져도 반품, 광고, 재고 리스크가 커질 수 있습니다.",
     tags: ["초보셀러", "중국사입"],
@@ -413,7 +436,7 @@ export const SEED_COMMUNITY_POSTS = [
   },
   {
     slug: "storage-fee-risk",
-    category: "operations",
+    category: "final-margin",
     title: "판매가 느리면 보관과 재고 리스크가 커집니다",
     summary: "마진 계산은 판매가 되는 속도까지 함께 봐야 합니다. 재고가 오래 묶이면 현금흐름이 나빠집니다.",
     tags: ["로켓그로스", "초보셀러"],
@@ -431,7 +454,7 @@ export const SEED_COMMUNITY_POSTS = [
   },
   {
     slug: "import-vat-vs-sales-vat",
-    category: "resources",
+    category: "china-korea-logistics",
     title: "수입 부가세와 판매 부가세를 구분하는 방법",
     summary: "수입 때 내는 부가세와 판매 후 보는 부가세 부담은 목적이 다릅니다.",
     tags: ["세금", "중국사입"],
