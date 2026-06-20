@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 import { DatabaseSync } from "node:sqlite";
 import express from "express";
 import { SEO_GUIDES } from "./seo-guides.js";
+import { COMMUNITY_CATEGORIES, SEED_COMMUNITY_POSTS } from "./community-posts.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -17,6 +18,7 @@ const SESSION_COOKIE = "rg_session";
 const OAUTH_STATE_COOKIE = "rg_kakao_state";
 const SESSION_TTL_MS = 1000 * 60 * 60 * 24 * 14;
 const OAUTH_STATE_TTL_MS = 1000 * 60 * 10;
+const HIDDEN_CALCULATOR_CATEGORIES = new Set(["margin", "china-purchase", "ad-break-even", "agency-margin", "cash-flow"]);
 const SESSION_SECRET = process.env.SESSION_SECRET || "dev-session-secret-change-me";
 const DATABASE_PATH = path.resolve(__dirname, process.env.DATABASE_PATH || "./data/app.sqlite");
 const KAKAO_REST_API_KEY = process.env.KAKAO_REST_API_KEY || "";
@@ -235,12 +237,185 @@ app.delete("/api/products/:id", requireLogin, (req, res) => {
   res.json({ ok: true, deletedId: productId });
 });
 
+app.get("/api/community/posts", (req, res) => {
+  const category = normalizeCommunityCategory(req.query.category);
+  const posts = getCommunityPosts({ category, limit: 50 });
+  res.json({ posts });
+});
+
+app.get("/api/community/posts/:slug", (req, res) => {
+  const post = getCommunityPostBySlug(req.params.slug);
+  if (!post) {
+    res.status(404).json({ error: "post_not_found", message: "게시글을 찾지 못했습니다." });
+    return;
+  }
+  res.json({ post, comments: getCommunityComments(post.id) });
+});
+
+app.post("/api/community/posts", requireLogin, (req, res) => {
+  const title = normalizeText(req.body?.title, 90);
+  const category = normalizeCommunityCategory(req.body?.category) || "tips";
+  const summary = normalizeText(req.body?.summary, 180);
+  const bodyText = normalizeText(req.body?.body, 5000);
+  const tags = normalizeTags(req.body?.tags);
+
+  if (!title || !bodyText) {
+    res.status(400).json({ error: "invalid_post", message: "제목과 본문을 입력해 주세요." });
+    return;
+  }
+
+  const now = new Date().toISOString();
+  const id = `post-${Date.now()}-${crypto.randomBytes(4).toString("hex")}`;
+  const slug = createUniqueCommunitySlug(title);
+  const bodyJson = JSON.stringify([{ heading: "본문", body: bodyText.split(/\n{2,}/).map((line) => line.trim()).filter(Boolean) }]);
+
+  db.prepare(
+    `INSERT INTO community_posts (
+      id, slug, category, title, summary, body_json, tags_json, author_user_id, author_name,
+      status, is_featured, is_notice, views, likes_count, bookmarks_count, comments_count, source, created_at, updated_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'published', 0, 0, 0, 0, 0, 0, 'user', ?, ?)`,
+  ).run(
+    id,
+    slug,
+    category,
+    title,
+    summary || title,
+    bodyJson,
+    JSON.stringify(tags),
+    req.currentUser.id,
+    getDisplayUserName(req.currentUser),
+    now,
+    now,
+  );
+
+  const post = getCommunityPostBySlug(slug);
+  res.status(201).json({ post });
+});
+
+app.put("/api/community/posts/:id", requireLogin, (req, res) => {
+  const existing = getEditableCommunityPost(req.params.id, req.currentUser.id);
+  if (!existing) {
+    res.status(404).json({ error: "post_not_found", message: "수정할 게시글을 찾지 못했습니다." });
+    return;
+  }
+
+  const title = normalizeText(req.body?.title, 90) || existing.title;
+  const category = normalizeCommunityCategory(req.body?.category) || existing.category;
+  const summary = normalizeText(req.body?.summary, 180) || existing.summary;
+  const bodyText = normalizeText(req.body?.body, 5000);
+  const tags = normalizeTags(req.body?.tags);
+  const bodyJson = bodyText
+    ? JSON.stringify([{ heading: "본문", body: bodyText.split(/\n{2,}/).map((line) => line.trim()).filter(Boolean) }])
+    : JSON.stringify(existing.sections);
+
+  db.prepare(
+    `UPDATE community_posts
+     SET title = ?, category = ?, summary = ?, body_json = ?, tags_json = ?, updated_at = ?
+     WHERE id = ? AND author_user_id = ?`,
+  ).run(title, category, summary, bodyJson, JSON.stringify(tags.length ? tags : existing.tags), new Date().toISOString(), existing.id, req.currentUser.id);
+
+  res.json({ post: communityPostFromRow(db.prepare("SELECT * FROM community_posts WHERE id = ?").get(existing.id)) });
+});
+
+app.delete("/api/community/posts/:id", requireLogin, (req, res) => {
+  const existing = getEditableCommunityPost(req.params.id, req.currentUser.id);
+  if (!existing) {
+    res.status(404).json({ error: "post_not_found", message: "삭제할 게시글을 찾지 못했습니다." });
+    return;
+  }
+
+  db.prepare("DELETE FROM community_comments WHERE post_id = ?").run(existing.id);
+  db.prepare("DELETE FROM community_reactions WHERE post_id = ?").run(existing.id);
+  db.prepare("DELETE FROM community_posts WHERE id = ? AND author_user_id = ?").run(existing.id, req.currentUser.id);
+  res.json({ ok: true, deletedId: existing.id });
+});
+
+app.post("/api/community/comments", requireLogin, (req, res) => {
+  const post = getCommunityPostBySlug(req.body?.slug) || getCommunityPostById(req.body?.postId);
+  const body = normalizeText(req.body?.body, 1500);
+  if (!post || !body) {
+    res.status(400).json({ error: "invalid_comment", message: "댓글을 남길 게시글과 내용을 확인해 주세요." });
+    return;
+  }
+
+  const now = new Date().toISOString();
+  const id = `comment-${Date.now()}-${crypto.randomBytes(4).toString("hex")}`;
+  db.prepare(
+    `INSERT INTO community_comments (id, post_id, user_id, author_name, body, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?)`,
+  ).run(id, post.id, req.currentUser.id, getDisplayUserName(req.currentUser), body, now, now);
+  updateCommunityCommentCount(post.id);
+  res.status(201).json({ comment: getCommunityCommentById(id), post: getCommunityPostById(post.id) });
+});
+
+app.delete("/api/community/comments/:id", requireLogin, (req, res) => {
+  const comment = db.prepare("SELECT * FROM community_comments WHERE id = ? AND user_id = ?").get(String(req.params.id || ""), req.currentUser.id);
+  if (!comment) {
+    res.status(404).json({ error: "comment_not_found", message: "삭제할 댓글을 찾지 못했습니다." });
+    return;
+  }
+
+  db.prepare("DELETE FROM community_comments WHERE id = ? AND user_id = ?").run(comment.id, req.currentUser.id);
+  updateCommunityCommentCount(comment.post_id);
+  res.json({ ok: true, deletedId: comment.id });
+});
+
+app.post("/api/community/reactions", requireLogin, (req, res) => {
+  const post = getCommunityPostBySlug(req.body?.slug) || getCommunityPostById(req.body?.postId);
+  const type = ["like", "bookmark"].includes(String(req.body?.type || "")) ? String(req.body.type) : "";
+  if (!post || !type) {
+    res.status(400).json({ error: "invalid_reaction", message: "반응할 게시글과 유형을 확인해 주세요." });
+    return;
+  }
+
+  const existing = db
+    .prepare("SELECT post_id FROM community_reactions WHERE post_id = ? AND user_id = ? AND type = ?")
+    .get(post.id, req.currentUser.id, type);
+  if (existing) {
+    db.prepare("DELETE FROM community_reactions WHERE post_id = ? AND user_id = ? AND type = ?").run(post.id, req.currentUser.id, type);
+  } else {
+    db.prepare("INSERT INTO community_reactions (post_id, user_id, type, created_at) VALUES (?, ?, ?, ?)").run(
+      post.id,
+      req.currentUser.id,
+      type,
+      new Date().toISOString(),
+    );
+  }
+  updateCommunityReactionCounts(post.id);
+  res.json({ post: getCommunityPostById(post.id), active: !existing, type });
+});
+
 app.get(["/", "/index.html"], (req, res) => {
+  const requestedCategory = String(req.query.category || "");
+  if (HIDDEN_CALCULATOR_CATEGORIES.has(requestedCategory)) {
+    res.redirect(302, "/community");
+    return;
+  }
+
   res.type("html").send(renderIndexHtml());
 });
 
 app.get("/saved", (req, res) => {
   res.type("html").send(renderIndexHtml());
+});
+
+app.get(["/community", "/community/"], (req, res) => {
+  res.type("html").send(renderCommunityIndexPage());
+});
+
+app.get("/community/:category(tips|cases|operations|logistics|qna|resources)", (req, res) => {
+  res.type("html").send(renderCommunityCategoryPage(req.params.category));
+});
+
+app.get("/community/:slug", (req, res) => {
+  const post = getCommunityPostBySlug(req.params.slug);
+  if (!post) {
+    res.status(404).type("html").send(renderNotFoundPage());
+    return;
+  }
+
+  incrementCommunityViews(post.id);
+  res.type("html").send(renderCommunityPostPage(getCommunityPostById(post.id)));
 });
 
 app.get(["/guides", "/guides/"], (req, res) => {
@@ -319,6 +494,383 @@ function normalizeSiteUrl(value) {
 function renderIndexHtml() {
   const filePath = path.join(__dirname, "index.html");
   return fs.readFileSync(filePath, "utf8").replaceAll("__SITE_URL__", PUBLIC_SITE_URL);
+}
+
+function renderCommunityIndexPage() {
+  const title = "쿠팡셀러 꿀팁 커뮤니티 | 로켓그로스 계산기";
+  const description =
+    "쿠팡셀러와 개인셀러를 위한 로켓그로스, 중국사입, LCL 물류, 쿠팡 수수료, 광고비, 마진 계산 꿀팁 커뮤니티입니다.";
+  const canonicalUrl = `${PUBLIC_SITE_URL}/community`;
+  const featuredPosts = getCommunityPosts({ featured: true, limit: 6 });
+  const qnaPosts = getCommunityPosts({ category: "qna", limit: 4 });
+  const casePosts = getCommunityPosts({ category: "cases", limit: 4 });
+
+  return renderDocumentShell({
+    title,
+    description,
+    canonicalUrl,
+    body: `<main class="community-shell">
+      ${renderCommunityHeader("community")}
+      <section class="community-hero" aria-labelledby="community-title">
+        <div>
+          <p class="eyebrow">셀러 꿀팁 커뮤니티</p>
+          <h1 id="community-title">계산만 하고 떠나지 않게, 실제 셀러 꿀팁을 함께 봅니다.</h1>
+          <p>로켓그로스 비용, 중국사입, LCL 물류, 쿠팡 수수료, 광고비처럼 초보 셀러가 자주 막히는 주제를 사례와 질문답변으로 모았습니다.</p>
+          <div class="community-hero-actions">
+            <a class="guide-primary-link" href="/">계산기로 돌아가기</a>
+            <a class="guide-secondary-link" href="/community/qna">질문답변 보기</a>
+          </div>
+        </div>
+        <aside>
+          <span>1차 목표</span>
+          <strong>평균 참여시간 90초+</strong>
+          <p>계산기 입력, 글 탐색, 질문 작성 흐름을 GA4 이벤트로 측정합니다.</p>
+        </aside>
+      </section>
+      <section class="community-category-grid" aria-label="커뮤니티 카테고리">
+        ${Object.values(COMMUNITY_CATEGORIES)
+          .map(
+            (category) => `<a href="/community/${category.slug}">
+              <span>${escapeHtml(category.label)}</span>
+              <strong>${escapeHtml(category.title)}</strong>
+              <em>${escapeHtml(category.description)}</em>
+            </a>`,
+          )
+          .join("")}
+      </section>
+      <section class="community-layout">
+        <div class="community-main-stack">
+          ${renderCommunityPostSection("많이 보는 셀러 꿀팁", featuredPosts)}
+          ${renderCommunityPostSection("로켓그로스 비용 사례", casePosts)}
+        </div>
+        <aside class="community-side-stack">
+          ${renderCommunityWritePanel()}
+          ${renderCommunityPostSection("최근 질문", qnaPosts, "compact")}
+          ${renderCommunityTagPanel()}
+        </aside>
+      </section>
+    </main>`,
+    jsonLd: buildCommunityIndexJsonLd(title, description, canonicalUrl, featuredPosts),
+    script: renderCommunityScript(),
+  });
+}
+
+function renderCommunityCategoryPage(categorySlug) {
+  const category = COMMUNITY_CATEGORIES[categorySlug] || COMMUNITY_CATEGORIES.tips;
+  const posts = getCommunityPosts({ category: category.slug, limit: 40 });
+  const canonicalUrl = `${PUBLIC_SITE_URL}/community/${category.slug}`;
+
+  return renderDocumentShell({
+    title: `${category.title} | 로켓그로스 계산기 커뮤니티`,
+    description: category.description,
+    canonicalUrl,
+    body: `<main class="community-shell">
+      ${renderCommunityHeader(category.slug)}
+      <section class="community-list-head">
+        <div>
+          <p class="eyebrow">${escapeHtml(category.label)}</p>
+          <h1>${escapeHtml(category.title)}</h1>
+          <p>${escapeHtml(category.description)}</p>
+        </div>
+        <a class="guide-secondary-link" href="/community">커뮤니티 홈</a>
+      </section>
+      <section class="community-layout">
+        <div class="community-main-stack">
+          ${renderCommunityPostSection(`${category.label} 글`, posts)}
+        </div>
+        <aside class="community-side-stack">
+          ${renderCommunityWritePanel(category.slug)}
+          ${renderCommunityTagPanel()}
+        </aside>
+      </section>
+    </main>`,
+    jsonLd: buildCommunityCategoryJsonLd(category, canonicalUrl, posts),
+    script: renderCommunityScript(),
+  });
+}
+
+function renderCommunityPostPage(post) {
+  const canonicalUrl = `${PUBLIC_SITE_URL}/community/${post.slug}`;
+  const comments = getCommunityComments(post.id);
+  const relatedPosts = getCommunityPosts({ category: post.category, limit: 5 }).filter((item) => item.id !== post.id).slice(0, 4);
+  const category = COMMUNITY_CATEGORIES[post.category] || COMMUNITY_CATEGORIES.tips;
+
+  return renderDocumentShell({
+    title: `${post.title} | 로켓그로스 계산기 커뮤니티`,
+    description: post.summary,
+    canonicalUrl,
+    body: `<main class="community-shell">
+      ${renderCommunityHeader(post.category)}
+      <article class="community-post-article" data-community-post="${escapeHtml(post.slug)}">
+        <nav class="guide-breadcrumb" aria-label="breadcrumb">
+          <a href="/">계산기</a>
+          <span>/</span>
+          <a href="/community">커뮤니티</a>
+          <span>/</span>
+          <a href="/community/${escapeHtml(category.slug)}">${escapeHtml(category.label)}</a>
+        </nav>
+        <p class="eyebrow">${escapeHtml(category.label)}</p>
+        <h1>${escapeHtml(post.title)}</h1>
+        <p class="guide-lede">${escapeHtml(post.summary)}</p>
+        <div class="community-post-meta">
+          <span>${escapeHtml(post.authorName)}</span>
+          <span>조회 ${formatInteger(post.views)}</span>
+          <span>추천 ${formatInteger(post.likesCount)}</span>
+          <span>댓글 ${formatInteger(post.commentsCount)}</span>
+        </div>
+        <div class="community-tag-row">${post.tags.map((tag) => `<a href="/community?tag=${encodeURIComponent(tag)}">#${escapeHtml(tag)}</a>`).join("")}</div>
+        <div class="community-post-actions">
+          <button type="button" data-community-reaction="like" data-post-slug="${escapeHtml(post.slug)}">추천하기</button>
+          <button type="button" data-community-reaction="bookmark" data-post-slug="${escapeHtml(post.slug)}">꿀팁 저장</button>
+          <a href="/?calc=final">계산기로 확인</a>
+        </div>
+        <div class="guide-section-list">
+          ${post.sections
+            .map(
+              (section) => `<section>
+                <h2>${escapeHtml(section.heading)}</h2>
+                ${section.body.map((paragraph) => `<p>${escapeHtml(paragraph)}</p>`).join("")}
+              </section>`,
+            )
+            .join("")}
+        </div>
+        ${renderCommunityFaq(post)}
+      </article>
+      <section class="community-comments" aria-labelledby="community-comments-title">
+        <div class="community-comments-head">
+          <div>
+            <p class="eyebrow">댓글</p>
+            <h2 id="community-comments-title">질문과 경험을 남겨주세요.</h2>
+          </div>
+          <a href="/auth/kakao/start">카카오로 시작하기</a>
+        </div>
+        <form class="community-comment-form" data-community-comment-form data-post-slug="${escapeHtml(post.slug)}">
+          <textarea name="body" rows="4" maxlength="1500" placeholder="추가 질문, 실제 견적 차이, 본인 사례를 남겨주세요."></textarea>
+          <button class="primary-small-button" type="submit">댓글 남기기</button>
+          <p data-community-message></p>
+        </form>
+        <div class="community-comment-list">
+          ${comments.length
+            ? comments.map((comment) => `<article>
+                <strong>${escapeHtml(comment.authorName)}</strong>
+                <p>${escapeHtml(comment.body)}</p>
+                <time datetime="${escapeHtml(comment.createdAt)}">${formatDate(comment.createdAt)}</time>
+              </article>`).join("")
+            : `<p class="community-empty">아직 댓글이 없습니다. 첫 질문을 남겨보세요.</p>`}
+        </div>
+      </section>
+      <aside class="guide-related community-related" aria-label="관련 글">
+        <p class="eyebrow">관련 꿀팁</p>
+        <div>${relatedPosts.map((item) => `<a href="/community/${item.slug}">${escapeHtml(item.title)}</a>`).join("")}</div>
+      </aside>
+    </main>`,
+    jsonLd: buildCommunityPostJsonLd(post, canonicalUrl, comments),
+    script: renderCommunityScript(post.slug),
+  });
+}
+
+function renderCommunityHeader(activeKey) {
+  const navItems = [
+    { key: "calculator", label: "로켓그로스 계산기", href: "/" },
+    { key: "community", label: "셀러 꿀팁", href: "/community" },
+    { key: "qna", label: "질문답변", href: "/community/qna" },
+    { key: "resources", label: "자료실", href: "/community/resources" },
+    { key: "guides", label: "계산 기준", href: "/guides" },
+  ];
+
+  return `<header class="community-topbar">
+    <a class="community-brand" href="/">로켓그로스 계산기</a>
+    <nav aria-label="커뮤니티 메뉴">
+      ${navItems
+        .map((item) => {
+          const isCommunityCategory = ["community", "tips", "cases", "operations", "logistics"].includes(activeKey);
+          const isActive = item.key === activeKey || (item.key === "community" && isCommunityCategory);
+          return `<a class="${isActive ? "is-active" : ""}" href="${item.href}">${escapeHtml(item.label)}</a>`;
+        })
+        .join("")}
+    </nav>
+  </header>`;
+}
+
+function renderCommunityPostSection(title, posts, mode = "default") {
+  return `<section class="community-post-section ${mode === "compact" ? "is-compact" : ""}">
+    <div class="community-section-head">
+      <h2>${escapeHtml(title)}</h2>
+      <span>${formatInteger(posts.length)}개</span>
+    </div>
+    <div class="community-post-list">
+      ${posts.length ? posts.map(renderCommunityPostCard).join("") : `<p class="community-empty">아직 공개된 글이 없습니다.</p>`}
+    </div>
+  </section>`;
+}
+
+function renderCommunityPostCard(post) {
+  const category = COMMUNITY_CATEGORIES[post.category] || COMMUNITY_CATEGORIES.tips;
+  return `<a class="community-post-card" href="/community/${post.slug}">
+    <span>${escapeHtml(category.label)}</span>
+    <strong>${escapeHtml(post.title)}</strong>
+    <p>${escapeHtml(post.summary)}</p>
+    <em>조회 ${formatInteger(post.views)} · 추천 ${formatInteger(post.likesCount)} · 댓글 ${formatInteger(post.commentsCount)}</em>
+  </a>`;
+}
+
+function renderCommunityWritePanel(defaultCategory = "tips") {
+  return `<section class="community-write-panel" aria-labelledby="community-write-title">
+    <p class="eyebrow">글쓰기</p>
+    <h2 id="community-write-title">꿀팁이나 질문을 남겨보세요.</h2>
+    <p>읽기는 모두 가능하고, 글쓰기와 댓글은 카카오 로그인 후 사용할 수 있습니다.</p>
+    <form data-community-post-form>
+      <label>
+        <span>분류</span>
+        <select name="category">
+          ${Object.values(COMMUNITY_CATEGORIES)
+            .map((category) => `<option value="${category.slug}" ${category.slug === defaultCategory ? "selected" : ""}>${escapeHtml(category.label)}</option>`)
+            .join("")}
+        </select>
+      </label>
+      <label>
+        <span>제목</span>
+        <input name="title" maxlength="90" placeholder="예: LCL 견적이 이 정도면 괜찮나요?" />
+      </label>
+      <label>
+        <span>요약</span>
+        <input name="summary" maxlength="180" placeholder="글 목록에 보일 한 줄 요약" />
+      </label>
+      <label>
+        <span>본문</span>
+        <textarea name="body" rows="5" maxlength="5000" placeholder="상황, 숫자, 궁금한 점을 함께 적어주세요."></textarea>
+      </label>
+      <label>
+        <span>태그</span>
+        <input name="tags" placeholder="로켓그로스, 중국사입, LCL" />
+      </label>
+      <button class="primary-small-button" type="submit">글 등록</button>
+      <p data-community-message></p>
+    </form>
+  </section>`;
+}
+
+function renderCommunityTagPanel() {
+  const tags = ["로켓그로스", "중국사입", "LCL", "쿠팡수수료", "파레트", "광고", "세금", "초보셀러"];
+  return `<section class="community-tag-panel">
+    <p class="eyebrow">탐색 태그</p>
+    <div>${tags.map((tag) => `<a href="/community?tag=${encodeURIComponent(tag)}">#${escapeHtml(tag)}</a>`).join("")}</div>
+  </section>`;
+}
+
+function renderCommunityFaq(post) {
+  if (!post.faq.length) {
+    return "";
+  }
+
+  return `<section class="guide-faq-block">
+    <p class="eyebrow">FAQ</p>
+    <h2>자주 묻는 질문</h2>
+    <div class="guide-faq-list">
+      ${post.faq.map((item) => `<article><h3>${escapeHtml(item.question)}</h3><p>${escapeHtml(item.answer)}</p></article>`).join("")}
+    </div>
+  </section>`;
+}
+
+function renderCommunityScript(postSlug = "") {
+  return `<script>
+    (function () {
+      function track(name, params) {
+        if (typeof window.gtag === "function") {
+          window.gtag("event", name, params || {});
+        }
+      }
+      track("community_view", { page_path: window.location.pathname });
+      ${postSlug ? `window.setTimeout(function () { track("post_read_60s", { post_slug: ${JSON.stringify(postSlug)} }); }, 60000);` : ""}
+
+      function setMessage(form, message, tone) {
+        var target = form.querySelector("[data-community-message]");
+        if (!target) return;
+        target.textContent = message;
+        target.dataset.tone = tone || "neutral";
+      }
+
+      document.querySelectorAll("[data-community-post-form]").forEach(function (form) {
+        form.addEventListener("submit", async function (event) {
+          event.preventDefault();
+          var data = new FormData(form);
+          var payload = {
+            category: data.get("category"),
+            title: data.get("title"),
+            summary: data.get("summary"),
+            body: data.get("body"),
+            tags: String(data.get("tags") || "").split(",").map(function (tag) { return tag.trim(); }).filter(Boolean)
+          };
+          try {
+            var response = await fetch("/api/community/posts", {
+              method: "POST",
+              credentials: "same-origin",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(payload)
+            });
+            var result = await response.json().catch(function () { return {}; });
+            if (response.status === 401) {
+              setMessage(form, "카카오로 시작하면 글을 등록할 수 있습니다.", "warning");
+              return;
+            }
+            if (!response.ok) throw new Error(result.message || "글을 등록하지 못했습니다.");
+            track("post_submit", { post_slug: result.post.slug, category: result.post.category });
+            window.location.href = "/community/" + result.post.slug;
+          } catch (error) {
+            setMessage(form, error.message || "잠시 후 다시 시도해 주세요.", "warning");
+          }
+        });
+      });
+
+      document.querySelectorAll("[data-community-comment-form]").forEach(function (form) {
+        var textarea = form.querySelector("textarea");
+        textarea && textarea.addEventListener("focus", function () {
+          track("post_comment_start", { post_slug: form.dataset.postSlug });
+        }, { once: true });
+        form.addEventListener("submit", async function (event) {
+          event.preventDefault();
+          try {
+            var response = await fetch("/api/community/comments", {
+              method: "POST",
+              credentials: "same-origin",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ slug: form.dataset.postSlug, body: textarea.value })
+            });
+            var result = await response.json().catch(function () { return {}; });
+            if (response.status === 401) {
+              setMessage(form, "카카오로 시작하면 댓글을 남길 수 있습니다.", "warning");
+              return;
+            }
+            if (!response.ok) throw new Error(result.message || "댓글을 남기지 못했습니다.");
+            window.location.reload();
+          } catch (error) {
+            setMessage(form, error.message || "잠시 후 다시 시도해 주세요.", "warning");
+          }
+        });
+      });
+
+      document.querySelectorAll("[data-community-reaction]").forEach(function (button) {
+        button.addEventListener("click", async function () {
+          try {
+            var response = await fetch("/api/community/reactions", {
+              method: "POST",
+              credentials: "same-origin",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ slug: button.dataset.postSlug, type: button.dataset.communityReaction })
+            });
+            if (response.status === 401) {
+              window.alert("카카오로 시작하면 추천과 꿀팁 저장을 사용할 수 있습니다.");
+              return;
+            }
+            if (!response.ok) throw new Error("반응을 저장하지 못했습니다.");
+            window.location.reload();
+          } catch {
+            button.textContent = "잠시 후 다시 시도";
+          }
+        });
+      });
+    })();
+  </script>`;
 }
 
 function renderGuideIndexPage() {
@@ -431,7 +983,7 @@ function renderNotFoundPage() {
   });
 }
 
-function renderDocumentShell({ title, description, canonicalUrl, body, jsonLd }) {
+function renderDocumentShell({ title, description, canonicalUrl, body, jsonLd, script = "" }) {
   const jsonLdBlock = jsonLd
     ? `<script type="application/ld+json">${JSON.stringify(jsonLd, null, 2).replace(/</g, "\\u003c")}</script>`
     : "";
@@ -476,6 +1028,7 @@ function renderDocumentShell({ title, description, canonicalUrl, body, jsonLd })
   </head>
   <body>
     ${body}
+    ${script}
   </body>
 </html>`;
 }
@@ -567,6 +1120,210 @@ function buildGuideJsonLd(guide, canonicalUrl) {
   };
 }
 
+function buildCommunityIndexJsonLd(title, description, canonicalUrl, posts) {
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      buildOrganizationNode(),
+      {
+        "@type": "CollectionPage",
+        "@id": `${canonicalUrl}#webpage`,
+        name: title,
+        description,
+        url: canonicalUrl,
+        inLanguage: "ko-KR",
+        isPartOf: {
+          "@id": `${PUBLIC_SITE_URL}/#website`,
+        },
+        hasPart: posts.map((post) => ({
+          "@type": post.category === "qna" ? "QAPage" : "Article",
+          name: post.title,
+          url: `${PUBLIC_SITE_URL}/community/${post.slug}`,
+        })),
+      },
+      {
+        "@type": "ItemList",
+        "@id": `${canonicalUrl}#items`,
+        itemListElement: posts.map((post, index) => ({
+          "@type": "ListItem",
+          position: index + 1,
+          name: post.title,
+          url: `${PUBLIC_SITE_URL}/community/${post.slug}`,
+        })),
+      },
+    ],
+  };
+}
+
+function buildCommunityCategoryJsonLd(category, canonicalUrl, posts) {
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      buildOrganizationNode(),
+      {
+        "@type": "CollectionPage",
+        "@id": `${canonicalUrl}#webpage`,
+        name: category.title,
+        description: category.description,
+        url: canonicalUrl,
+        inLanguage: "ko-KR",
+        isPartOf: {
+          "@id": `${PUBLIC_SITE_URL}/#website`,
+        },
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": `${canonicalUrl}#breadcrumb`,
+        itemListElement: [
+          {
+            "@type": "ListItem",
+            position: 1,
+            name: "로켓그로스 계산기",
+            item: `${PUBLIC_SITE_URL}/`,
+          },
+          {
+            "@type": "ListItem",
+            position: 2,
+            name: "셀러 꿀팁 커뮤니티",
+            item: `${PUBLIC_SITE_URL}/community`,
+          },
+          {
+            "@type": "ListItem",
+            position: 3,
+            name: category.label,
+            item: canonicalUrl,
+          },
+        ],
+      },
+      {
+        "@type": "ItemList",
+        "@id": `${canonicalUrl}#items`,
+        itemListElement: posts.map((post, index) => ({
+          "@type": "ListItem",
+          position: index + 1,
+          name: post.title,
+          url: `${PUBLIC_SITE_URL}/community/${post.slug}`,
+        })),
+      },
+    ],
+  };
+}
+
+function buildCommunityPostJsonLd(post, canonicalUrl, comments) {
+  const category = COMMUNITY_CATEGORIES[post.category] || COMMUNITY_CATEGORIES.tips;
+  const isQuestion = post.category === "qna";
+  const mainEntity = isQuestion
+    ? {
+        "@type": "Question",
+        name: post.title,
+        text: post.summary,
+        answerCount: comments.length,
+        dateCreated: post.createdAt,
+        author: {
+          "@type": "Person",
+          name: post.authorName,
+        },
+        acceptedAnswer: comments[0]
+          ? {
+              "@type": "Answer",
+              text: comments[0].body,
+              dateCreated: comments[0].createdAt,
+              author: {
+                "@type": "Person",
+                name: comments[0].authorName,
+              },
+            }
+          : undefined,
+      }
+    : null;
+  const primaryNode = isQuestion
+    ? {
+        "@type": "QAPage",
+        "@id": `${canonicalUrl}#webpage`,
+        name: post.title,
+        description: post.summary,
+        url: canonicalUrl,
+        inLanguage: "ko-KR",
+        mainEntity,
+      }
+    : {
+        "@type": post.source === "user" ? "DiscussionForumPosting" : "Article",
+        "@id": `${canonicalUrl}#article`,
+        headline: post.title,
+        name: post.title,
+        description: post.summary,
+        url: canonicalUrl,
+        inLanguage: "ko-KR",
+        datePublished: post.createdAt,
+        dateModified: post.updatedAt,
+        keywords: post.tags.join(", "),
+        author: {
+          "@type": post.source === "seed" ? "Organization" : "Person",
+          name: post.authorName,
+        },
+        publisher: {
+          "@id": `${PUBLIC_SITE_URL}/#organization`,
+        },
+        mainEntityOfPage: canonicalUrl,
+      };
+
+  const graph = [
+    buildOrganizationNode(),
+    primaryNode,
+    {
+      "@type": "BreadcrumbList",
+      "@id": `${canonicalUrl}#breadcrumb`,
+      itemListElement: [
+        {
+          "@type": "ListItem",
+          position: 1,
+          name: "로켓그로스 계산기",
+          item: `${PUBLIC_SITE_URL}/`,
+        },
+        {
+          "@type": "ListItem",
+          position: 2,
+          name: "셀러 꿀팁 커뮤니티",
+          item: `${PUBLIC_SITE_URL}/community`,
+        },
+        {
+          "@type": "ListItem",
+          position: 3,
+          name: category.label,
+          item: `${PUBLIC_SITE_URL}/community/${category.slug}`,
+        },
+        {
+          "@type": "ListItem",
+          position: 4,
+          name: post.title,
+          item: canonicalUrl,
+        },
+      ],
+    },
+  ];
+
+  if (post.faq.length) {
+    graph.push({
+      "@type": "FAQPage",
+      "@id": `${canonicalUrl}#faq`,
+      inLanguage: "ko-KR",
+      mainEntity: post.faq.map((item) => ({
+        "@type": "Question",
+        name: item.question,
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: item.answer,
+        },
+      })),
+    });
+  }
+
+  return {
+    "@context": "https://schema.org",
+    "@graph": graph,
+  };
+}
+
 function buildOrganizationNode() {
   return {
     "@type": "Organization",
@@ -579,10 +1336,10 @@ function buildOrganizationNode() {
 function getCalculatorHref(slug) {
   const routes = {
     "rocket-growth-calculator": "/",
-    "margin-price-calculator": "/?category=margin",
-    "china-purchase-cost": "/?category=china-purchase",
-    "ad-break-even-roas": "/?category=ad-break-even",
-    "cash-flow-calculator": "/?category=cash-flow",
+    "margin-price-calculator": "/community/cases",
+    "china-purchase-cost": "/community/logistics",
+    "ad-break-even-roas": "/community/tips",
+    "cash-flow-calculator": "/community/resources",
     "lcl-logistics-cost": "china-korea",
     "import-vat-customs": "china-korea",
     "coupang-pallet-cost": "korea-coupang",
@@ -621,8 +1378,21 @@ function renderRobotsTxt() {
 
 function renderSitemapXml() {
   const today = new Date().toISOString().slice(0, 10);
+  const communityCategories = Object.values(COMMUNITY_CATEGORIES).map((category) => ({
+    loc: `${PUBLIC_SITE_URL}/community/${category.slug}`,
+    priority: category.slug === "tips" || category.slug === "qna" ? "0.9" : "0.8",
+    changefreq: "weekly",
+  }));
+  const communityPosts = getCommunityPosts({ limit: 100 }).map((post) => ({
+    loc: `${PUBLIC_SITE_URL}/community/${post.slug}`,
+    priority: post.isFeatured ? "0.8" : "0.7",
+    changefreq: "weekly",
+  }));
   const urls = [
     { loc: `${PUBLIC_SITE_URL}/`, priority: "1.0", changefreq: "weekly" },
+    { loc: `${PUBLIC_SITE_URL}/community`, priority: "0.9", changefreq: "weekly" },
+    ...communityCategories,
+    ...communityPosts,
     { loc: `${PUBLIC_SITE_URL}/guides`, priority: "0.8", changefreq: "monthly" },
     ...SEO_GUIDES.map((guide) => ({
       loc: `${PUBLIC_SITE_URL}/guides/${guide.slug}`,
@@ -653,6 +1423,11 @@ function renderLlmsTxt() {
     `  - 주요 키워드: ${guide.keyword}`,
     `  - 요약: ${guide.summary}`,
   ].join("\n")).join("\n");
+  const communityList = getCommunityPosts({ limit: 30 }).map((post) => [
+    `- ${post.title}: ${PUBLIC_SITE_URL}/community/${post.slug}`,
+    `  - 분류: ${(COMMUNITY_CATEGORIES[post.category] || COMMUNITY_CATEGORIES.tips).label}`,
+    `  - 요약: ${post.summary}`,
+  ].join("\n")).join("\n");
 
   return [
     "# 로켓그로스 계산기",
@@ -677,6 +1452,12 @@ function renderLlmsTxt() {
     "## 주요 문서",
     `- 지식 허브: ${PUBLIC_SITE_URL}/guides`,
     guideList,
+    "",
+    "## 셀러 꿀팁 커뮤니티",
+    `- 커뮤니티 홈: ${PUBLIC_SITE_URL}/community`,
+    `- 질문답변: ${PUBLIC_SITE_URL}/community/qna`,
+    `- 자료실: ${PUBLIC_SITE_URL}/community/resources`,
+    communityList,
     "",
     "## 대표 질문",
     "- 로켓그로스 계산기는 어떤 비용을 계산하나요?",
@@ -873,10 +1654,60 @@ function initializeDatabase() {
 
     CREATE INDEX IF NOT EXISTS sessions_user_id_idx ON sessions (user_id);
     CREATE INDEX IF NOT EXISTS products_user_updated_idx ON products (user_id, updated_at);
+
+    CREATE TABLE IF NOT EXISTS community_posts (
+      id TEXT PRIMARY KEY,
+      slug TEXT NOT NULL UNIQUE,
+      category TEXT NOT NULL,
+      title TEXT NOT NULL,
+      summary TEXT NOT NULL,
+      body_json TEXT NOT NULL,
+      tags_json TEXT DEFAULT '[]',
+      author_user_id INTEGER,
+      author_name TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'published',
+      is_featured INTEGER NOT NULL DEFAULT 0,
+      is_notice INTEGER NOT NULL DEFAULT 0,
+      views INTEGER NOT NULL DEFAULT 0,
+      likes_count INTEGER NOT NULL DEFAULT 0,
+      bookmarks_count INTEGER NOT NULL DEFAULT 0,
+      comments_count INTEGER NOT NULL DEFAULT 0,
+      source TEXT NOT NULL DEFAULT 'user',
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      FOREIGN KEY (author_user_id) REFERENCES users(id) ON DELETE SET NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS community_comments (
+      id TEXT PRIMARY KEY,
+      post_id TEXT NOT NULL,
+      user_id INTEGER NOT NULL,
+      author_name TEXT NOT NULL,
+      body TEXT NOT NULL,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      FOREIGN KEY (post_id) REFERENCES community_posts(id) ON DELETE CASCADE,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    );
+
+    CREATE TABLE IF NOT EXISTS community_reactions (
+      post_id TEXT NOT NULL,
+      user_id INTEGER NOT NULL,
+      type TEXT NOT NULL,
+      created_at TEXT NOT NULL,
+      PRIMARY KEY (post_id, user_id, type),
+      FOREIGN KEY (post_id) REFERENCES community_posts(id) ON DELETE CASCADE,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    );
+
+    CREATE INDEX IF NOT EXISTS community_posts_category_updated_idx ON community_posts (category, updated_at);
+    CREATE INDEX IF NOT EXISTS community_posts_status_updated_idx ON community_posts (status, updated_at);
+    CREATE INDEX IF NOT EXISTS community_comments_post_created_idx ON community_comments (post_id, created_at);
   `);
 
   migrateProductMetadataColumns();
   migrateProductNameKeys();
+  seedCommunityPosts();
 }
 
 function migrateProductMetadataColumns() {
@@ -1020,6 +1851,255 @@ function productFromRow(row) {
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
+}
+
+function seedCommunityPosts() {
+  const now = new Date().toISOString();
+  const insert = db.prepare(
+    `INSERT INTO community_posts (
+      id, slug, category, title, summary, body_json, tags_json, author_user_id, author_name,
+      status, is_featured, is_notice, views, likes_count, bookmarks_count, comments_count, source, created_at, updated_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, NULL, ?, 'published', ?, ?, ?, 0, 0, 0, 'seed', ?, ?)`,
+  );
+  const update = db.prepare(
+    `UPDATE community_posts
+     SET category = ?, title = ?, summary = ?, body_json = ?, tags_json = ?, author_name = ?,
+         is_featured = ?, is_notice = ?, source = 'seed', updated_at = ?
+     WHERE slug = ? AND source = 'seed'`,
+  );
+
+  SEED_COMMUNITY_POSTS.forEach((post, index) => {
+    const existing = db.prepare("SELECT id FROM community_posts WHERE slug = ?").get(post.slug);
+    const createdAt = new Date(Date.now() - (SEED_COMMUNITY_POSTS.length - index) * 3600 * 1000).toISOString();
+    const values = [
+      post.category,
+      post.title,
+      post.summary,
+      JSON.stringify(post.sections || []),
+      JSON.stringify(post.tags || []),
+      post.authorName || "브랜드코어",
+      post.isFeatured ? 1 : 0,
+      post.isNotice ? 1 : 0,
+      now,
+    ];
+
+    if (existing) {
+      update.run(...values, post.slug);
+      return;
+    }
+
+    insert.run(
+      `seed-${post.slug}`,
+      post.slug,
+      post.category,
+      post.title,
+      post.summary,
+      JSON.stringify(post.sections || []),
+      JSON.stringify(post.tags || []),
+      post.authorName || "브랜드코어",
+      post.isFeatured ? 1 : 0,
+      post.isNotice ? 1 : 0,
+      Math.max(12, 120 - index * 4),
+      createdAt,
+      now,
+    );
+  });
+}
+
+function communityPostFromRow(row) {
+  if (!row) {
+    return null;
+  }
+
+  return {
+    id: row.id,
+    slug: row.slug,
+    category: row.category,
+    title: row.title,
+    summary: row.summary,
+    sections: normalizePostSections(parseJson(row.body_json, [])),
+    faq: getSeedPostFaq(row.slug),
+    tags: parseJson(row.tags_json, []),
+    authorUserId: row.author_user_id,
+    authorName: row.author_name || "셀러",
+    status: row.status,
+    isFeatured: Boolean(row.is_featured),
+    isNotice: Boolean(row.is_notice),
+    views: Number(row.views || 0),
+    likesCount: Number(row.likes_count || 0),
+    bookmarksCount: Number(row.bookmarks_count || 0),
+    commentsCount: Number(row.comments_count || 0),
+    source: row.source || "user",
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+function normalizePostSections(sections) {
+  if (!Array.isArray(sections) || sections.length === 0) {
+    return [{ heading: "본문", body: ["내용을 준비하고 있습니다."] }];
+  }
+
+  return sections.map((section) => ({
+    heading: String(section.heading || "본문"),
+    body: Array.isArray(section.body) ? section.body.map((item) => String(item)) : [String(section.body || "")],
+  }));
+}
+
+function getSeedPostFaq(slug) {
+  const seedPost = SEED_COMMUNITY_POSTS.find((post) => post.slug === slug);
+  return Array.isArray(seedPost?.faq) ? seedPost.faq : [];
+}
+
+function getCommunityPosts(options = {}) {
+  const category = normalizeCommunityCategory(options.category);
+  const featured = Boolean(options.featured);
+  const limit = Math.max(1, Math.min(Number(options.limit || 20), 100));
+  const where = ["status = 'published'"];
+  const params = [];
+
+  if (category) {
+    where.push("category = ?");
+    params.push(category);
+  }
+
+  if (featured) {
+    where.push("is_featured = 1");
+  }
+
+  params.push(limit);
+  return db
+    .prepare(
+      `SELECT * FROM community_posts
+       WHERE ${where.join(" AND ")}
+       ORDER BY is_notice DESC, is_featured DESC, updated_at DESC
+       LIMIT ?`,
+    )
+    .all(...params)
+    .map(communityPostFromRow);
+}
+
+function getCommunityPostBySlug(slug) {
+  const normalizedSlug = String(slug || "").trim();
+  if (!normalizedSlug) {
+    return null;
+  }
+  return communityPostFromRow(
+    db.prepare("SELECT * FROM community_posts WHERE slug = ? AND status = 'published'").get(normalizedSlug),
+  );
+}
+
+function getCommunityPostById(id) {
+  const postId = String(id || "").trim();
+  if (!postId) {
+    return null;
+  }
+  return communityPostFromRow(db.prepare("SELECT * FROM community_posts WHERE id = ? AND status = 'published'").get(postId));
+}
+
+function getEditableCommunityPost(id, userId) {
+  const row = db.prepare("SELECT * FROM community_posts WHERE id = ? AND author_user_id = ? AND source = 'user'").get(String(id || ""), userId);
+  return communityPostFromRow(row);
+}
+
+function getCommunityComments(postId) {
+  return db
+    .prepare("SELECT * FROM community_comments WHERE post_id = ? ORDER BY created_at ASC")
+    .all(postId)
+    .map(communityCommentFromRow);
+}
+
+function getCommunityCommentById(id) {
+  return communityCommentFromRow(db.prepare("SELECT * FROM community_comments WHERE id = ?").get(id));
+}
+
+function communityCommentFromRow(row) {
+  if (!row) {
+    return null;
+  }
+  return {
+    id: row.id,
+    postId: row.post_id,
+    userId: row.user_id,
+    authorName: row.author_name,
+    body: row.body,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+function updateCommunityCommentCount(postId) {
+  const count = db.prepare("SELECT COUNT(*) AS count FROM community_comments WHERE post_id = ?").get(postId)?.count || 0;
+  db.prepare("UPDATE community_posts SET comments_count = ?, updated_at = ? WHERE id = ?").run(count, new Date().toISOString(), postId);
+}
+
+function updateCommunityReactionCounts(postId) {
+  const likes = db.prepare("SELECT COUNT(*) AS count FROM community_reactions WHERE post_id = ? AND type = 'like'").get(postId)?.count || 0;
+  const bookmarks = db.prepare("SELECT COUNT(*) AS count FROM community_reactions WHERE post_id = ? AND type = 'bookmark'").get(postId)?.count || 0;
+  db.prepare("UPDATE community_posts SET likes_count = ?, bookmarks_count = ?, updated_at = ? WHERE id = ?").run(
+    likes,
+    bookmarks,
+    new Date().toISOString(),
+    postId,
+  );
+}
+
+function incrementCommunityViews(postId) {
+  db.prepare("UPDATE community_posts SET views = views + 1 WHERE id = ?").run(postId);
+}
+
+function normalizeCommunityCategory(category) {
+  const value = String(category || "").trim();
+  return COMMUNITY_CATEGORIES[value] ? value : "";
+}
+
+function normalizeText(value, maxLength) {
+  return String(value || "")
+    .replace(/\r/g, "")
+    .trim()
+    .slice(0, maxLength);
+}
+
+function normalizeTags(value) {
+  const source = Array.isArray(value) ? value : String(value || "").split(",");
+  const allowed = new Set(["로켓그로스", "중국사입", "LCL", "쿠팡수수료", "파레트", "광고", "세금", "초보셀러"]);
+  return [...new Set(source.map((tag) => String(tag).trim()).filter((tag) => tag && allowed.has(tag)).slice(0, 8))];
+}
+
+function createUniqueCommunitySlug(title) {
+  const baseSlug = slugify(title) || `post-${Date.now()}`;
+  let slug = baseSlug;
+  let suffix = 2;
+  while (db.prepare("SELECT id FROM community_posts WHERE slug = ?").get(slug)) {
+    slug = `${baseSlug}-${suffix}`;
+    suffix += 1;
+  }
+  return slug;
+}
+
+function slugify(value) {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}]+/gu, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 80);
+}
+
+function getDisplayUserName(user) {
+  return user?.nickname || "카카오 셀러";
+}
+
+function formatInteger(value) {
+  return new Intl.NumberFormat("ko-KR").format(Number(value || 0));
+}
+
+function formatDate(value) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+  return new Intl.DateTimeFormat("ko-KR", { year: "numeric", month: "short", day: "numeric" }).format(date);
 }
 
 function parseJson(value, fallback) {

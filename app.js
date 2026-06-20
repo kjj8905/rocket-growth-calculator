@@ -1654,6 +1654,7 @@ const overviewSection = document.querySelector(".overview-section");
 const seoSection = document.querySelector(".seo-content-section");
 const homeGuideStrip = document.querySelector(".home-guide-strip");
 const homeQuickCalculator = document.querySelector("#quick-home-calculator");
+const homeCommunitySection = document.querySelector("#home-community-section");
 const homeSeoExplainSection = document.querySelector(".home-seo-explain-section");
 const workspace = document.querySelector(".workspace");
 const sessionBar = document.querySelector(".session-bar");
@@ -1785,6 +1786,8 @@ const stageSummaries = {
   cashFlowCalculator: "월말 현금 잔액과 다음 발주 가능금액을 확인합니다.",
 };
 const categoryButtons = document.querySelectorAll("[data-category]");
+let hasTrackedCalculatorInputStart = false;
+let hasTrackedQuickInputStart = false;
 const comingSoonCopy = {
   margin: {
     title: "마진율 계산기가 곧 제공됩니다.",
@@ -1803,6 +1806,12 @@ const comingSoonCopy = {
     description: "사입금, 입고비, 판매 회수 시점을 나누어 자금 흐름을 볼 수 있도록 서비스 확장 목록에 반영되어 있습니다.",
   },
 };
+
+function trackEvent(name, params = {}) {
+  if (typeof window.gtag === "function") {
+    window.gtag("event", name, params);
+  }
+}
 
 let currentCalculator = "china";
 let currentProductId = null;
@@ -4044,6 +4053,9 @@ function showComingSoon(category, options = {}) {
   bannerGrid.hidden = true;
   homeGuideStrip.hidden = true;
   homeQuickCalculator.hidden = true;
+  if (homeCommunitySection) {
+    homeCommunitySection.hidden = true;
+  }
   homeSeoExplainSection.hidden = true;
   overviewSection.hidden = true;
   seoSection.hidden = true;
@@ -4066,6 +4078,10 @@ function renderCalculator(id, options = {}) {
   const isStandalone = Boolean(standaloneCategory);
 
   currentCalculator = calculators[id] ? id : "china";
+  trackEvent("calculator_step_change", { calculator_step: currentCalculator });
+  if (currentCalculator === "final") {
+    trackEvent("calculator_final_view", { calculator_step: currentCalculator });
+  }
   setActiveCategory(isStandalone ? standaloneCategory : "rocket-growth");
   activeTitle.textContent = calculator.title;
   formTitle.textContent = calculator.formTitle;
@@ -4095,6 +4111,9 @@ function renderCalculator(id, options = {}) {
   bannerGrid.hidden = true;
   homeGuideStrip.hidden = true;
   homeQuickCalculator.hidden = true;
+  if (homeCommunitySection) {
+    homeCommunitySection.hidden = true;
+  }
   homeSeoExplainSection.hidden = true;
   overviewSection.hidden = true;
   seoSection.hidden = true;
@@ -4116,6 +4135,9 @@ function showSavedPage(options = {}) {
   bannerGrid.hidden = true;
   homeGuideStrip.hidden = true;
   homeQuickCalculator.hidden = true;
+  if (homeCommunitySection) {
+    homeCommunitySection.hidden = true;
+  }
   homeSeoExplainSection.hidden = true;
   overviewSection.hidden = true;
   seoSection.hidden = true;
@@ -5168,15 +5190,7 @@ categoryButtons.forEach((button) => {
       return;
     }
 
-    const calculatorId = standaloneCalculatorByCategory[category];
-    if (calculatorId) {
-      const canonicalCategory = category === "agency-margin" ? "ad-break-even" : category;
-      renderCalculator(calculatorId);
-      window.history.replaceState(null, "", `?category=${canonicalCategory}`);
-      return;
-    }
-
-    showComingSoon(category);
+    window.location.href = "/community";
   });
 });
 
@@ -5315,6 +5329,11 @@ function handleStageFieldUpdate(event) {
   const fieldKey = event.target.dataset.field;
   if (!fieldKey || currentCalculator === "final") {
     return;
+  }
+
+  if (!hasTrackedCalculatorInputStart) {
+    hasTrackedCalculatorInputStart = true;
+    trackEvent("calculator_input_start", { source: "detail", calculator_step: currentCalculator });
   }
 
   const field = fieldLookup[currentCalculator]?.[fieldKey];
@@ -5466,14 +5485,17 @@ productNameInput.addEventListener("input", () => {
 });
 
 saveProductButton?.addEventListener("click", async () => {
+  trackEvent("save_click", { source: "session_bar", calculator_step: currentCalculator });
   await handleSaveButtonClick();
 });
 
 footerSaveButton?.addEventListener("click", async () => {
+  trackEvent("save_click", { source: "live_result", calculator_step: currentCalculator });
   await handleSaveButtonClick();
 });
 
 finalSaveButton?.addEventListener("click", async () => {
+  trackEvent("save_click", { source: "final_summary", calculator_step: currentCalculator });
   await handleSaveButtonClick();
 });
 
@@ -5506,6 +5528,13 @@ document.addEventListener("keydown", (event) => {
 
   if (event.key === "Escape" && activeSaveModal) {
     closeSaveModal();
+  }
+});
+
+document.addEventListener("click", (event) => {
+  const guideLink = event.target.closest('a[href^="/guides"]');
+  if (guideLink) {
+    trackEvent("guide_click", { link_url: guideLink.getAttribute("href") || "" });
   }
 });
 
@@ -5668,7 +5697,13 @@ finalMarginActions?.addEventListener("click", (event) => {
 });
 
 quickHomeInputs.forEach((input) => {
-  input.addEventListener("input", updateQuickHomeCalculator);
+  input.addEventListener("input", () => {
+    if (!hasTrackedQuickInputStart) {
+      hasTrackedQuickInputStart = true;
+      trackEvent("calculator_input_start", { source: "quick_home" });
+    }
+    updateQuickHomeCalculator();
+  });
 });
 
 quickHomeDetailButton?.addEventListener("click", () => {
@@ -5690,6 +5725,9 @@ function showHome(scrollTarget = bannerGrid) {
   bannerGrid.hidden = false;
   homeGuideStrip.hidden = false;
   homeQuickCalculator.hidden = false;
+  if (homeCommunitySection) {
+    homeCommunitySection.hidden = false;
+  }
   homeSeoExplainSection.hidden = false;
   overviewSection.hidden = true;
   seoSection.hidden = true;
@@ -5719,14 +5757,11 @@ async function initializeApp() {
   } else if (initialView === "saved" || window.location.pathname === "/saved") {
     showSavedPage({ scroll: false });
   } else if (initialCategory && standaloneCalculatorByCategory[initialCategory]) {
-    const calculatorId = standaloneCalculatorByCategory[initialCategory];
-    const canonicalCategory = initialCategory === "agency-margin" ? "ad-break-even" : initialCategory;
-    renderCalculator(calculatorId, { scroll: false });
-    if (initialCategory !== canonicalCategory) {
-      window.history.replaceState(null, "", `?category=${canonicalCategory}`);
-    }
+    window.location.replace("/community");
+    return;
   } else if (initialCategory && initialCategory !== "rocket-growth" && comingSoonCopy[initialCategory]) {
-    showComingSoon(initialCategory, { scroll: false });
+    window.location.replace("/community");
+    return;
   } else if (initialCalculator && calculators[initialCalculator]) {
     renderCalculator(initialCalculator, { scroll: false });
   }
