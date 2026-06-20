@@ -2130,6 +2130,47 @@ body.wc-save-lock {
   bottom: 14px;
 }
 
+.home-accuracy-points {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.home-accuracy-points article {
+  min-width: 0;
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  border: 1px solid var(--grey-200);
+  border-radius: var(--radius-12);
+  background: var(--grey-50);
+}
+
+.home-accuracy-points span {
+  width: fit-content;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: var(--blue-50);
+  color: var(--blue-600);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 18px;
+}
+
+.home-accuracy-points strong {
+  color: var(--grey-900);
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 24px;
+}
+
+.home-accuracy-points p {
+  margin: 0;
+  color: var(--grey-600);
+  font-size: 13px;
+  line-height: 21px;
+}
+
 .quick-home-results {
   min-width: 0;
   display: flex;
@@ -2140,6 +2181,39 @@ body.wc-save-lock {
   border-radius: var(--radius-16);
   background: var(--grey-50);
   box-shadow: inset 0 0 0 1px rgba(2, 32, 71, 0.04);
+}
+
+.home-detail-start {
+  justify-content: flex-start;
+}
+
+.home-detail-start h3 {
+  margin: 0;
+  color: var(--grey-900);
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 32px;
+}
+
+.home-detail-start ol {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.home-detail-start li {
+  display: flex;
+  align-items: center;
+  min-height: 38px;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-12);
+  background: var(--white);
+  color: var(--grey-800);
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 20px;
 }
 
 .quick-home-result-head {
@@ -6621,6 +6695,10 @@ em {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .home-accuracy-points {
+    grid-template-columns: 1fr;
+  }
+
   .home-community-head {
     display: grid;
   }
@@ -6812,6 +6890,7 @@ em {
   .category-explain-grid,
   .seo-content-section,
   .quick-home-inputs,
+  .home-accuracy-points,
   .quick-home-result-grid,
   .login-controls,
   .product-controls,

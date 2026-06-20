@@ -161,7 +161,7 @@
             "name": "정확한 계산은 어디서 하나요?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "상단 간편 계산으로 마진 감각을 먼저 보고, 5단계 상세 계산에서 사입, 물류, 입고, 쿠팡 비용을 나눠 입력하면 됩니다."
+              "text": "5단계 상세 계산에서 중국사입, 중국에서 한국까지의 물류비, 한국에서 쿠팡까지의 입고비, 쿠팡 판매 비용, 최종 마진을 순서대로 입력하면 됩니다."
             }
           }
         ]
@@ -213,79 +213,39 @@
       <section class="quick-home-calculator" id="quick-home-calculator" aria-labelledby="quick-home-title">
         <article class="quick-home-card">
           <div class="quick-home-copy">
-            <p class="eyebrow">간편 계산</p>
-            <h2 id="quick-home-title">판매 전 마진부터 빠르게 확인하세요.</h2>
+            <p class="eyebrow">계산 기준</p>
+            <h2 id="quick-home-title">비용을 한 번에 뭉치지 않고 단계별로 나눠 계산합니다.</h2>
             <p>
-              1개당 판매가와 원가, 수량, 쿠팡 수수료만 넣으면 예상마진을 먼저 볼 수 있습니다.
-              물류비와 입고비를 나눠 보고 싶다면 아래 5단계 상세 계산으로 이어가면 됩니다.
+              로켓그로스 판매 전 놓치기 쉬운 사입, 물류, 입고, 쿠팡 비용을 같은 흐름으로 연결합니다.
             </p>
-            <div class="quick-home-inputs" aria-label="로켓그로스 간편 계산 입력">
-              <label>
-                <span>1개당 판매가</span>
-                <input data-quick-field="salePriceKrw" type="text" inputmode="numeric" value="0" />
-                <em>원</em>
-              </label>
-              <label>
-                <span>1개당 상품원가</span>
-                <input data-quick-field="unitProductCostKrw" type="text" inputmode="numeric" value="0" />
-                <em>원</em>
-              </label>
-              <label>
-                <span>판매 수량</span>
-                <input data-quick-field="quantity" type="text" inputmode="numeric" value="0" />
-                <em>개</em>
-              </label>
-              <label>
-                <span>쿠팡 수수료율</span>
-                <input data-quick-field="coupangFeeRate" type="text" inputmode="decimal" value="0" />
-                <em>%</em>
-              </label>
-              <label>
-                <span>물류·입고비 총액</span>
-                <input data-quick-field="logisticsInboundTotalKrw" type="text" inputmode="numeric" value="0" />
-                <em>원</em>
-              </label>
-              <label>
-                <span>총 광고비</span>
-                <input data-quick-field="adCostTotalKrw" type="text" inputmode="numeric" value="0" />
-                <em>원</em>
-              </label>
+            <div class="home-accuracy-points" aria-label="로켓그로스 계산 정확도 기준">
+              <article>
+                <span>01</span>
+                <strong>사입 원가</strong>
+                <p>위안화 단가, 수량, 환율을 먼저 원화 기준으로 맞춥니다.</p>
+              </article>
+              <article>
+                <span>02</span>
+                <strong>물류·입고비</strong>
+                <p>CBM, 중량, 통관, 파레트 비용을 구간별로 더합니다.</p>
+              </article>
+              <article>
+                <span>03</span>
+                <strong>판매 후 비용</strong>
+                <p>쿠팡 수수료와 최종 판매가를 연결해 마진을 봅니다.</p>
+              </article>
             </div>
           </div>
-          <aside class="quick-home-results" aria-label="간편 계산 결과">
-            <div class="quick-home-result-head">
-              <p class="eyebrow">예상 결과</p>
-              <span data-quick-status>판매 전 예상치</span>
-            </div>
-            <div class="wc-result-hero" data-quick-hero>
-              <div class="wc-result-hero-head">
-                <span>총 예상마진</span>
-                <b data-quick-result="marginRate">0%</b>
-              </div>
-              <strong data-quick-result="totalMargin">0원</strong>
-              <div class="wc-margin-progress" aria-hidden="true">
-                <i data-quick-margin-progress></i>
-              </div>
-              <p class="wc-margin-message" data-quick-margin-message>값을 입력하면 마진 상태를 보여드립니다.</p>
-            </div>
-            <div class="quick-home-result-grid">
-              <div>
-                <span>1개당 상품원가</span>
-                <strong data-quick-result="unitCost">0원</strong>
-              </div>
-              <div>
-                <span>1개당 예상마진</span>
-                <strong data-quick-result="unitMargin">0원</strong>
-              </div>
-              <div>
-                <span>최종 예상 총비용</span>
-                <strong data-quick-result="totalCost">0원</strong>
-              </div>
-              <div class="quick-home-roas-row">
-                <span>최소 ROAS</span>
-                <strong data-quick-result="minimumRoas">0%</strong>
-              </div>
-            </div>
+          <aside class="quick-home-results home-detail-start" aria-label="5단계 상세 계산 시작">
+            <p class="eyebrow">상세 계산</p>
+            <h3>5단계로 입력하면 최종 원가와 예상마진까지 이어집니다.</h3>
+            <ol>
+              <li>중국사입</li>
+              <li>중국→한국</li>
+              <li>한국→쿠팡</li>
+              <li>쿠팡 소모 비용</li>
+              <li>최종 비용</li>
+            </ol>
             <button class="quick-home-detail-button" type="button" data-quick-detail-start>
               5단계 상세 계산하기
             </button>
@@ -487,7 +447,7 @@
           </details>
           <details>
             <summary>정확한 계산은 어디서 하나요?</summary>
-            <p>상단 간편 계산으로 마진 감각을 먼저 보고, 5단계 상세 계산에서 사입·물류·입고·쿠팡 비용을 나눠 입력하면 됩니다.</p>
+            <p>5단계 상세 계산에서 사입·물류·입고·쿠팡 비용을 나눠 입력하면 최종 원가와 예상마진까지 이어집니다.</p>
           </details>
         </article>
       </section>
