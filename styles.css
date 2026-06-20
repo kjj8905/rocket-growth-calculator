@@ -2067,10 +2067,10 @@ body.wc-save-lock {
 .quick-home-card {
   min-width: 0;
   display: grid;
-  grid-template-columns: minmax(0, 1.12fr) minmax(320px, 0.88fr);
-  gap: var(--space-6);
-  align-items: stretch;
-  padding: var(--space-6);
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+  align-items: start;
+  padding: var(--space-5);
   border: 1px solid rgba(2, 32, 71, 0.04);
   border-radius: var(--radius-16);
   background: var(--white);
@@ -2089,7 +2089,7 @@ body.wc-save-lock {
 
 .quick-home-copy p {
   max-width: 760px;
-  margin-bottom: var(--space-5);
+  margin-bottom: var(--space-4);
   color: var(--grey-600);
   font-size: 15px;
   line-height: 24px;
@@ -2169,6 +2169,12 @@ body.wc-save-lock {
   color: var(--grey-600);
   font-size: 13px;
   line-height: 21px;
+}
+
+.home-detail-cta-row {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: var(--space-4);
 }
 
 .quick-home-results {
@@ -2279,6 +2285,8 @@ body.wc-save-lock {
 
 .quick-home-detail-button {
   min-height: 52px;
+  min-width: 220px;
+  padding: 0 var(--space-5);
   border: 0;
   border-radius: var(--radius-12);
   background: var(--blue-500);
