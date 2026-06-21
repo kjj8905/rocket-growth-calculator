@@ -8635,3 +8635,600 @@ em {
     width: 100%;
   }
 }
+
+/* MVP design-system variants. These routes are internal design candidates, so
+   each version intentionally uses a distinct visual language while sharing the
+   same calculator engine. */
+.mvp-shell[data-mvp-theme] {
+  --mvp-ink: #111827;
+  --mvp-muted: #536174;
+  --mvp-line: #d8dee8;
+  --mvp-surface: #ffffff;
+  --mvp-soft: #f8fafc;
+  --mvp-accent: #2f80ed;
+  --mvp-accent-ink: #ffffff;
+  width: min(1240px, calc(100% - 32px));
+  border-radius: 0;
+}
+
+.mvp-shell[data-mvp-theme] .mvp-top,
+.mvp-shell[data-mvp-theme] .mvp-board-side,
+.mvp-shell[data-mvp-theme] .mvp-board-main,
+.mvp-shell[data-mvp-theme] .mvp-finance-layout,
+.mvp-shell[data-mvp-theme] .mvp-workspace-layout,
+.mvp-shell[data-mvp-theme] .mvp-phone-frame,
+.mvp-shell[data-mvp-theme] .mvp-output-card,
+.mvp-shell[data-mvp-theme] .mvp-trend-strip {
+  border-color: var(--mvp-line);
+  background: var(--mvp-surface);
+  color: var(--mvp-ink);
+}
+
+.mvp-shell[data-mvp-theme] .mvp-top nav a.is-active,
+.mvp-shell[data-mvp-theme] .mvp-board-side a.is-active,
+.mvp-shell[data-mvp-theme] .mvp-workspace-nav button.is-active {
+  background: var(--mvp-accent);
+  color: var(--mvp-accent-ink);
+}
+
+.mvp-shell[data-mvp-theme] .mvp-board-head button,
+.mvp-shell[data-mvp-theme] .mvp-action-row button,
+.mvp-shell[data-mvp-theme] .mvp-phone-frame button,
+.mvp-shell[data-mvp-theme] .mvp-finance-report a,
+.mvp-shell[data-mvp-theme] .mvp-workspace-result a {
+  background: var(--mvp-accent);
+  color: var(--mvp-accent-ink);
+}
+
+.mvp-shell[data-mvp-theme] .mvp-input-field {
+  color: var(--mvp-muted);
+}
+
+.mvp-shell[data-mvp-theme] .mvp-input-field > div,
+.mvp-shell[data-mvp-theme] .mvp-search-field input {
+  border-color: var(--mvp-line);
+  background: var(--mvp-surface);
+  color: var(--mvp-ink);
+}
+
+.mvp-shell[data-mvp-theme] .mvp-input-field input {
+  color: var(--mvp-ink);
+}
+
+.mvp-shell[data-mvp-theme] .mvp-input-field input:focus,
+.mvp-shell[data-mvp-theme] .mvp-search-field input:focus {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--mvp-accent), transparent 78%);
+  border-color: var(--mvp-accent);
+}
+
+.mvp-v2 {
+  --mvp-ink: #1a1a1a;
+  --mvp-muted: #5d5b54;
+  --mvp-line: #e5e3df;
+  --mvp-surface: #fffdfa;
+  --mvp-soft: #f6f5f4;
+  --mvp-accent: #5645d4;
+  --mvp-accent-ink: #ffffff;
+  padding: 20px;
+  border: 1px solid #ede9e4;
+  border-radius: 22px;
+  background: #fafaf9;
+  font-family: "Notion Sans", Inter, "Segoe UI", system-ui, sans-serif;
+}
+
+.mvp-v2 .mvp-top {
+  border-radius: 16px;
+  background: #ffffff;
+}
+
+.mvp-v2 .mvp-top > a {
+  font-weight: 850;
+}
+
+.mvp-v2 .mvp-forum-layout {
+  grid-template-columns: 240px minmax(0, 1fr);
+}
+
+.mvp-v2 .mvp-board-side {
+  border-radius: 18px;
+  background: #0a1530;
+  color: #ffffff;
+}
+
+.mvp-v2 .mvp-board-side a {
+  color: #d7dce7;
+}
+
+.mvp-v2 .mvp-board-side a.is-active {
+  background: #ffffff !important;
+  color: #0a1530 !important;
+}
+
+.mvp-v2 .mvp-top nav a.is-active,
+.mvp-v2 .mvp-board-head button {
+  background: #5645d4 !important;
+  color: #ffffff !important;
+}
+
+.mvp-v2 .mvp-board-head {
+  background:
+    linear-gradient(90deg, #fffdfa 0%, #fffdfa 68%, #e6e0f5 68%, #e6e0f5 100%);
+}
+
+.mvp-v2 .mvp-board-head span,
+.mvp-v2 .mvp-trend-strip span,
+.mvp-v2 .mvp-output-card span {
+  color: #5645d4;
+}
+
+.mvp-v2 .mvp-board-head h1 {
+  font-size: 28px;
+  line-height: 38px;
+  font-weight: 650;
+}
+
+.mvp-v2 .mvp-board-calculator {
+  background: #f6f5f4;
+}
+
+.mvp-v2 .mvp-output-card.is-primary {
+  border-color: #d6b6f6;
+  background: #e6e0f5;
+}
+
+.mvp-v2 .mvp-board-tools button,
+.mvp-v2 .mvp-board-tools > div > span {
+  background: #f0eeec;
+  color: #37352f;
+}
+
+.mvp-v2 .mvp-board-table article {
+  grid-template-columns: 92px minmax(0, 1fr) 210px;
+  border-bottom-color: #ede9e4;
+  background: #fffdfa;
+}
+
+.mvp-v2 .mvp-board-table article:nth-child(2n) {
+  background: #fafaf9;
+}
+
+.mvp-v2 .mvp-trend-strip {
+  background: #101b37 !important;
+  background-color: #101b37 !important;
+  border-color: #1a2a52 !important;
+}
+
+.mvp-v2 .mvp-trend-strip strong,
+.mvp-v2 .mvp-trend-strip button {
+  color: #ffffff;
+}
+
+.mvp-v2 .mvp-trend-strip a,
+.mvp-v2 .mvp-trend-strip span {
+  color: #d6b6f6;
+}
+
+.mvp-v3 {
+  --mvp-ink: #0e0f0c;
+  --mvp-muted: #454745;
+  --mvp-line: #c5d8bb;
+  --mvp-surface: #ffffff;
+  --mvp-soft: #e8ebe6;
+  --mvp-accent: #9fe870;
+  --mvp-accent-ink: #0e0f0c;
+  padding: 24px;
+  border-radius: 26px;
+  background: #e8ebe6;
+  font-family: "Wise Sans", Inter, "Segoe UI", system-ui, sans-serif;
+}
+
+.mvp-v3 .mvp-top {
+  border: 0;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #0e0f0c;
+}
+
+.mvp-v3 .mvp-top nav a {
+  color: #163300;
+}
+
+.mvp-v3 .mvp-top nav a.is-active {
+  border-radius: 999px;
+  background: #9fe870 !important;
+  color: #0e0f0c !important;
+}
+
+.mvp-v3 .mvp-action-row button,
+.mvp-v3 .mvp-finance-report a {
+  background: #9fe870 !important;
+  color: #0e0f0c !important;
+}
+
+.mvp-v3 .mvp-finance-layout {
+  grid-template-columns: minmax(0, 1fr) 400px;
+  gap: 24px;
+  padding: 34px;
+  border: 0;
+  border-radius: 28px;
+  background: #f7fbf1;
+}
+
+.mvp-v3 .mvp-finance-copy h1 {
+  max-width: 720px;
+  font-size: 42px;
+  line-height: 46px;
+  font-weight: 950;
+}
+
+.mvp-v3 .mvp-finance-copy span,
+.mvp-v3 .mvp-output-card span,
+.mvp-v3 .mvp-diagnosis-card span {
+  color: #054d28;
+}
+
+.mvp-v3 .mvp-input-field > div {
+  min-height: 56px;
+  border: 2px solid #c5d8bb;
+  border-radius: 999px;
+}
+
+.mvp-v3 .mvp-input-field input {
+  height: 54px;
+  font-size: 22px;
+  font-weight: 900;
+}
+
+.mvp-v3 .mvp-action-row button + button {
+  background: #ffffff;
+  color: #0e0f0c;
+}
+
+.mvp-v3 .mvp-finance-report {
+  border: 0;
+  border-radius: 30px;
+  background: #163300;
+  color: #ffffff;
+}
+
+.mvp-v3 .mvp-finance-report > span {
+  color: #9fe870;
+}
+
+.mvp-v3 .mvp-finance-report > strong {
+  color: #9fe870;
+  font-size: 54px;
+  line-height: 58px;
+  font-weight: 950;
+}
+
+.mvp-v3 .mvp-finance-report div {
+  border-top-color: rgb(159 232 112 / 28%);
+}
+
+.mvp-v3 .mvp-finance-report p,
+.mvp-v3 .mvp-diagnosis-card p,
+.mvp-v3 .mvp-diagnosis-card li {
+  color: #dcefd2;
+}
+
+.mvp-v3 .mvp-diagnosis-card {
+  border-color: rgb(159 232 112 / 24%);
+  background: rgb(159 232 112 / 12%);
+}
+
+.mvp-v4 {
+  --mvp-ink: #f7f8f8;
+  --mvp-muted: #d0d6e0;
+  --mvp-line: #23252a;
+  --mvp-surface: #0f1011;
+  --mvp-soft: #141516;
+  --mvp-accent: #5e6ad2;
+  --mvp-accent-ink: #ffffff;
+  padding: 18px;
+  border: 1px solid #23252a;
+  border-radius: 20px;
+  background: #010102;
+  color: #f7f8f8;
+  font-family: "Linear Text", "SF Pro Display", Inter, "Segoe UI", system-ui, sans-serif;
+}
+
+.mvp-v4 .mvp-top {
+  border-color: #23252a !important;
+  background: #0f1011 !important;
+  color: #f7f8f8 !important;
+}
+
+.mvp-v4 .mvp-top nav a {
+  color: #d0d6e0;
+}
+
+.mvp-v4 .mvp-top nav a.is-active,
+.mvp-v4 .mvp-action-row button {
+  background: #5e6ad2 !important;
+  color: #ffffff !important;
+}
+
+.mvp-v4 .mvp-workspace-layout {
+  grid-template-columns: 230px minmax(0, 1fr) 320px;
+  border-color: #23252a;
+  background: #0f1011;
+}
+
+.mvp-v4 .mvp-workspace-nav {
+  border-right-color: #23252a;
+  background: #010102;
+}
+
+.mvp-v4 .mvp-workspace-nav strong {
+  color: #f7f8f8;
+}
+
+.mvp-v4 .mvp-workspace-nav a,
+.mvp-v4 .mvp-workspace-nav button {
+  color: #8a8f98;
+}
+
+.mvp-v4 .mvp-workspace-nav button.is-active {
+  background: #1b1d2e;
+  color: #ffffff;
+  box-shadow: inset 0 0 0 1px #5e6ad2;
+}
+
+.mvp-v4 .mvp-workspace-form {
+  background: #0f1011;
+}
+
+.mvp-v4 .mvp-workspace-form h1 {
+  color: #ffffff;
+  font-size: 34px;
+  line-height: 40px;
+  font-weight: 650;
+}
+
+.mvp-v4 .mvp-workspace-form p,
+.mvp-v4 .mvp-workspace-result p {
+  color: #d0d6e0;
+}
+
+.mvp-v4 .mvp-workspace-form span,
+.mvp-v4 .mvp-workspace-result span,
+.mvp-v4 .mvp-output-card span {
+  color: #828fff;
+}
+
+.mvp-v4 .mvp-input-field > div,
+.mvp-v4 .mvp-output-card,
+.mvp-v4 .mvp-diagnosis-card {
+  border-color: #34343a !important;
+  background: #141516 !important;
+  background-color: #141516 !important;
+}
+
+.mvp-v4 .mvp-input-field em {
+  color: #8a8f98;
+}
+
+.mvp-v4 .mvp-input-field input {
+  color: #f7f8f8 !important;
+}
+
+.mvp-v4 .mvp-workspace-result {
+  border-left-color: #23252a;
+  background: #010102;
+}
+
+.mvp-v4 .mvp-workspace-result > strong,
+.mvp-v4 .mvp-output-card strong,
+.mvp-v4 .mvp-output-card [data-mvp-output] {
+  color: #f7f8f8 !important;
+}
+
+.mvp-v4 .mvp-stage-focus {
+  background: #1b1d2e;
+  color: #dfe3ff !important;
+}
+
+.mvp-v4 .mvp-trend-strip {
+  border-color: #23252a !important;
+  background: #0f1011 !important;
+  background-color: #0f1011 !important;
+}
+
+.mvp-v4 .mvp-trend-strip strong,
+.mvp-v4 .mvp-trend-strip button {
+  color: #f7f8f8 !important;
+}
+
+.mvp-v4 .mvp-trend-strip span,
+.mvp-v4 .mvp-trend-strip a {
+  color: #828fff !important;
+}
+
+.mvp-v4 .mvp-diagnosis-card strong {
+  color: #f7f8f8 !important;
+}
+
+.mvp-v4 [data-mvp-output="status"][data-tone="good"] {
+  color: #7ad89a;
+}
+
+.mvp-v5 {
+  --mvp-ink: #222222;
+  --mvp-muted: #6a6a6a;
+  --mvp-line: #dddddd;
+  --mvp-surface: #ffffff;
+  --mvp-soft: #f7f7f7;
+  --mvp-accent: #ff385c;
+  --mvp-accent-ink: #ffffff;
+  padding: 24px;
+  border-radius: 30px;
+  background: #fff7f8;
+  font-family: "Airbnb Cereal VF", Circular, "Segoe UI", system-ui, sans-serif;
+}
+
+.mvp-v5 .mvp-top {
+  border-radius: 999px;
+  background: #ffffff;
+}
+
+.mvp-v5 .mvp-top nav a {
+  color: #6a6a6a;
+}
+
+.mvp-v5 .mvp-top nav a.is-active {
+  border-radius: 999px;
+  background: #ff385c !important;
+  color: #ffffff !important;
+}
+
+.mvp-v5 .mvp-phone-frame button {
+  background: #ff385c !important;
+  color: #ffffff !important;
+}
+
+.mvp-v5 .mvp-wizard-phone {
+  min-height: 720px;
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at top left, rgb(255 56 92 / 20%), transparent 36%),
+    linear-gradient(135deg, #ffffff 0%, #fff1f4 100%);
+}
+
+.mvp-v5 .mvp-phone-frame {
+  width: min(390px, calc(100vw - 48px));
+  gap: 14px;
+  padding: 22px;
+  border: 1px solid #ebebeb;
+  border-radius: 30px;
+  background: #ffffff;
+  box-shadow: 0 18px 36px rgb(34 34 34 / 10%);
+}
+
+.mvp-v5 .mvp-phone-frame header span,
+.mvp-v5 .mvp-phone-more summary,
+.mvp-v5 .mvp-phone-frame aside em,
+.mvp-v5 .mvp-trend-strip span,
+.mvp-v5 .mvp-trend-strip a,
+.mvp-v5 .mvp-output-card span {
+  color: #ff385c;
+}
+
+.mvp-v5 .mvp-phone-frame header strong {
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.mvp-v5 .mvp-phone-progress {
+  height: 10px;
+  background: #f2f2f2;
+}
+
+.mvp-v5 .mvp-phone-progress i {
+  background: #ff385c;
+}
+
+.mvp-v5 .mvp-input-field > div {
+  min-height: 54px;
+  border: 1px solid #c1c1c1;
+  border-radius: 18px;
+}
+
+.mvp-v5 .mvp-input-field input {
+  height: 54px;
+  font-size: 20px;
+  font-weight: 750;
+}
+
+.mvp-v5 .mvp-phone-more {
+  border-color: #ebebeb;
+  border-radius: 20px;
+  background: #f7f7f7;
+}
+
+.mvp-v5 .mvp-phone-frame aside {
+  border-radius: 24px;
+  background: #fff0f3;
+}
+
+.mvp-v5 .mvp-phone-frame aside strong {
+  color: #222222;
+  font-size: 36px;
+}
+
+.mvp-v5 .mvp-output-card {
+  border-color: #ebebeb;
+  border-radius: 18px;
+  background: #ffffff;
+}
+
+.mvp-v5 .mvp-phone-controls button:first-child {
+  background: #f7f7f7 !important;
+  color: #222222 !important;
+}
+
+.mvp-v5 .mvp-trend-strip {
+  border-color: #ebebeb;
+  border-radius: 20px;
+  background: #ffffff;
+}
+
+@media (max-width: 980px) {
+  .mvp-v2 .mvp-forum-layout,
+  .mvp-v3 .mvp-finance-layout,
+  .mvp-v4 .mvp-workspace-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .mvp-v4 .mvp-workspace-nav {
+    border-right: 0;
+    border-bottom: 1px solid #23252a;
+  }
+
+  .mvp-v4 .mvp-workspace-result {
+    border-left: 0;
+    border-top: 1px solid #23252a;
+  }
+
+  .mvp-v3 .mvp-finance-report > strong {
+    font-size: 42px;
+    line-height: 48px;
+  }
+}
+
+@media (max-width: 720px) {
+  .mvp-shell[data-mvp-theme] {
+    width: calc(100% - 20px);
+    padding: 14px;
+  }
+
+  .mvp-shell[data-mvp-theme] .mvp-top {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .mvp-v2 .mvp-board-calculator,
+  .mvp-v2 .mvp-board-tools {
+    grid-template-columns: 1fr;
+  }
+
+  .mvp-v2 .mvp-board-form,
+  .mvp-v3 .mvp-finance-inputs {
+    grid-template-columns: 1fr;
+  }
+
+  .mvp-v2 .mvp-board-table article {
+    grid-template-columns: 1fr;
+  }
+
+  .mvp-v3 .mvp-finance-copy h1,
+  .mvp-v4 .mvp-workspace-form h1 {
+    font-size: 28px;
+    line-height: 36px;
+  }
+
+  .mvp-v5 .mvp-wizard-phone {
+    min-height: 0;
+    padding: 12px 0;
+  }
+}

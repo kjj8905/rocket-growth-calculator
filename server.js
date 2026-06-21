@@ -35,6 +35,15 @@ const SEARCH_TREND_CACHE_TTL_MS = Number(process.env.SEARCH_TREND_CACHE_TTL_MS |
 const GOOGLE_TRENDS_RSS_URL = process.env.GOOGLE_TRENDS_RSS_URL || "https://trends.google.com/trending/rss?geo=KR";
 const NAVER_TREND_API_URL = process.env.NAVER_TREND_API_URL || "";
 const DAUM_TREND_API_URL = process.env.DAUM_TREND_API_URL || "";
+const NAVER_DATALAB_CLIENT_ID = process.env.NAVER_DATALAB_CLIENT_ID || process.env.NAVER_CLIENT_ID || "";
+const NAVER_DATALAB_CLIENT_SECRET = process.env.NAVER_DATALAB_CLIENT_SECRET || process.env.NAVER_CLIENT_SECRET || "";
+const TREND_KEYWORD_GROUPS = [
+  { title: "로켓그로스 비용", keywords: ["로켓그로스 비용", "로켓그로스 계산기", "쿠팡 로켓그로스 비용"], url: "/guides/rocket-growth-calculator" },
+  { title: "쿠팡 수수료", keywords: ["쿠팡 수수료", "쿠팡 판매 수수료", "쿠팡 수수료 계산기"], url: "/guides/coupang-fee" },
+  { title: "중국사입 원가", keywords: ["중국사입 원가", "중국사입 계산기", "1688 사입 원가"], url: "/guides/china-purchase-cost" },
+  { title: "LCL 물류비", keywords: ["LCL 물류비", "CBM 계산", "중국 한국 물류비"], url: "/guides/lcl-logistics-cost" },
+  { title: "쿠팡 파레트", keywords: ["쿠팡 파레트", "쿠팡 입고 비용", "로켓그로스 입고"], url: "/guides/coupang-pallet-cost" },
+];
 let searchTrendCache = {
   expiresAt: 0,
   data: null,
@@ -576,7 +585,7 @@ function renderMvpVariantPage(version) {
     title: `${variant.name} | 로켓그로스 UIUX MVP`,
     description: variant.summary,
     canonicalUrl: `${PUBLIC_SITE_URL}/mvp/${variant.version}`,
-    body: `<main class="mvp-shell ${escapeHtml(variant.className)}">
+    body: `<main class="mvp-shell ${escapeHtml(variant.className)}" data-mvp-theme="${escapeHtml(variant.theme)}">
       <header class="mvp-top">
         <a href="/mvp">MVP 비교</a>
         <nav>
@@ -595,34 +604,38 @@ function getMvpVariants() {
   return [
     {
       version: "2",
-      label: "Forum first",
-      name: "실검·게시판형 워룸",
-      summary: "실시간 검색 흐름, 질문 검색, 비용 사례를 계산과 함께 보는 커뮤니티 중심 구조입니다.",
+      label: "Notion DB",
+      name: "문서·게시판형 셀러룸",
+      summary: "질문, 비용 사례, 검색어 흐름을 문서 데이터베이스처럼 탐색하는 커뮤니티형 구조입니다.",
       className: "mvp-v2",
+      theme: "notion-db",
       render: renderMvpForum,
     },
     {
       version: "3",
-      label: "Finance first",
+      label: "Wise report",
       name: "마진 리포트형 계산기",
-      summary: "예상마진, 위험 신호, 다음 조치가 함께 나오는 리포트 중심 구조입니다.",
+      summary: "예상마진과 위험 신호를 금융 리포트처럼 강하게 보여주는 판매가 판단형 구조입니다.",
       className: "mvp-v3",
+      theme: "wise-report",
       render: renderMvpFinance,
     },
     {
       version: "4",
-      label: "Workspace",
+      label: "Linear ops",
       name: "운영 워크스페이스형",
-      summary: "단계 탭을 누르면 검수 포인트와 입력 초점이 바뀌는 업무 도구형 구조입니다.",
+      summary: "단계 탭, 검수 결과, 검색어 흐름을 다크 운영 도구처럼 묶은 워크스페이스 구조입니다.",
       className: "mvp-v4",
+      theme: "linear-ops",
       render: renderMvpWorkspace,
     },
     {
       version: "5",
-      label: "Mobile wizard",
+      label: "Airbnb flow",
       name: "모바일 단계형 계산기",
-      summary: "휴대폰에서 단계별로 넘기며 입력과 결과를 확인하는 진행형 구조입니다.",
+      summary: "모바일에서 단계별로 넘기며 입력하는 친근한 예약 흐름식 구조입니다.",
       className: "mvp-v5",
+      theme: "airbnb-flow",
       render: renderMvpWizard,
     },
   ];
@@ -650,8 +663,8 @@ function renderMvpTrendStrip() {
   return `<section class="mvp-trend-strip" aria-labelledby="mvp-trend-title">
     <header>
       <div>
-        <span>검색 참고</span>
-        <strong id="mvp-trend-title">검색 흐름</strong>
+        <span>검색어 순위</span>
+        <strong id="mvp-trend-title">셀러 관심 키워드</strong>
       </div>
       <a href="/trends">전체</a>
     </header>
@@ -1519,18 +1532,18 @@ function renderCommunityTagPanel() {
 function renderTrendMiniPanel() {
   return `<section class="community-trend-mini" aria-labelledby="community-trend-mini-title">
     <div>
-      <span>검색 흐름</span>
-      <strong id="community-trend-mini-title">실시간 검색어</strong>
+      <span>검색어 순위</span>
+      <strong id="community-trend-mini-title">셀러 키워드</strong>
     </div>
-    <p>Google은 자동 갱신, 네이버·다음은 제공 경로 연결 후 표시합니다.</p>
+    <p>구글 트렌드와 셀러 주제어를 함께 봅니다.</p>
     <a href="/trends">트렌드 보기</a>
   </section>`;
 }
 
 function renderTrendPage(trends) {
-  const title = "실시간 검색 트렌드 | 로켓그로스 계산기";
+  const title = "셀러 검색어 순위 | 로켓그로스 계산기";
   const description =
-    "Google, 네이버, 다음 검색 트렌드를 10분 캐시 기준으로 확인하는 셀러용 트렌드 화면입니다. 상품 소싱과 콘텐츠 주제 발굴에 참고할 수 있습니다.";
+    "Google Trends, 네이버 데이터랩, Daum 검색 결과량, 셀러 키워드를 10분 캐시 기준으로 확인하는 셀러용 검색어 순위 화면입니다.";
   const canonicalUrl = `${PUBLIC_SITE_URL}/trends`;
 
   return renderDocumentShell({
@@ -1542,17 +1555,17 @@ function renderTrendPage(trends) {
       <section class="trend-page" aria-labelledby="trend-page-title">
         <div class="trend-page-head">
           <div>
-            <span class="community-page-label">검색 트렌드</span>
-            <h1 id="trend-page-title">실시간 검색어 흐름</h1>
+            <span class="community-page-label">검색어 순위</span>
+            <h1 id="trend-page-title">셀러 검색어 흐름</h1>
           </div>
-          <p>10분마다 새로 확인합니다.</p>
+          <p>10분 캐시로 갱신합니다.</p>
         </div>
         <div class="trend-provider-grid" data-trend-grid>
           ${trends.providers.map(renderTrendProviderCard).join("")}
         </div>
         <section class="trend-note-panel">
           <strong>운영 기준</strong>
-          <p>검색어 순위는 상품 소싱과 콘텐츠 아이디어 참고용입니다. 네이버·다음은 제공 경로가 확정되면 같은 화면에 자동 반영됩니다.</p>
+          <p>구글은 트렌딩 RSS, 네이버는 데이터랩 관심도, Daum은 검색 결과량, 셀러 키워드는 커뮤니티 주제 가중치로 표시합니다.</p>
         </section>
       </section>
     </main>`,
@@ -2286,19 +2299,10 @@ async function getSearchTrends() {
   }
 
   const providers = await Promise.all([
+    buildSellerKeywordProvider(),
     fetchGoogleSearchTrends(),
-    fetchConfiguredTrendProvider({
-      key: "naver",
-      label: "네이버",
-      url: NAVER_TREND_API_URL,
-      message: "네이버 트렌드 제공 경로를 연결하면 표시됩니다.",
-    }),
-    fetchConfiguredTrendProvider({
-      key: "daum",
-      label: "다음",
-      url: DAUM_TREND_API_URL,
-      message: "다음 트렌드 제공 경로를 연결하면 표시됩니다.",
-    }),
+    fetchNaverDatalabTrends(),
+    fetchDaumSearchInterest(),
   ]);
   const data = {
     updatedAt: new Date().toISOString(),
@@ -2312,6 +2316,50 @@ async function getSearchTrends() {
   };
 
   return data;
+}
+
+function buildSellerKeywordProvider() {
+  const scores = new Map(
+    TREND_KEYWORD_GROUPS.map((group, index) => [
+      group.title,
+      {
+        title: group.title,
+        url: group.url,
+        score: 90 - index * 4,
+      },
+    ]),
+  );
+
+  SEED_COMMUNITY_POSTS.forEach((post) => {
+    const source = `${post.title} ${post.summary} ${(post.tags || []).join(" ")}`;
+    TREND_KEYWORD_GROUPS.forEach((group) => {
+      const matched = group.keywords.some((keyword) => source.includes(keyword)) || source.includes(group.title);
+      if (matched) {
+        const current = scores.get(group.title);
+        current.score += post.isFeatured ? 18 : 10;
+        current.score += post.isNotice ? 8 : 0;
+      }
+    });
+  });
+
+  const items = [...scores.values()]
+    .sort((a, b) => b.score - a.score)
+    .map((item) => ({
+      title: item.title,
+      traffic: `관심도 ${Math.max(1, Math.round(item.score))}`,
+      url: item.url,
+    }))
+    .slice(0, 10);
+
+  return {
+    key: "seller",
+    label: "셀러 키워드",
+    status: "ok",
+    updatedAt: new Date().toISOString(),
+    sourceUrl: `${PUBLIC_SITE_URL}/community`,
+    items,
+    message: "",
+  };
 }
 
 async function fetchGoogleSearchTrends() {
@@ -2345,6 +2393,163 @@ async function fetchGoogleSearchTrends() {
       sourceUrl: GOOGLE_TRENDS_RSS_URL,
       items: [],
       message: "Google Trends 연결을 확인해 주세요.",
+    };
+  }
+}
+
+async function fetchNaverDatalabTrends() {
+  if (NAVER_TREND_API_URL) {
+    return fetchConfiguredTrendProvider({
+      key: "naver",
+      label: "네이버 데이터랩",
+      url: NAVER_TREND_API_URL,
+      message: "네이버 데이터랩 제공 경로를 연결하면 표시됩니다.",
+    });
+  }
+
+  if (!NAVER_DATALAB_CLIENT_ID || !NAVER_DATALAB_CLIENT_SECRET) {
+    return {
+      key: "naver",
+      label: "네이버 데이터랩",
+      status: "unconfigured",
+      updatedAt: "",
+      sourceUrl: "https://datalab.naver.com/keyword/trendSearch.naver",
+      items: [],
+      message: "네이버 데이터랩 키를 연결하면 셀러 주제어 관심도를 표시합니다.",
+    };
+  }
+
+  try {
+    const response = await fetch("https://openapi.naver.com/v1/datalab/search", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Naver-Client-Id": NAVER_DATALAB_CLIENT_ID,
+        "X-Naver-Client-Secret": NAVER_DATALAB_CLIENT_SECRET,
+        "User-Agent": "rocket-growth-calculator/1.0",
+      },
+      body: JSON.stringify({
+        startDate: getDateString(-30),
+        endDate: getDateString(0),
+        timeUnit: "date",
+        keywordGroups: TREND_KEYWORD_GROUPS.slice(0, 5).map((group) => ({
+          groupName: group.title,
+          keywords: group.keywords,
+        })),
+      }),
+    });
+    if (!response.ok) {
+      throw new Error(`Naver Datalab ${response.status}`);
+    }
+    const payload = await response.json();
+    const items = (payload.results || [])
+      .map((result) => {
+        const latest = Array.isArray(result.data) && result.data.length ? result.data[result.data.length - 1] : null;
+        const group = TREND_KEYWORD_GROUPS.find((item) => item.title === result.title);
+        const ratio = latest ? Number(latest.ratio || 0) : 0;
+        return {
+          title: normalizeText(result.title, 80),
+          traffic: `관심도 ${Math.round(ratio * 10) / 10}`,
+          url: group ? group.url : "https://datalab.naver.com/keyword/trendSearch.naver",
+          ratio,
+        };
+      })
+      .filter((item) => item.title)
+      .sort((a, b) => b.ratio - a.ratio)
+      .slice(0, 10)
+      .map(({ ratio, ...item }) => item);
+
+    return {
+      key: "naver",
+      label: "네이버 데이터랩",
+      status: items.length ? "ok" : "empty",
+      updatedAt: new Date().toISOString(),
+      sourceUrl: "https://datalab.naver.com/keyword/trendSearch.naver",
+      items,
+      message: items.length ? "" : "네이버 데이터랩에서 표시할 관심도 데이터를 찾지 못했습니다.",
+    };
+  } catch (error) {
+    return {
+      key: "naver",
+      label: "네이버 데이터랩",
+      status: "error",
+      updatedAt: new Date().toISOString(),
+      sourceUrl: "https://datalab.naver.com/keyword/trendSearch.naver",
+      items: [],
+      message: "네이버 데이터랩 연결을 확인해 주세요.",
+    };
+  }
+}
+
+async function fetchDaumSearchInterest() {
+  if (DAUM_TREND_API_URL) {
+    return fetchConfiguredTrendProvider({
+      key: "daum",
+      label: "Daum 검색",
+      url: DAUM_TREND_API_URL,
+      message: "Daum 검색 제공 경로를 연결하면 표시됩니다.",
+    });
+  }
+
+  if (!KAKAO_REST_API_KEY) {
+    return {
+      key: "daum",
+      label: "Daum 검색",
+      status: "unconfigured",
+      updatedAt: "",
+      sourceUrl: "https://developers.kakao.com/docs/latest/ko/daum-search/dev-guide",
+      items: [],
+      message: "카카오 REST 키를 연결하면 Daum 검색 결과량 기준 관심도를 표시합니다.",
+    };
+  }
+
+  try {
+    const responses = await Promise.all(
+      TREND_KEYWORD_GROUPS.slice(0, 5).map(async (group) => {
+        const url = `https://dapi.kakao.com/v2/search/web?query=${encodeURIComponent(group.title)}&size=1`;
+        const response = await fetch(url, {
+          headers: {
+            Authorization: `KakaoAK ${KAKAO_REST_API_KEY}`,
+            Accept: "application/json",
+            "User-Agent": "rocket-growth-calculator/1.0",
+          },
+        });
+        if (!response.ok) {
+          throw new Error(`Daum search ${response.status}`);
+        }
+        const payload = await response.json();
+        return {
+          title: group.title,
+          traffic: `${formatInteger(payload.meta?.total_count || 0)}건`,
+          totalCount: Number(payload.meta?.total_count || 0),
+          url: `https://search.daum.net/search?w=tot&q=${encodeURIComponent(group.title)}`,
+        };
+      }),
+    );
+
+    const items = responses
+      .sort((a, b) => b.totalCount - a.totalCount)
+      .slice(0, 10)
+      .map(({ totalCount, ...item }) => item);
+
+    return {
+      key: "daum",
+      label: "Daum 검색",
+      status: items.length ? "ok" : "empty",
+      updatedAt: new Date().toISOString(),
+      sourceUrl: "https://developers.kakao.com/docs/latest/ko/daum-search/dev-guide",
+      items,
+      message: items.length ? "" : "Daum 검색에서 표시할 결과량을 찾지 못했습니다.",
+    };
+  } catch (error) {
+    return {
+      key: "daum",
+      label: "Daum 검색",
+      status: "error",
+      updatedAt: new Date().toISOString(),
+      sourceUrl: "https://developers.kakao.com/docs/latest/ko/daum-search/dev-guide",
+      items: [],
+      message: "Daum 검색 연결을 확인해 주세요.",
     };
   }
 }
@@ -3226,6 +3431,12 @@ function formatDate(value) {
     return "";
   }
   return new Intl.DateTimeFormat("ko-KR", { year: "numeric", month: "short", day: "numeric" }).format(date);
+}
+
+function getDateString(offsetDays = 0) {
+  const date = new Date();
+  date.setDate(date.getDate() + offsetDays);
+  return date.toISOString().slice(0, 10);
 }
 
 function parseJson(value, fallback) {
