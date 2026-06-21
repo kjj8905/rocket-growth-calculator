@@ -418,6 +418,14 @@ app.get("/saved", (req, res) => {
   res.type("html").send(renderIndexHtml());
 });
 
+app.get(["/mvp", "/mvp/"], (req, res) => {
+  res.type("html").send(renderMvpIndexPage());
+});
+
+app.get("/mvp/:version(2|3|4|5)", (req, res) => {
+  res.type("html").send(renderMvpVariantPage(req.params.version));
+});
+
 app.get(["/community", "/community/"], (req, res) => {
   res.type("html").send(renderCommunityIndexPage());
 });
@@ -531,6 +539,190 @@ function normalizeSiteUrl(value) {
 function renderIndexHtml() {
   const filePath = path.join(__dirname, "index.html");
   return fs.readFileSync(filePath, "utf8").replaceAll("__SITE_URL__", PUBLIC_SITE_URL);
+}
+
+function renderMvpIndexPage() {
+  const title = "로켓그로스 UIUX MVP 비교";
+  const description = "로켓그로스 계산기의 다른 UIUX 방향을 비교하는 내부 검토용 화면입니다.";
+  const variants = getMvpVariants();
+  return renderDocumentShell({
+    title,
+    description,
+    canonicalUrl: `${PUBLIC_SITE_URL}/mvp`,
+    body: `<main class="mvp-shell mvp-index">
+      <header class="mvp-index-head">
+        <a href="/">로켓그로스 계산기</a>
+        <h1>UIUX MVP 비교</h1>
+        <p>계산기 본체와 분리된 검토 화면입니다.</p>
+      </header>
+      <section class="mvp-index-grid">
+        ${variants
+          .map(
+            (variant) => `<a class="mvp-index-card" href="/mvp/${variant.version}">
+              <span>${escapeHtml(variant.label)}</span>
+              <strong>${escapeHtml(variant.name)}</strong>
+              <p>${escapeHtml(variant.summary)}</p>
+            </a>`,
+          )
+          .join("")}
+      </section>
+    </main>`,
+  });
+}
+
+function renderMvpVariantPage(version) {
+  const variant = getMvpVariants().find((item) => item.version === String(version)) || getMvpVariants()[0];
+  return renderDocumentShell({
+    title: `${variant.name} | 로켓그로스 UIUX MVP`,
+    description: variant.summary,
+    canonicalUrl: `${PUBLIC_SITE_URL}/mvp/${variant.version}`,
+    body: `<main class="mvp-shell ${escapeHtml(variant.className)}">
+      <header class="mvp-top">
+        <a href="/mvp">MVP 비교</a>
+        <nav>
+          ${getMvpVariants()
+            .map((item) => `<a class="${item.version === variant.version ? "is-active" : ""}" href="/mvp/${item.version}">MVP ${item.version}</a>`)
+            .join("")}
+        </nav>
+      </header>
+      ${variant.render()}
+    </main>`,
+  });
+}
+
+function getMvpVariants() {
+  return [
+    {
+      version: "2",
+      label: "Forum first",
+      name: "게시판형 비용 워룸",
+      summary: "질문·사례 탐색을 먼저 보여주고 계산기로 이어지는 커뮤니티 중심 구조입니다.",
+      className: "mvp-v2",
+      render: renderMvpForum,
+    },
+    {
+      version: "3",
+      label: "Finance first",
+      name: "마진 리포트형 계산기",
+      summary: "판매 전 예상마진을 금융 리포트처럼 크게 보여주는 결과 중심 구조입니다.",
+      className: "mvp-v3",
+      render: renderMvpFinance,
+    },
+    {
+      version: "4",
+      label: "Workspace",
+      name: "운영 워크스페이스형",
+      summary: "좌측 단계, 중앙 입력, 우측 검수 패널을 둔 업무 도구형 구조입니다.",
+      className: "mvp-v4",
+      render: renderMvpWorkspace,
+    },
+    {
+      version: "5",
+      label: "Mobile wizard",
+      name: "모바일 단계형 계산기",
+      summary: "휴대폰에서 견적서를 보며 순서대로 입력하기 쉬운 단계 진행형 구조입니다.",
+      className: "mvp-v5",
+      render: renderMvpWizard,
+    },
+  ];
+}
+
+function renderMvpForum() {
+  return `<section class="mvp-forum-layout">
+    <aside class="mvp-board-side">
+      <strong>로켓그로스</strong>
+      <a class="is-active" href="#mvp">전체 질문</a>
+      <a href="#mvp">비용 사례</a>
+      <a href="#mvp">LCL·통관</a>
+      <a href="#mvp">쿠팡 입고</a>
+    </aside>
+    <section class="mvp-board-main">
+      <div class="mvp-board-head">
+        <div>
+          <span>셀러 질문 중심</span>
+          <h1>비슷한 계산 사례부터 찾고 시작합니다.</h1>
+        </div>
+        <a href="/?calc=china-sourcing">계산 시작</a>
+      </div>
+      <div class="mvp-board-table">
+        ${[
+          ["답변 3", "조회 128", "LCL 견적에 터미널 운송료가 따로 붙는 이유", "중국→한국 · LCL · 초보셀러"],
+          ["답변 1", "조회 74", "로켓그로스 입고 전 판매가를 어디까지 올려야 하나요?", "최종 비용 · 마진"],
+          ["답변 5", "조회 211", "파레트 없이 입고하면 쿠팡센터 비용은 어떻게 보나요?", "한국→쿠팡 · 파레트"],
+        ]
+          .map(
+            (row) => `<article>
+              <div><b>${row[0]}</b><span>${row[1]}</span></div>
+              <strong>${row[2]}</strong>
+              <em>${row[3]}</em>
+            </article>`,
+          )
+          .join("")}
+      </div>
+    </section>
+  </section>`;
+}
+
+function renderMvpFinance() {
+  return `<section class="mvp-finance-layout">
+    <div class="mvp-finance-copy">
+      <span>판매 전 예상 리포트</span>
+      <h1>마진이 남는지 먼저 보고, 부족한 비용을 찾습니다.</h1>
+      <div class="mvp-finance-inputs">
+        <label>판매가 <input value="23,900원" readonly /></label>
+        <label>수량 <input value="100개" readonly /></label>
+        <label>총 원가 <input value="1,420,000원" readonly /></label>
+      </div>
+    </div>
+    <aside class="mvp-finance-report">
+      <span>예상마진</span>
+      <strong>278,000원</strong>
+      <div><b>마진율</b><em>11.6%</em></div>
+      <div><b>최소 ROAS</b><em>420%</em></div>
+      <a href="/?calc=final">5단계 상세 보기</a>
+    </aside>
+  </section>`;
+}
+
+function renderMvpWorkspace() {
+  return `<section class="mvp-workspace-layout">
+    <aside class="mvp-workspace-nav">
+      <strong>계산 단계</strong>
+      ${["중국사입", "중국→한국", "한국→쿠팡", "쿠팡 소모", "최종 비용"].map((item, index) => `<a class="${index === 1 ? "is-active" : ""}" href="#mvp">${item}</a>`).join("")}
+    </aside>
+    <section class="mvp-workspace-form">
+      <div>
+        <span>2단계</span>
+        <h1>중국→한국 물류</h1>
+      </div>
+      <label>총 CBM <input value="5.5" readonly /></label>
+      <label>LCL 해상운임 <input value="560,000원" readonly /></label>
+      <label>통관·부가세 <input value="83,670원" readonly /></label>
+    </section>
+    <aside class="mvp-workspace-result">
+      <span>검수 결과</span>
+      <strong>물류비 비중 31%</strong>
+      <p>CBM과 국내 운송비가 총원가에 크게 반영됩니다.</p>
+      <a href="/?calc=china-korea">계산기에서 확인</a>
+    </aside>
+  </section>`;
+}
+
+function renderMvpWizard() {
+  return `<section class="mvp-wizard-phone">
+    <div class="mvp-phone-frame">
+      <header><span>1/5</span><strong>중국사입</strong></header>
+      <div class="mvp-phone-progress"><i style="width: 20%"></i></div>
+      <label>상품 단가 <input value="8.5 위안" readonly /></label>
+      <label>발주 수량 <input value="100개" readonly /></label>
+      <label>적용 환율 <input value="190원" readonly /></label>
+      <aside>
+        <span>현재까지 원가</span>
+        <strong>161,500원</strong>
+      </aside>
+      <a href="/?calc=china-sourcing">다음 단계로 계산</a>
+    </div>
+  </section>`;
 }
 
 function renderCommunityIndexPage() {
@@ -1867,21 +2059,25 @@ function renderRobotsTxt() {
     "Allow: /",
     "Disallow: /api/",
     "Disallow: /auth/",
+    "Disallow: /mvp/",
     "",
     "User-agent: GPTBot",
     "Allow: /",
     "Disallow: /api/",
     "Disallow: /auth/",
+    "Disallow: /mvp/",
     "",
     "User-agent: ChatGPT-User",
     "Allow: /",
     "Disallow: /api/",
     "Disallow: /auth/",
+    "Disallow: /mvp/",
     "",
     "User-agent: *",
     "Allow: /",
     "Disallow: /api/",
     "Disallow: /auth/",
+    "Disallow: /mvp/",
     "",
     `Sitemap: ${PUBLIC_SITE_URL}/sitemap.xml`,
     "",
