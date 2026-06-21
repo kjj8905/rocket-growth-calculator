@@ -427,14 +427,6 @@ app.get("/saved", (req, res) => {
   res.type("html").send(renderIndexHtml());
 });
 
-app.get(["/mvp", "/mvp/"], (req, res) => {
-  res.type("html").send(renderMvpIndexPage());
-});
-
-app.get("/mvp/:version(2|3|4|5)", (req, res) => {
-  res.type("html").send(renderMvpVariantPage(req.params.version));
-});
-
 app.get(["/community", "/community/"], (req, res) => {
   res.type("html").send(renderCommunityIndexPage());
 });
@@ -545,128 +537,9 @@ function normalizeSiteUrl(value) {
   return url || `http://localhost:${PORT}`;
 }
 
-function renderIndexHtml(options = {}) {
+function renderIndexHtml() {
   const filePath = path.join(__dirname, "index.html");
-  let html = fs.readFileSync(filePath, "utf8").replaceAll("__SITE_URL__", PUBLIC_SITE_URL);
-  if (options.mvpVariant) {
-    html = renderMvpCalculatorHtml(html, options.mvpVariant);
-  }
-  return html;
-}
-
-function renderMvpIndexPage() {
-  const title = "로켓그로스 UIUX MVP 비교";
-  const description = "로켓그로스 계산기 원본 기능을 유지한 상태에서 UIUX 방향만 비교하는 내부 검토용 화면입니다.";
-  const variants = getMvpVariants();
-  return renderDocumentShell({
-    title,
-    description,
-    canonicalUrl: `${PUBLIC_SITE_URL}/mvp`,
-    body: `<main class="mvp-shell mvp-index">
-      <header class="mvp-index-head">
-        <a href="/">로켓그로스 계산기</a>
-        <h1>UIUX MVP 비교</h1>
-        <p>각 버전은 동일한 계산기, 저장, 커뮤니티, 검색 트렌드 기능을 유지하고 화면 구조와 시각 언어만 다르게 적용합니다.</p>
-      </header>
-      <section class="mvp-index-grid">
-        ${variants
-          .map(
-            (variant) => `<a class="mvp-index-card" href="/mvp/${variant.version}">
-              <span>${escapeHtml(variant.label)}</span>
-              <strong>${escapeHtml(variant.name)}</strong>
-              <p>${escapeHtml(variant.summary)}</p>
-            </a>`,
-          )
-          .join("")}
-      </section>
-    </main>`,
-  });
-}
-
-function renderMvpVariantPage(version) {
-  const variant = getMvpVariants().find((item) => item.version === String(version)) || getMvpVariants()[0];
-  return renderIndexHtml({ mvpVariant: variant });
-}
-
-function renderMvpCalculatorHtml(html, variant) {
-  const title = `${variant.name} | 로켓그로스 계산기 UIUX MVP`;
-  const canonicalUrl = `${PUBLIC_SITE_URL}/mvp/${variant.version}`;
-  const notice = renderMvpVariantNotice(variant);
-  return html
-    .replace(
-      /<title>[\s\S]*?<\/title>/,
-      `<title>${escapeHtml(title)}</title>`,
-    )
-    .replace(
-      /<meta\s+name="description"\s+content="[^"]*"\s*\/>/,
-      `<meta name="description" content="${escapeHtml(variant.summary)}" />`,
-    )
-    .replace(
-      /<link\s+rel="canonical"\s+href="[^"]*"\s*\/>/,
-      `<link rel="canonical" href="${escapeHtml(canonicalUrl)}" />`,
-    )
-    .replaceAll('href="./styles.css"', 'href="/styles.css"')
-    .replaceAll('src="./app.js"', 'src="/app.js"')
-    .replace(
-      "  <body>",
-      `  <body class="mvp-variant-active ${escapeHtml(variant.className)}" data-mvp-variant="${escapeHtml(variant.version)}">
-    ${notice}`,
-    );
-}
-
-function renderMvpVariantNotice(activeVariant) {
-  const links = [
-    `<a href="/">MVP 1 원본</a>`,
-    ...getMvpVariants().map((variant) => {
-      const activeClass = variant.version === activeVariant.version ? ' class="is-active" aria-current="page"' : "";
-      return `<a${activeClass} href="/mvp/${variant.version}">MVP ${escapeHtml(variant.version)}</a>`;
-    }),
-  ].join("");
-  return `<aside class="mvp-variant-notice" aria-label="MVP UIUX 비교">
-      <div>
-        <span>기능 동일</span>
-        <strong>${escapeHtml(activeVariant.name)}</strong>
-        <p>${escapeHtml(activeVariant.summary)}</p>
-      </div>
-      <nav aria-label="MVP 버전 이동">${links}</nav>
-    </aside>`;
-}
-
-function getMvpVariants() {
-  return [
-    {
-      version: "2",
-      label: "Community Desk",
-      name: "셀러 커뮤니티 데스크형",
-      summary: "원본 계산기와 커뮤니티를 유지하면서 게시판 접근성을 더 강조한 문서형 레이아웃입니다.",
-      className: "mvp-theme-2",
-      theme: "notion-db",
-    },
-    {
-      version: "3",
-      label: "Margin Report",
-      name: "마진 리포트형",
-      summary: "원본 계산 흐름은 유지하고 판매가, 원가, 마진 판단을 더 선명하게 보이도록 만든 리포트형 테마입니다.",
-      className: "mvp-theme-3",
-      theme: "wise-report",
-    },
-    {
-      version: "4",
-      label: "Ops Console",
-      name: "운영 콘솔형",
-      summary: "원본 기능을 그대로 두고 단계 검수와 비용 흐름을 운영 콘솔처럼 집중해서 보는 다크 UIUX입니다.",
-      className: "mvp-theme-4",
-      theme: "linear-ops",
-    },
-    {
-      version: "5",
-      label: "Mobile Flow",
-      name: "모바일 우선 단계형",
-      summary: "원본 5단계 계산기와 저장·커뮤니티 기능을 유지하되 모바일 입력 흐름과 버튼 가독성을 강화한 UIUX입니다.",
-      className: "mvp-theme-5",
-      theme: "airbnb-flow",
-    },
-  ];
+  return fs.readFileSync(filePath, "utf8").replaceAll("__SITE_URL__", PUBLIC_SITE_URL);
 }
 
 function renderCommunityIndexPage() {
@@ -984,25 +857,18 @@ function renderCommunityCollapsedPostPanel(title, posts) {
 function renderCommunityPostCard(post, mode = "default") {
   const category = COMMUNITY_CATEGORIES[post.category] || COMMUNITY_CATEGORIES["final-margin"];
   const isCompact = mode === "compact";
-  const tags = post.tags.slice(0, isCompact ? 1 : 3);
+  const dateLabel = formatDate(post.updatedAt || post.createdAt);
   return `<a class="community-post-card ${isCompact ? "is-compact" : ""}" href="/community/${post.slug}">
-    ${
-      isCompact
-        ? ""
-        : `<dl class="community-post-metrics" aria-label="글 지표">
-            <div><dt>댓글</dt><dd>${formatInteger(post.commentsCount)}</dd></div>
-            <div><dt>조회</dt><dd>${formatInteger(post.views)}</dd></div>
-          </dl>`
-    }
     <div class="community-post-main">
-      <span class="community-post-badge">${escapeHtml(category.label)}</span>
-      <strong>${escapeHtml(post.title)}</strong>
-      ${isCompact ? "" : `<p>${escapeHtml(post.summary)}</p>`}
-      <div class="community-row-tags">
-        ${tags.map((tag) => `<span>#${escapeHtml(tag)}</span>`).join("")}
+      <strong class="community-post-title">${escapeHtml(post.title)}</strong>
+      ${isCompact ? "" : `<p class="community-post-excerpt">${escapeHtml(post.summary)}</p>`}
+      <div class="community-post-meta">
+        <span class="community-post-cat">${escapeHtml(category.label)}</span>
+        ${dateLabel ? `<span>${escapeHtml(dateLabel)}</span>` : ""}
+        <span>댓글 ${formatInteger(post.commentsCount)}</span>
+        ${isCompact ? "" : `<span>조회 ${formatInteger(post.views)}</span>`}
       </div>
     </div>
-    <em>${formatDate(post.updatedAt || post.createdAt)}</em>
   </a>`;
 }
 
@@ -2150,25 +2016,21 @@ function renderRobotsTxt() {
     "Allow: /",
     "Disallow: /api/",
     "Disallow: /auth/",
-    "Disallow: /mvp/",
     "",
     "User-agent: GPTBot",
     "Allow: /",
     "Disallow: /api/",
     "Disallow: /auth/",
-    "Disallow: /mvp/",
     "",
     "User-agent: ChatGPT-User",
     "Allow: /",
     "Disallow: /api/",
     "Disallow: /auth/",
-    "Disallow: /mvp/",
     "",
     "User-agent: *",
     "Allow: /",
     "Disallow: /api/",
     "Disallow: /auth/",
-    "Disallow: /mvp/",
     "",
     `Sitemap: ${PUBLIC_SITE_URL}/sitemap.xml`,
     "",
@@ -2887,28 +2749,12 @@ function normalizeTags(value) {
   return [...new Set(source.map((tag) => String(tag).trim()).filter((tag) => tag && allowed.has(tag)).slice(0, 8))];
 }
 
-function createUniqueCommunitySlug(title) {
-  const baseSlug = slugify(title) || `post-${Date.now()}`;
-  let slug = baseSlug;
-  let suffix = 2;
-  while (db.prepare("SELECT id FROM community_posts WHERE slug = ?").get(slug)) {
-    slug = `${baseSlug}-${suffix}`;
-    suffix += 1;
+function parseJson(value, fallback) {
+  try {
+    return JSON.parse(value);
+  } catch {
+    return fallback;
   }
-  return slug;
-}
-
-function slugify(value) {
-  return String(value || "")
-    .trim()
-    .toLowerCase()
-    .replace(/[^\p{L}\p{N}]+/gu, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 80);
-}
-
-function getDisplayUserName(user) {
-  return user?.nickname || "카카오 셀러";
 }
 
 function formatInteger(value) {
@@ -2929,12 +2775,28 @@ function getDateString(offsetDays = 0) {
   return date.toISOString().slice(0, 10);
 }
 
-function parseJson(value, fallback) {
-  try {
-    return JSON.parse(value);
-  } catch {
-    return fallback;
+function getDisplayUserName(user) {
+  return user?.nickname || "카카오 셀러";
+}
+
+function slugify(value) {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}]+/gu, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 80);
+}
+
+function createUniqueCommunitySlug(title) {
+  const baseSlug = slugify(title) || `post-${Date.now()}`;
+  let slug = baseSlug;
+  let suffix = 2;
+  while (db.prepare("SELECT id FROM community_posts WHERE slug = ?").get(slug)) {
+    slug = `${baseSlug}-${suffix}`;
+    suffix += 1;
   }
+  return slug;
 }
 
 function renderConfigErrorPage() {
@@ -2963,3 +2825,4 @@ function renderConfigErrorPage() {
     </html>
   `;
 }
+
