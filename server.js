@@ -596,8 +596,8 @@ function getMvpVariants() {
     {
       version: "2",
       label: "Forum first",
-      name: "게시판형 비용 워룸",
-      summary: "질문·사례 탐색을 먼저 보여주고 계산기로 이어지는 커뮤니티 중심 구조입니다.",
+      name: "실검·게시판형 워룸",
+      summary: "실시간 검색 흐름, 질문 검색, 비용 사례를 계산과 함께 보는 커뮤니티 중심 구조입니다.",
       className: "mvp-v2",
       render: renderMvpForum,
     },
@@ -605,7 +605,7 @@ function getMvpVariants() {
       version: "3",
       label: "Finance first",
       name: "마진 리포트형 계산기",
-      summary: "판매 전 예상마진을 금융 리포트처럼 크게 보여주는 결과 중심 구조입니다.",
+      summary: "예상마진, 위험 신호, 다음 조치가 함께 나오는 리포트 중심 구조입니다.",
       className: "mvp-v3",
       render: renderMvpFinance,
     },
@@ -613,7 +613,7 @@ function getMvpVariants() {
       version: "4",
       label: "Workspace",
       name: "운영 워크스페이스형",
-      summary: "좌측 단계, 중앙 입력, 우측 검수 패널을 둔 업무 도구형 구조입니다.",
+      summary: "단계 탭을 누르면 검수 포인트와 입력 초점이 바뀌는 업무 도구형 구조입니다.",
       className: "mvp-v4",
       render: renderMvpWorkspace,
     },
@@ -621,7 +621,7 @@ function getMvpVariants() {
       version: "5",
       label: "Mobile wizard",
       name: "모바일 단계형 계산기",
-      summary: "휴대폰에서 견적서를 보며 순서대로 입력하기 쉬운 단계 진행형 구조입니다.",
+      summary: "휴대폰에서 단계별로 넘기며 입력과 결과를 확인하는 진행형 구조입니다.",
       className: "mvp-v5",
       render: renderMvpWizard,
     },
@@ -645,6 +645,33 @@ function renderMvpOutput(label, key, format = "money", tone = "") {
   </article>`;
 }
 
+function renderMvpTrendStrip() {
+  const fallback = ["로켓그로스 비용", "쿠팡 수수료", "LCL 물류비", "중국사입 원가", "쿠팡 파레트"];
+  return `<section class="mvp-trend-strip" aria-labelledby="mvp-trend-title">
+    <header>
+      <div>
+        <span>검색 참고</span>
+        <strong id="mvp-trend-title">검색 흐름</strong>
+      </div>
+      <a href="/trends">전체</a>
+    </header>
+    <ol data-mvp-trend-list>
+      ${fallback.map((keyword, index) => `<li><b>${index + 1}</b><button type="button" data-mvp-search-keyword="${escapeHtml(keyword)}">${escapeHtml(keyword)}</button></li>`).join("")}
+    </ol>
+  </section>`;
+}
+
+function renderMvpDiagnosisBlock() {
+  return `<section class="mvp-diagnosis-card">
+    <span>브랜드코어 진단</span>
+    <strong data-mvp-diagnosis-title>입력값을 검수 중입니다.</strong>
+    <p data-mvp-diagnosis-body>판매가, 물류비, 수수료, 광고비를 기준으로 위험 구간을 자동 표시합니다.</p>
+    <ul data-mvp-action-list>
+      <li>예시를 불러오거나 값을 입력하면 조치 항목이 바뀝니다.</li>
+    </ul>
+  </section>`;
+}
+
 function renderMvpCalculatorScript() {
   return `<script>
     (function () {
@@ -657,6 +684,38 @@ function renderMvpCalculatorScript() {
         coupangFeeRate: 12,
         adCost: 150000
       };
+      var stageData = [
+        {
+          label: "중국사입",
+          title: "제품 원가 확인",
+          note: "위안화 단가, 수량, 환율을 먼저 맞춥니다.",
+          focus: "상품 단가와 환율이 흔들리면 모든 단계의 원가가 같이 바뀝니다."
+        },
+        {
+          label: "중국→한국",
+          title: "물류비 검수",
+          note: "LCL, CBM, 통관, 국내 도착 후 비용을 분리해서 봅니다.",
+          focus: "물류·입고비가 총비용에서 차지하는 비중을 확인하세요."
+        },
+        {
+          label: "한국→쿠팡",
+          title: "입고 전 비용",
+          note: "국내 운송, 라벨, 파레트, 박스 단위 작업비를 확인합니다.",
+          focus: "입고비는 상품 수량으로 나눠 1개당 원가에 반영됩니다."
+        },
+        {
+          label: "쿠팡 소모",
+          title: "판매 후 빠지는 비용",
+          note: "쿠팡 수수료와 광고비를 판매가 기준으로 연결합니다.",
+          focus: "광고비를 빼먹으면 마진율이 실제보다 높게 보입니다."
+        },
+        {
+          label: "최종 비용",
+          title: "판매가와 마진 판단",
+          note: "총 판매액, 총비용, 1개당 원가, 최소 ROAS를 같이 봅니다.",
+          focus: "총 예상마진이 남아도 1개당 마진이 낮으면 가격 조정이 필요합니다."
+        }
+      ];
 
       function toNumber(value) {
         var number = Number(String(value || "").replace(/[^0-9.-]/g, ""));
@@ -683,10 +742,46 @@ function renderMvpCalculatorScript() {
         return Math.round(value * 10) / 10 + "%";
       }
 
+      function escapeMarkup(value) {
+        return String(value || "").replace(/[&<>"']/g, function (char) {
+          return ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char];
+        });
+      }
+
       function write(calc, key, value, format) {
         calc.querySelectorAll('[data-mvp-output="' + key + '"]').forEach(function (node) {
           node.textContent = format === "percent" ? formatPercent(value) : formatMoney(value);
           node.classList.toggle("is-negative", value < 0);
+        });
+      }
+
+      function updateText(calc, selector, value) {
+        calc.querySelectorAll(selector).forEach(function (node) {
+          node.textContent = value;
+        });
+      }
+
+      function updateDiagnosis(calc, metrics) {
+        var title = "현재 구조는 계산 가능합니다.";
+        var body = "마진율, 물류비 비중, 광고비를 같이 보며 판매 전 판단을 이어가면 됩니다.";
+        var actions = ["최종 비용에서 1개당 원가와 판매가 차이를 확인하세요."];
+        if (metrics.totalMargin < 0) {
+          title = "손실 구간입니다.";
+          body = "현재 입력값은 판매할수록 손실이 누적됩니다. 판매가, 물류비, 광고비 중 하나를 먼저 조정해야 합니다.";
+          actions = ["판매가를 올리거나 광고비를 낮춰보세요.", "물류·입고비가 과하게 잡혔는지 견적 항목을 다시 보세요."];
+        } else if (metrics.marginRate < 10) {
+          title = "마진 여유가 낮습니다.";
+          body = "예상마진은 남지만 반품, 재고, 광고 변동을 버티기 어려운 구간입니다.";
+          actions = ["목표 마진율을 정하고 판매가를 역산하세요.", "쿠팡 수수료율과 광고비를 보수적으로 입력하세요."];
+        } else if (metrics.logisticsRate > 35) {
+          title = "물류비 비중이 큽니다.";
+          body = "총비용에서 물류·입고비가 크게 잡혀 있습니다. CBM, 파레트, 국내 운송 조건을 먼저 비교하세요.";
+          actions = ["CBM과 총중량을 다시 확인하세요.", "포워더 견적에 포함·별도 항목을 나눠보세요."];
+        }
+        updateText(calc, "[data-mvp-diagnosis-title]", title);
+        updateText(calc, "[data-mvp-diagnosis-body]", body);
+        calc.querySelectorAll("[data-mvp-action-list]").forEach(function (list) {
+          list.innerHTML = actions.map(function (item) { return "<li>" + item + "</li>"; }).join("");
         });
       }
 
@@ -708,6 +803,17 @@ function renderMvpCalculatorScript() {
         var marginRate = totalSales > 0 ? totalMargin / totalSales * 100 : 0;
         var minRoas = adCost > 0 ? totalSales / adCost * 100 : 0;
         var logisticsRate = totalCost > 0 ? logistics / totalCost * 100 : 0;
+        var metrics = {
+          totalSales: totalSales,
+          purchaseTotal: purchaseTotal,
+          totalCost: totalCost,
+          totalMargin: totalMargin,
+          unitCost: unitCost,
+          unitMargin: unitMargin,
+          marginRate: marginRate,
+          minRoas: minRoas,
+          logisticsRate: logisticsRate
+        };
         write(calc, "totalSales", totalSales, "money");
         write(calc, "purchaseTotal", purchaseTotal, "money");
         write(calc, "totalCost", totalCost, "money");
@@ -723,6 +829,91 @@ function renderMvpCalculatorScript() {
             : "현재 입력값 기준 예상마진이 남습니다.";
           node.dataset.tone = totalMargin < 0 ? "danger" : "good";
         });
+        updateDiagnosis(calc, metrics);
+      }
+
+      function initBoardSearch(calc) {
+        var input = calc.querySelector("[data-mvp-board-search]");
+        var posts = Array.prototype.slice.call(calc.querySelectorAll("[data-mvp-post]"));
+        if (!input || !posts.length) return;
+        function filter(value) {
+          var keyword = String(value || "").trim().toLowerCase();
+          var visible = 0;
+          posts.forEach(function (post) {
+            var matched = !keyword || String(post.dataset.search || "").toLowerCase().indexOf(keyword) >= 0;
+            post.hidden = !matched;
+            if (matched) visible += 1;
+          });
+          updateText(calc, "[data-mvp-search-count]", visible + "개");
+        }
+        input.addEventListener("input", function () { filter(input.value); });
+        calc.querySelectorAll("[data-mvp-search-keyword]").forEach(function (button) {
+          button.addEventListener("click", function () {
+            input.value = button.dataset.mvpSearchKeyword || button.textContent || "";
+            filter(input.value);
+          });
+        });
+        filter(input.value);
+      }
+
+      function initStageControls(calc) {
+        var tabs = Array.prototype.slice.call(calc.querySelectorAll("[data-mvp-stage-tab]"));
+        var next = calc.querySelector("[data-mvp-wizard-next]");
+        var prev = calc.querySelector("[data-mvp-wizard-prev]");
+        if (!tabs.length && !next && !prev) return;
+        var current = 0;
+        function setStage(index) {
+          current = Math.max(0, Math.min(stageData.length - 1, index));
+          var stage = stageData[current];
+          tabs.forEach(function (tab, tabIndex) {
+            tab.classList.toggle("is-active", tabIndex === current);
+            if (tabIndex === current) tab.setAttribute("aria-current", "step");
+            else tab.removeAttribute("aria-current");
+          });
+          updateText(calc, "[data-mvp-stage-title]", stage.title);
+          updateText(calc, "[data-mvp-stage-note]", stage.note);
+          updateText(calc, "[data-mvp-stage-focus]", stage.focus);
+          updateText(calc, "[data-mvp-stage-label]", stage.label);
+          updateText(calc, "[data-mvp-wizard-step]", current + 1 + "/5");
+          calc.querySelectorAll("[data-mvp-wizard-progress]").forEach(function (bar) {
+            bar.style.width = ((current + 1) / stageData.length * 100) + "%";
+          });
+          if (prev) prev.disabled = current === 0;
+          if (next) next.disabled = current === stageData.length - 1;
+        }
+        tabs.forEach(function (tab, index) {
+          tab.addEventListener("click", function () { setStage(index); });
+        });
+        if (next) next.addEventListener("click", function () { setStage(current + 1); });
+        if (prev) prev.addEventListener("click", function () { setStage(current - 1); });
+        setStage(0);
+      }
+
+      async function refreshTrends() {
+        var lists = Array.prototype.slice.call(document.querySelectorAll("[data-mvp-trend-list]"));
+        if (!lists.length) return;
+        try {
+          var response = await fetch("/api/search-trends", { headers: { "Accept": "application/json" } });
+          if (!response.ok) return;
+          var data = await response.json();
+          var items = [];
+          (data.providers || []).forEach(function (provider) {
+            (provider.items || []).forEach(function (item) {
+              if (item && item.title) items.push(item.title);
+            });
+          });
+          items = items.slice(0, 5);
+          if (!items.length) return;
+          lists.forEach(function (list) {
+            list.innerHTML = items.map(function (title, index) {
+              var safeTitle = escapeMarkup(title);
+              return '<li><b>' + (index + 1) + '</b><button type="button" data-mvp-search-keyword="' + safeTitle + '">' + safeTitle + '</button></li>';
+            }).join("");
+          });
+          document.querySelectorAll("[data-mvp-calculator]").forEach(initBoardSearch);
+        } catch (error) {
+          // Keep fallback keywords.
+        }
       }
 
       document.querySelectorAll("[data-mvp-calculator]").forEach(function (calc) {
@@ -742,12 +933,22 @@ function renderMvpCalculatorScript() {
           });
         });
         calculate(calc);
+        initBoardSearch(calc);
+        initStageControls(calc);
       });
+      refreshTrends();
     })();
   </script>`;
 }
 
 function renderMvpForum() {
+  const posts = [
+    ["답변 3", "조회 128", "LCL 견적에 터미널 운송료가 따로 붙는 이유", "중국→한국 · LCL · 초보셀러"],
+    ["답변 1", "조회 74", "로켓그로스 입고 전 판매가를 어디까지 올려야 하나요?", "최종 비용 · 마진"],
+    ["답변 5", "조회 211", "파레트 없이 입고하면 쿠팡센터 비용은 어떻게 보나요?", "한국→쿠팡 · 파레트"],
+    ["답변 2", "조회 96", "원산지증명서가 있으면 관세는 어떻게 봐야 하나요?", "통관 · 세금"],
+    ["답변 4", "조회 183", "광고비를 넣으면 최소 ROAS가 왜 바뀌나요?", "쿠팡 소모 · 광고"],
+  ];
   return `<section class="mvp-forum-layout" data-mvp-calculator>
     <aside class="mvp-board-side">
       <strong>로켓그로스</strong>
@@ -755,6 +956,7 @@ function renderMvpForum() {
       <a href="#mvp">비용 사례</a>
       <a href="#mvp">LCL·통관</a>
       <a href="#mvp">쿠팡 입고</a>
+      ${renderMvpTrendStrip()}
     </aside>
     <section class="mvp-board-main">
       <div class="mvp-board-head">
@@ -782,18 +984,26 @@ function renderMvpForum() {
           <p data-mvp-output="status">입력값을 바꾸면 결과가 바로 바뀝니다.</p>
         </aside>
       </div>
+      <div class="mvp-board-tools">
+        <label class="mvp-search-field">
+          <span>질문·사례 검색</span>
+          <input type="search" data-mvp-board-search placeholder="예: LCL, 파레트, 광고비" />
+        </label>
+        <div>
+          <span data-mvp-search-count>0개</span>
+          <button type="button" data-mvp-search-keyword="LCL">LCL</button>
+          <button type="button" data-mvp-search-keyword="파레트">파레트</button>
+          <button type="button" data-mvp-search-keyword="광고">광고</button>
+        </div>
+      </div>
       <div class="mvp-board-table">
-        ${[
-          ["답변 3", "조회 128", "LCL 견적에 터미널 운송료가 따로 붙는 이유", "중국→한국 · LCL · 초보셀러"],
-          ["답변 1", "조회 74", "로켓그로스 입고 전 판매가를 어디까지 올려야 하나요?", "최종 비용 · 마진"],
-          ["답변 5", "조회 211", "파레트 없이 입고하면 쿠팡센터 비용은 어떻게 보나요?", "한국→쿠팡 · 파레트"],
-        ]
+        ${posts
           .map(
             (row) => `<article>
               <div><b>${row[0]}</b><span>${row[1]}</span></div>
               <strong>${row[2]}</strong>
               <em>${row[3]}</em>
-            </article>`,
+            </article>`.replace("<article>", `<article data-mvp-post data-search="${escapeHtml(`${row[2]} ${row[3]}`)}">`),
           )
           .join("")}
       </div>
@@ -829,6 +1039,7 @@ function renderMvpFinance() {
       <div><b>마진율</b><em data-mvp-output="marginRate">0%</em></div>
       <div><b>최소 ROAS</b><em data-mvp-output="minRoas">0%</em></div>
       <p data-mvp-output="status">입력값을 바꾸면 리포트가 바로 바뀝니다.</p>
+      ${renderMvpDiagnosisBlock()}
     </aside>
   </section>`;
 }
@@ -837,12 +1048,14 @@ function renderMvpWorkspace() {
   return `<section class="mvp-workspace-layout" data-mvp-calculator>
     <aside class="mvp-workspace-nav">
       <strong>계산 단계</strong>
-      ${["중국사입", "중국→한국", "한국→쿠팡", "쿠팡 소모", "최종 비용"].map((item, index) => `<a class="${index === 1 ? "is-active" : ""}" href="#mvp">${item}</a>`).join("")}
+      ${["중국사입", "중국→한국", "한국→쿠팡", "쿠팡 소모", "최종 비용"].map((item, index) => `<button type="button" class="${index === 0 ? "is-active" : ""}" data-mvp-stage-tab>${item}</button>`).join("")}
+      ${renderMvpTrendStrip()}
     </aside>
     <section class="mvp-workspace-form">
       <div>
-        <span>2단계</span>
-        <h1>중국→한국 물류</h1>
+        <span data-mvp-stage-label>중국사입</span>
+        <h1 data-mvp-stage-title>제품 원가 확인</h1>
+        <p data-mvp-stage-note>위안화 단가, 수량, 환율을 먼저 맞춥니다.</p>
       </div>
       ${renderMvpInput("salePrice", "1개 판매가", 23900, "원")}
       ${renderMvpInput("unitCny", "상품 단가", 8.5, "위안")}
@@ -859,6 +1072,7 @@ function renderMvpWorkspace() {
     <aside class="mvp-workspace-result">
       <span>검수 결과</span>
       <strong data-mvp-output="totalMargin">0원</strong>
+      <p class="mvp-stage-focus" data-mvp-stage-focus>상품 단가와 환율이 흔들리면 모든 단계의 원가가 같이 바뀝니다.</p>
       <div class="mvp-result-grid">
         ${renderMvpOutput("총 판매액", "totalSales", "money")}
         ${renderMvpOutput("총 비용", "totalCost", "money")}
@@ -867,6 +1081,7 @@ function renderMvpWorkspace() {
         ${renderMvpOutput("물류 비중", "logisticsRate", "percent")}
       </div>
       <p data-mvp-output="status">입력값을 바꾸면 검수 결과가 바로 바뀝니다.</p>
+      ${renderMvpDiagnosisBlock()}
     </aside>
   </section>`;
 }
@@ -874,8 +1089,9 @@ function renderMvpWorkspace() {
 function renderMvpWizard() {
   return `<section class="mvp-wizard-phone" data-mvp-calculator>
     <div class="mvp-phone-frame">
-      <header><span>1/5</span><strong>중국사입</strong></header>
-      <div class="mvp-phone-progress"><i style="width: 20%"></i></div>
+      <header><span data-mvp-wizard-step>1/5</span><strong data-mvp-stage-label>중국사입</strong></header>
+      <div class="mvp-phone-progress"><i style="width: 20%" data-mvp-wizard-progress></i></div>
+      <p class="mvp-phone-note" data-mvp-stage-note>위안화 단가, 수량, 환율을 먼저 맞춥니다.</p>
       ${renderMvpInput("salePrice", "1개 판매가", 23900, "원")}
       ${renderMvpInput("unitCny", "상품 단가", 8.5, "위안")}
       ${renderMvpInput("quantity", "발주 수량", 100, "개")}
@@ -895,7 +1111,12 @@ function renderMvpWizard() {
         ${renderMvpOutput("1개당 원가", "unitCost", "money")}
         ${renderMvpOutput("최소 ROAS", "minRoas", "percent")}
       </div>
+      <div class="mvp-phone-controls">
+        <button type="button" data-mvp-wizard-prev>이전</button>
+        <button type="button" data-mvp-wizard-next>다음</button>
+      </div>
       <button type="button" data-mvp-example>예시 불러오기</button>
+      ${renderMvpTrendStrip()}
     </div>
   </section>`;
 }
