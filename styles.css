@@ -9684,3 +9684,532 @@ body.mvp-theme-5 .product-name-field input {
     min-height: 82px;
   }
 }
+
+/* MVP structural layouts. These rules intentionally move the same functional
+   modules into different product structures without replacing the app logic. */
+@media (min-width: 981px) {
+  body.mvp-theme-2 .app-shell {
+    max-width: 1240px;
+    display: grid;
+    grid-template-columns: 286px minmax(0, 1fr);
+    gap: 18px;
+    align-items: start;
+  }
+
+  body.mvp-theme-2 .intro {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+    position: sticky;
+    top: 18px;
+    z-index: 3;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+    min-height: 520px;
+    margin: 0;
+    padding: 20px;
+    border-radius: 18px;
+    background: #0a1530;
+    color: #ffffff;
+  }
+
+  body.mvp-theme-2 .intro .eyebrow,
+  body.mvp-theme-2 .intro #login-status,
+  body.mvp-theme-2 .intro .account-status span {
+    color: #d9ddff;
+  }
+
+  body.mvp-theme-2 .home-title-button {
+    color: #ffffff;
+    font-size: 31px;
+    line-height: 1.18;
+    text-align: left;
+  }
+
+  body.mvp-theme-2 .header-account-box {
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+    grid-template-columns: 1fr;
+    flex-direction: column;
+    align-items: stretch;
+    border-color: rgb(255 255 255 / 14%);
+    background: rgb(255 255 255 / 8%);
+  }
+
+  body.mvp-theme-2 .header-account-box .login-button,
+  body.mvp-theme-2 .header-account-box .logout-button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  body.mvp-theme-2 .site-nav-panel {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+    position: sticky;
+    top: 326px;
+    z-index: 4;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+    margin: 290px 14px 0;
+    padding: 16px;
+  }
+
+  body.mvp-theme-2 .site-nav-copy strong {
+    font-size: 16px;
+    line-height: 1.45;
+  }
+
+  body.mvp-theme-2 .calculator-category-nav {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+    padding: 0;
+    background: transparent;
+  }
+
+  body.mvp-theme-2 .calculator-category-nav button,
+  body.mvp-theme-2 .calculator-category-nav a {
+    justify-content: flex-start;
+    width: 100%;
+    min-height: 42px;
+    padding: 0 12px;
+    border-radius: 10px;
+  }
+
+  body.mvp-theme-2 .quick-home-calculator,
+  body.mvp-theme-2 .home-community-section,
+  body.mvp-theme-2 .session-bar,
+  body.mvp-theme-2 .coming-soon-section,
+  body.mvp-theme-2 .wc-save-list-page,
+  body.mvp-theme-2 .banner-grid,
+  body.mvp-theme-2 .home-guide-strip,
+  body.mvp-theme-2 .home-seo-explain-section,
+  body.mvp-theme-2 .overview-section,
+  body.mvp-theme-2 .knowledge-hub-teaser,
+  body.mvp-theme-2 .workspace {
+    grid-column: 2;
+  }
+
+  body.mvp-theme-2 .quick-home-calculator {
+    margin: 0;
+  }
+
+  body.mvp-theme-2 .quick-home-card {
+    padding: 22px;
+  }
+
+  body.mvp-theme-2 .home-accuracy-points {
+    grid-template-columns: 1fr;
+  }
+
+  body.mvp-theme-2 .banner-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    margin-top: 0;
+  }
+
+  body.mvp-theme-2 .calc-banner {
+    min-height: 68px;
+    justify-content: flex-start;
+    padding: 0 22px;
+  }
+
+  body.mvp-theme-2 .calc-banner span {
+    font-size: 25px;
+    line-height: 1.1;
+  }
+
+  body.mvp-theme-2 .selected-banner {
+    grid-template-columns: 180px minmax(0, 1fr);
+    align-items: stretch;
+    gap: 0;
+    padding: 0;
+    overflow: hidden;
+  }
+
+  body.mvp-theme-2 .selected-banner .calc-banner-active {
+    min-height: 100%;
+    border-radius: 0;
+  }
+
+  body.mvp-theme-2 .quick-switch {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 0;
+    padding: 0;
+    border-radius: 0;
+    background: #ffffff;
+  }
+
+  body.mvp-theme-2 .quick-switch button {
+    border-radius: 0;
+    border-left: 1px solid #e5e3df;
+  }
+
+  body.mvp-theme-3 .app-shell {
+    max-width: 1240px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    gap: 20px;
+    align-items: start;
+  }
+
+  body.mvp-theme-3 .intro,
+  body.mvp-theme-3 .workspace,
+  body.mvp-theme-3 .home-community-section,
+  body.mvp-theme-3 .home-seo-explain-section,
+  body.mvp-theme-3 .session-bar,
+  body.mvp-theme-3 .wc-save-list-page,
+  body.mvp-theme-3 .overview-section,
+  body.mvp-theme-3 .knowledge-hub-teaser {
+    grid-column: 1 / -1;
+  }
+
+  body.mvp-theme-3 .quick-home-calculator,
+  body.mvp-theme-3 .banner-grid,
+  body.mvp-theme-3 .home-guide-strip {
+    grid-column: 1;
+  }
+
+  body.mvp-theme-3 .site-nav-panel {
+    grid-column: 2;
+    grid-row: 2 / span 3;
+    position: sticky;
+    top: 20px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+    min-height: 420px;
+    padding: 18px;
+  }
+
+  body.mvp-theme-3 .calculator-category-nav {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    padding: 0;
+    background: transparent;
+  }
+
+  body.mvp-theme-3 .calculator-category-nav button,
+  body.mvp-theme-3 .calculator-category-nav a {
+    justify-content: space-between;
+    min-height: 48px;
+    padding: 0 14px;
+  }
+
+  body.mvp-theme-3 .quick-home-card {
+    min-height: 420px;
+    display: grid;
+    align-content: center;
+    padding: 34px;
+  }
+
+  body.mvp-theme-3 .home-accuracy-points {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  body.mvp-theme-3 .banner-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  body.mvp-theme-3 .calc-banner {
+    min-height: 82px;
+  }
+
+  body.mvp-theme-3 .calc-banner span {
+    font-size: 21px;
+    line-height: 1.15;
+  }
+
+  body.mvp-theme-3 .calculator-layout {
+    grid-template-columns: 360px minmax(0, 1fr);
+  }
+
+  body.mvp-theme-3:has(.workspace:not([hidden])) .site-nav-panel {
+    display: none;
+  }
+
+  body.mvp-theme-3:has(.workspace:not([hidden])) .workspace {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+
+  body.mvp-theme-3 .preview-panel {
+    grid-column: 1;
+    grid-row: 1;
+    border-right: 1px solid #c9d8be;
+    border-left: 0;
+  }
+
+  body.mvp-theme-3 .form-panel {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  body.mvp-theme-3 .result-card {
+    display: grid;
+    gap: 10px;
+    padding: 18px;
+    border-radius: 18px;
+    background: #163300;
+    color: #ffffff;
+  }
+
+  body.mvp-theme-3 .preview-panel .result-row span,
+  body.mvp-theme-3 .preview-panel .result-row strong {
+    color: #ffffff;
+  }
+
+  body.mvp-theme-4 .app-shell {
+    max-width: 1280px;
+    display: grid;
+    grid-template-columns: 228px minmax(0, 1fr);
+    gap: 18px;
+    align-items: start;
+  }
+
+  body.mvp-theme-4 .intro,
+  body.mvp-theme-4 .workspace,
+  body.mvp-theme-4 .session-bar,
+  body.mvp-theme-4 .wc-save-list-page,
+  body.mvp-theme-4 .home-seo-explain-section,
+  body.mvp-theme-4 .overview-section,
+  body.mvp-theme-4 .knowledge-hub-teaser {
+    grid-column: 1 / -1;
+  }
+
+  body.mvp-theme-4 .site-nav-panel {
+    grid-column: 1;
+    grid-row: 2 / span 4;
+    position: sticky;
+    top: 18px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 18px;
+    min-height: 560px;
+    margin: 0;
+  }
+
+  body.mvp-theme-4 .calculator-category-nav {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    padding: 0;
+    background: transparent;
+  }
+
+  body.mvp-theme-4 .calculator-category-nav button,
+  body.mvp-theme-4 .calculator-category-nav a {
+    justify-content: flex-start;
+    min-height: 44px;
+  }
+
+  body.mvp-theme-4 .quick-home-calculator,
+  body.mvp-theme-4 .home-community-section,
+  body.mvp-theme-4 .banner-grid,
+  body.mvp-theme-4 .home-guide-strip {
+    grid-column: 2;
+  }
+
+  body.mvp-theme-4 .quick-home-card {
+    padding: 28px;
+  }
+
+  body.mvp-theme-4 .home-accuracy-points {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+
+  body.mvp-theme-4 .banner-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  body.mvp-theme-4 .calc-banner {
+    min-height: 74px;
+  }
+
+  body.mvp-theme-4 .calc-banner span {
+    font-size: 19px;
+    line-height: 1.15;
+  }
+
+  body.mvp-theme-4 .workspace {
+    display: grid;
+    grid-template-columns: 220px minmax(0, 1fr);
+    overflow: hidden;
+  }
+
+  body.mvp-theme-4:has(.workspace:not([hidden])) .workspace {
+    grid-column: 2;
+    grid-row: 2;
+  }
+
+  body.mvp-theme-4 .selected-banner {
+    grid-column: 1;
+    grid-row: 1 / span 3;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    margin: 0;
+    border-right: 1px solid #242736;
+    border-radius: 0;
+    background: #080a0f;
+  }
+
+  body.mvp-theme-4 .selected-banner .calc-banner-active {
+    min-height: 96px;
+    border-radius: 0;
+  }
+
+  body.mvp-theme-4 .quick-switch {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    padding: 0;
+    border-radius: 0;
+    background: transparent;
+  }
+
+  body.mvp-theme-4 .quick-switch button {
+    justify-content: flex-start;
+    min-height: 50px;
+    border-top: 1px solid #242736;
+    border-radius: 0;
+  }
+
+  body.mvp-theme-4 .wc-step-progress,
+  body.mvp-theme-4 .calculator-layout,
+  body.mvp-theme-4 .stage-help-summary {
+    grid-column: 2;
+  }
+
+  body.mvp-theme-4 .calculator-layout {
+    grid-template-columns: minmax(0, 1fr) 340px;
+  }
+
+  body.mvp-theme-4 .field-grid.two {
+    grid-template-columns: 1fr;
+  }
+
+  body.mvp-theme-5 .app-shell {
+    max-width: 760px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  body.mvp-theme-5 .intro,
+  body.mvp-theme-5 .site-nav-panel {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+    margin: 0;
+  }
+
+  body.mvp-theme-5 .home-title-button {
+    font-size: 40px;
+    line-height: 1.08;
+    text-align: left;
+  }
+
+  body.mvp-theme-5 .header-account-box {
+    width: 100%;
+  }
+
+  body.mvp-theme-5 .calculator-category-nav {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+    padding: 0;
+    background: transparent;
+  }
+
+  body.mvp-theme-5 .calculator-category-nav button,
+  body.mvp-theme-5 .calculator-category-nav a {
+    justify-content: center;
+    width: 100%;
+  }
+
+  body.mvp-theme-5 .quick-home-card {
+    padding: 28px 20px;
+  }
+
+  body.mvp-theme-5 .home-accuracy-points {
+    grid-template-columns: 1fr;
+  }
+
+  body.mvp-theme-5 .banner-grid {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    padding-bottom: 8px;
+    scroll-snap-type: x mandatory;
+  }
+
+  body.mvp-theme-5 .banner-grid .calc-banner {
+    min-width: 76%;
+    scroll-snap-align: start;
+  }
+
+  body.mvp-theme-5 .selected-banner {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  body.mvp-theme-5 .quick-switch {
+    display: flex;
+    overflow-x: auto;
+    padding: 8px;
+    border-radius: 999px;
+  }
+
+  body.mvp-theme-5 .quick-switch button {
+    min-width: max-content;
+  }
+
+  body.mvp-theme-5 .calculator-layout {
+    display: flex;
+    flex-direction: column;
+  }
+
+  body.mvp-theme-5 .preview-panel {
+    order: -1;
+    border-left: 0;
+    border-bottom: 1px solid #ebd7dc;
+  }
+
+  body.mvp-theme-5 .form-panel {
+    order: 1;
+  }
+}
+
+@media (max-width: 980px) {
+  body.mvp-theme-2 .intro,
+  body.mvp-theme-3 .intro,
+  body.mvp-theme-4 .intro,
+  body.mvp-theme-5 .intro {
+    position: static;
+    min-height: 0;
+  }
+
+  body.mvp-theme-2 .site-nav-panel,
+  body.mvp-theme-3 .site-nav-panel,
+  body.mvp-theme-4 .site-nav-panel {
+    position: static;
+    min-height: 0;
+  }
+
+  body.mvp-theme-5 .calculator-layout {
+    display: flex;
+    flex-direction: column;
+  }
+
+  body.mvp-theme-5 .preview-panel {
+    order: -1;
+  }
+}
