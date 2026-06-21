@@ -35,12 +35,6 @@ export const COMMUNITY_CATEGORIES = {
     title: "초보 셀러 질문답변",
     description: "쿠팡셀러와 개인셀러가 자주 묻는 비용, 마진, 입고, 세금 질문을 답변형으로 정리합니다.",
   },
-  resources: {
-    slug: "resources",
-    label: "자료실",
-    title: "셀러 자료실",
-    description: "체크리스트, 계산 기준, 비교표, 외부 확인 경로를 모아두는 자료실입니다.",
-  },
 };
 
 export const COMMUNITY_STAGE_SLUGS = [
@@ -51,7 +45,7 @@ export const COMMUNITY_STAGE_SLUGS = [
   "final-margin",
 ];
 
-export const COMMUNITY_BOARD_SLUGS = ["qna", "resources"];
+export const COMMUNITY_BOARD_SLUGS = ["qna"];
 
 export const LEGACY_COMMUNITY_CATEGORY_REDIRECTS = {
   tips: "final-margin",
@@ -490,7 +484,7 @@ export const SEED_COMMUNITY_POSTS = [
   },
   {
     slug: "weekly-seller-reading-list",
-    category: "resources",
+    category: "final-margin",
     title: "이번 주 셀러가 읽어볼 계산 기준 모음",
     summary: "로켓그로스 비용 계산, 쿠팡 수수료, LCL 물류비, 수입 부가세 기준을 한 번에 볼 수 있게 모았습니다.",
     tags: ["로켓그로스", "LCL", "쿠팡수수료", "세금"],

@@ -31,6 +31,14 @@ const KAKAO_REST_API_KEY = process.env.KAKAO_REST_API_KEY || "";
 const KAKAO_CLIENT_SECRET = process.env.KAKAO_CLIENT_SECRET || "";
 const KAKAO_REDIRECT_URI = process.env.KAKAO_REDIRECT_URI || `http://localhost:${PORT}/auth/kakao/callback`;
 const ACCOUNT_FEATURE_ENABLED = !["off", "disabled", "hidden"].includes(String(process.env.ACCOUNT_FEATURE_ENABLED || "").toLowerCase());
+const SEARCH_TREND_CACHE_TTL_MS = Number(process.env.SEARCH_TREND_CACHE_TTL_MS || 1000 * 60 * 10);
+const GOOGLE_TRENDS_RSS_URL = process.env.GOOGLE_TRENDS_RSS_URL || "https://trends.google.com/trending/rss?geo=KR";
+const NAVER_TREND_API_URL = process.env.NAVER_TREND_API_URL || "";
+const DAUM_TREND_API_URL = process.env.DAUM_TREND_API_URL || "";
+let searchTrendCache = {
+  expiresAt: 0,
+  data: null,
+};
 const app = express();
 app.disable("x-powered-by");
 app.use(express.json({ limit: "1mb" }));
@@ -391,6 +399,11 @@ app.post("/api/community/reactions", requireLogin, (req, res) => {
   res.json({ post: getCommunityPostById(post.id), active: !existing, type });
 });
 
+app.get("/api/search-trends", async (req, res) => {
+  const trends = await getSearchTrends();
+  res.json(trends);
+});
+
 app.get(["/", "/index.html"], (req, res) => {
   const requestedCategory = String(req.query.category || "");
   if (HIDDEN_CALCULATOR_CATEGORIES.has(requestedCategory)) {
@@ -414,7 +427,15 @@ app.get("/community/:legacyCategory(tips|cases|operations|logistics)", (req, res
   res.redirect(301, `/community/${target}`);
 });
 
-app.get("/community/:category(china-sourcing|china-korea-logistics|korea-coupang-inbound|coupang-selling-cost|final-margin|qna|resources)", (req, res) => {
+app.get("/community/resources", (req, res) => {
+  res.redirect(301, "/trends");
+});
+
+app.get("/community/trends", (req, res) => {
+  res.redirect(301, "/trends");
+});
+
+app.get("/community/:category(china-sourcing|china-korea-logistics|korea-coupang-inbound|coupang-selling-cost|final-margin|qna)", (req, res) => {
   res.type("html").send(renderCommunityCategoryPage(req.params.category));
 });
 
@@ -431,6 +452,11 @@ app.get("/community/:slug", (req, res) => {
 
 app.get(["/guides", "/guides/"], (req, res) => {
   res.type("html").send(renderGuideIndexPage());
+});
+
+app.get(["/trends", "/trends/"], async (req, res) => {
+  const trends = await getSearchTrends();
+  res.type("html").send(renderTrendPage(trends));
 });
 
 app.get("/guides/:slug", (req, res) => {
@@ -512,10 +538,9 @@ function renderCommunityIndexPage() {
   const description =
     "쿠팡셀러와 개인셀러를 위한 로켓그로스 5단계 커뮤니티입니다. 중국사입, 중국→한국 물류, 한국→쿠팡 입고, 쿠팡 소모 비용, 최종 비용을 단계별로 묻고 답합니다.";
   const canonicalUrl = `${PUBLIC_SITE_URL}/community`;
-  const recentPosts = getCommunityPosts({ limit: 12 });
-  const featuredPosts = getCommunityPosts({ featured: true, limit: 5 });
+  const recentPosts = getCommunityPosts({ limit: 18 });
+  const featuredPosts = getCommunityPosts({ featured: true, limit: 6 });
   const qnaPosts = getCommunityPosts({ category: "qna", limit: 4 });
-  const resourcePosts = getCommunityPosts({ category: "resources", limit: 4 });
 
   return renderDocumentShell({
     title,
@@ -523,34 +548,30 @@ function renderCommunityIndexPage() {
     canonicalUrl,
     body: `<main class="community-shell">
       ${renderCommunityHeader("community")}
-      <section class="community-workspace">
-        <aside class="community-left-rail">
-          ${renderCommunityCategoryNav("community", "rail")}
-        </aside>
+      <section class="community-forum-shell">
         <section class="community-feed-panel" aria-labelledby="community-title">
           <div class="community-feed-head">
             <div>
               <span class="community-page-label">셀러 커뮤니티</span>
-              <h1 id="community-title">로켓그로스 비용 게시판</h1>
-              <p>5단계 비용 질문과 사례를 모았습니다.</p>
+              <h1 id="community-title">쿠팡셀러 비용 게시판</h1>
             </div>
             <a class="community-head-action" href="/community/qna">질문하기</a>
           </div>
-          <nav class="community-feed-tabs" aria-label="커뮤니티 빠른 이동">
-            <a class="is-active" href="/community">전체</a>
-            <a href="/community/final-margin">비용 사례</a>
-            <a href="/community/qna">질문답변</a>
-            <a href="/community/resources">자료실</a>
-          </nav>
-          ${renderCommunityPostSection("전체 글", recentPosts, "feed")}
-          ${renderCommunityPostSection("고정 글", featuredPosts, "compact")}
+          ${renderCommunityStageTabs("community")}
+          ${renderCommunityPostSection("최신 글", recentPosts, "feed")}
+          <details class="community-collapsible-panel community-board-extra">
+            <summary>
+              <strong>고정 글</strong>
+              <span>${formatInteger(featuredPosts.length)}개</span>
+            </summary>
+            ${renderCommunityPostSection("고정 글", featuredPosts, "compact")}
+          </details>
         </section>
         <aside class="community-right-rail">
           ${renderCommunityStats()}
           ${renderCommunityWritePanel()}
-          ${renderCommunityBoardNav("community")}
+          ${renderTrendMiniPanel()}
           ${renderCommunityCollapsedPostPanel("최근 질문", qnaPosts)}
-          ${renderCommunityCollapsedPostPanel("자료실", resourcePosts)}
           ${renderCommunityTagPanel()}
         </aside>
       </section>
@@ -564,7 +585,7 @@ function renderCommunityCategoryPage(categorySlug) {
   const category = COMMUNITY_CATEGORIES[categorySlug] || COMMUNITY_CATEGORIES["final-margin"];
   const posts = getCommunityPosts({ category: category.slug, limit: 40 });
   const canonicalUrl = `${PUBLIC_SITE_URL}/community/${category.slug}`;
-  const isBoard = COMMUNITY_BOARD_SLUGS.includes(category.slug);
+  const featuredPosts = getCommunityPosts({ featured: true, limit: 4 });
 
   return renderDocumentShell({
     title: `${category.title} | 로켓그로스 계산기 커뮤니티`,
@@ -572,24 +593,22 @@ function renderCommunityCategoryPage(categorySlug) {
     canonicalUrl,
     body: `<main class="community-shell">
       ${renderCommunityHeader(category.slug)}
-      <section class="community-workspace">
-        <aside class="community-left-rail">
-          ${isBoard ? renderCommunityBoardNav(category.slug) : renderCommunityCategoryNav(category.slug, "rail")}
-        </aside>
+      <section class="community-forum-shell">
         <section class="community-feed-panel" aria-labelledby="community-category-title">
           <div class="community-feed-head">
             <div>
               <span class="community-page-label">${escapeHtml(category.label)}</span>
               <h1 id="community-category-title">${escapeHtml(category.title)}</h1>
-              <p>${escapeHtml(shortenText(category.description, 24))}</p>
             </div>
             <a class="community-head-action" href="/community">전체 보기</a>
           </div>
+          ${renderCommunityStageTabs(category.slug)}
           ${renderCommunityPostSection(`${category.label} 글`, posts, "feed")}
         </section>
         <aside class="community-right-rail">
           ${renderCommunityWritePanel(category.slug)}
-          ${isBoard ? renderCommunityCategoryNav("community", "rail") : renderCommunityBoardNav(category.slug)}
+          ${renderTrendMiniPanel()}
+          ${renderCommunityCollapsedPostPanel("추천 글", featuredPosts)}
           ${renderCommunityTagPanel()}
         </aside>
       </section>
@@ -668,7 +687,7 @@ function renderCommunityHeader(activeKey) {
     { key: "calculator", label: "계산기 홈", href: "/" },
     { key: "community", label: "셀러 커뮤니티", href: "/community" },
     { key: "qna", label: "질문답변", href: "/community/qna" },
-    { key: "resources", label: "자료실", href: "/community/resources" },
+    { key: "trends", label: "검색 트렌드", href: "/trends" },
     { key: "guides", label: "계산 기준", href: "/guides" },
   ];
 
@@ -684,6 +703,38 @@ function renderCommunityHeader(activeKey) {
         .join("")}
     </nav>
   </header>`;
+}
+
+function renderCommunityStageTabs(activeKey = "community") {
+  const counts = getCommunityCategoryCounts();
+  const stageCount = COMMUNITY_STAGE_SLUGS.reduce((sum, slug) => sum + (counts[slug] || 0), 0);
+  const items = [
+    { slug: "community", label: "전체", href: "/community", count: stageCount },
+    ...COMMUNITY_STAGE_SLUGS.map((slug) => ({
+      slug,
+      label: COMMUNITY_CATEGORIES[slug].label,
+      href: `/community/${slug}`,
+      count: counts[slug] || 0,
+    })),
+    {
+      slug: "qna",
+      label: "질문답변",
+      href: "/community/qna",
+      count: counts.qna || 0,
+    },
+  ];
+
+  return `<nav class="community-feed-tabs community-stage-tabs" aria-label="커뮤니티 단계">
+    ${items
+      .map((item) => {
+        const isActive = item.slug === activeKey || (activeKey === "community" && item.slug === "community");
+        return `<a class="${isActive ? "is-active" : ""}" href="${item.href}" ${isActive ? 'aria-current="page"' : ""}>
+          <span>${escapeHtml(item.label)}</span>
+          <em>${formatInteger(item.count)}</em>
+        </a>`;
+      })
+      .join("")}
+  </nav>`;
 }
 
 function renderCommunityCategoryNav(activeKey = "community", mode = "default") {
@@ -747,7 +798,7 @@ function renderCommunityBoardNav(activeKey = "community") {
   return `<section class="community-board-nav" aria-labelledby="community-board-title">
     <div>
       <span>보드</span>
-      <h2 id="community-board-title">질문·자료</h2>
+      <h2 id="community-board-title">질문답변</h2>
     </div>
     <div class="community-board-links">
       ${boards
@@ -766,7 +817,7 @@ function renderCommunityStats() {
   const total = Object.values(counts).reduce((sum, count) => sum + count, 0);
   return `<section class="community-stat-card is-compact" aria-label="커뮤니티 현황">
     <strong>현황</strong>
-    <p>전체 ${formatInteger(total)} · 질문 ${formatInteger(counts.qna || 0)} · 자료 ${formatInteger(counts.resources || 0)}</p>
+    <p>전체 ${formatInteger(total)} · 질문 ${formatInteger(counts.qna || 0)}</p>
   </section>`;
 }
 
@@ -796,14 +847,26 @@ function renderCommunityCollapsedPostPanel(title, posts) {
 
 function renderCommunityPostCard(post, mode = "default") {
   const category = COMMUNITY_CATEGORIES[post.category] || COMMUNITY_CATEGORIES["final-margin"];
-  const showSummary = mode === "summary";
-  return `<a class="community-post-card" href="/community/${post.slug}">
-    <span class="community-post-badge">${escapeHtml(category.label)}</span>
-    <div>
+  const isCompact = mode === "compact";
+  const tags = post.tags.slice(0, isCompact ? 1 : 3);
+  return `<a class="community-post-card ${isCompact ? "is-compact" : ""}" href="/community/${post.slug}">
+    ${
+      isCompact
+        ? ""
+        : `<dl class="community-post-metrics" aria-label="글 지표">
+            <div><dt>댓글</dt><dd>${formatInteger(post.commentsCount)}</dd></div>
+            <div><dt>조회</dt><dd>${formatInteger(post.views)}</dd></div>
+          </dl>`
+    }
+    <div class="community-post-main">
+      <span class="community-post-badge">${escapeHtml(category.label)}</span>
       <strong>${escapeHtml(post.title)}</strong>
-      ${showSummary ? `<p>${escapeHtml(post.summary)}</p>` : ""}
+      ${isCompact ? "" : `<p>${escapeHtml(post.summary)}</p>`}
+      <div class="community-row-tags">
+        ${tags.map((tag) => `<span>#${escapeHtml(tag)}</span>`).join("")}
+      </div>
     </div>
-    <em>댓글 ${formatInteger(post.commentsCount)}</em>
+    <em>${formatDate(post.updatedAt || post.createdAt)}</em>
   </a>`;
 }
 
@@ -863,6 +926,121 @@ function renderCommunityTagPanel() {
     </summary>
     <div>${tags.map((tag) => `<a href="/community?tag=${encodeURIComponent(tag)}">#${escapeHtml(tag)}</a>`).join("")}</div>
   </details>`;
+}
+
+function renderTrendMiniPanel() {
+  return `<section class="community-trend-mini" aria-labelledby="community-trend-mini-title">
+    <div>
+      <span>검색 흐름</span>
+      <strong id="community-trend-mini-title">실시간 검색어</strong>
+    </div>
+    <p>Google은 자동 갱신, 네이버·다음은 제공 경로 연결 후 표시합니다.</p>
+    <a href="/trends">트렌드 보기</a>
+  </section>`;
+}
+
+function renderTrendPage(trends) {
+  const title = "실시간 검색 트렌드 | 로켓그로스 계산기";
+  const description =
+    "Google, 네이버, 다음 검색 트렌드를 10분 캐시 기준으로 확인하는 셀러용 트렌드 화면입니다. 상품 소싱과 콘텐츠 주제 발굴에 참고할 수 있습니다.";
+  const canonicalUrl = `${PUBLIC_SITE_URL}/trends`;
+
+  return renderDocumentShell({
+    title,
+    description,
+    canonicalUrl,
+    body: `<main class="community-shell">
+      ${renderCommunityHeader("trends")}
+      <section class="trend-page" aria-labelledby="trend-page-title">
+        <div class="trend-page-head">
+          <div>
+            <span class="community-page-label">검색 트렌드</span>
+            <h1 id="trend-page-title">실시간 검색어 흐름</h1>
+          </div>
+          <p>10분마다 새로 확인합니다.</p>
+        </div>
+        <div class="trend-provider-grid" data-trend-grid>
+          ${trends.providers.map(renderTrendProviderCard).join("")}
+        </div>
+        <section class="trend-note-panel">
+          <strong>운영 기준</strong>
+          <p>검색어 순위는 상품 소싱과 콘텐츠 아이디어 참고용입니다. 네이버·다음은 제공 경로가 확정되면 같은 화면에 자동 반영됩니다.</p>
+        </section>
+      </section>
+    </main>`,
+    jsonLd: buildTrendPageJsonLd(title, description, canonicalUrl, trends),
+    script: renderTrendScript(),
+  });
+}
+
+function renderTrendProviderCard(provider) {
+  const statusLabel = provider.status === "ok" ? "표시 중" : provider.status === "unconfigured" ? "준비 중" : "확인 필요";
+  const items = provider.items.slice(0, 10);
+  return `<article class="trend-provider-card" data-trend-provider="${escapeHtml(provider.key)}">
+    <header>
+      <div>
+        <span>${escapeHtml(statusLabel)}</span>
+        <h2>${escapeHtml(provider.label)}</h2>
+      </div>
+      <time datetime="${escapeHtml(provider.updatedAt || "")}">${provider.updatedAt ? formatDate(provider.updatedAt) : "대기"}</time>
+    </header>
+    ${
+      items.length
+        ? `<ol class="trend-keyword-list">
+            ${items
+              .map(
+                (item, index) => `<li>
+                  <b>${index + 1}</b>
+                  ${item.url ? `<a href="${escapeHtml(item.url)}" rel="nofollow noopener" target="_blank">${escapeHtml(item.title)}</a>` : `<span>${escapeHtml(item.title)}</span>`}
+                  ${item.traffic ? `<em>${escapeHtml(item.traffic)}</em>` : ""}
+                </li>`,
+              )
+              .join("")}
+          </ol>`
+        : `<p class="trend-provider-empty">${escapeHtml(provider.message || "표시할 검색어가 없습니다.")}</p>`
+    }
+  </article>`;
+}
+
+function renderTrendScript() {
+  return `<script>
+    (function () {
+      var grid = document.querySelector("[data-trend-grid]");
+      if (!grid) return;
+      function escapeText(value) {
+        return String(value || "").replace(/[&<>"']/g, function (char) {
+          return ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char];
+        });
+      }
+      function renderProvider(provider) {
+        var status = provider.status === "ok" ? "표시 중" : provider.status === "unconfigured" ? "준비 중" : "확인 필요";
+        var list = (provider.items || []).slice(0, 10);
+        return '<article class="trend-provider-card" data-trend-provider="' + escapeText(provider.key) + '">' +
+          '<header><div><span>' + escapeText(status) + '</span><h2>' + escapeText(provider.label) + '</h2></div>' +
+          '<time>' + escapeText(provider.updatedAt ? provider.updatedAt.slice(0, 10) : "대기") + '</time></header>' +
+          (list.length
+            ? '<ol class="trend-keyword-list">' + list.map(function (item, index) {
+                return '<li><b>' + (index + 1) + '</b>' +
+                  (item.url ? '<a href="' + escapeText(item.url) + '" rel="nofollow noopener" target="_blank">' + escapeText(item.title) + '</a>' : '<span>' + escapeText(item.title) + '</span>') +
+                  (item.traffic ? '<em>' + escapeText(item.traffic) + '</em>' : '') + '</li>';
+              }).join("") + '</ol>'
+            : '<p class="trend-provider-empty">' + escapeText(provider.message || "표시할 검색어가 없습니다.") + '</p>') +
+          '</article>';
+      }
+      async function refreshTrends() {
+        try {
+          var response = await fetch("/api/search-trends", { headers: { "Accept": "application/json" } });
+          if (!response.ok) return;
+          var data = await response.json();
+          grid.innerHTML = (data.providers || []).map(renderProvider).join("");
+          if (typeof gtag === "function") gtag("event", "trend_refresh", { providers: (data.providers || []).length });
+        } catch (error) {
+          // Keep the server-rendered list if refresh fails.
+        }
+      }
+      window.setInterval(refreshTrends, 600000);
+    })();
+  </script>`;
 }
 
 function renderCommunityFaq(post) {
@@ -981,7 +1159,7 @@ function renderCommunityScript(postSlug = "") {
 }
 
 function renderGuideIndexPage() {
-  const title = "로켓그로스 계산 기준 자료실";
+  const title = "로켓그로스 계산 기준";
   const description =
     "로켓그로스 계산기, LCL 물류비, 수입 부가세, 쿠팡 파레트 비용, 쿠팡 판매 수수료처럼 초보 셀러가 헷갈리는 계산 기준을 문서로 정리한 지식 허브입니다.";
   const canonicalUrl = `${PUBLIC_SITE_URL}/guides`;
@@ -1006,16 +1184,12 @@ function renderGuideIndexPage() {
     canonicalUrl,
     body: `<main class="community-shell">
       ${renderCommunityHeader("guides")}
-      <section class="community-workspace">
-        <aside class="community-left-rail">
-          ${renderCommunityCategoryNav("community", "rail")}
-        </aside>
+      <section class="community-forum-shell">
         <section class="community-feed-panel" aria-labelledby="guide-library-title">
           <div class="community-feed-head">
             <div>
               <span class="community-page-label">계산 기준</span>
-              <h1 id="guide-library-title">셀러 비용 자료실</h1>
-              <p>세금·수수료·물류 기준을 정리했습니다.</p>
+              <h1 id="guide-library-title">셀러 비용 계산 기준</h1>
             </div>
             <a class="community-head-action" href="/">계산기 홈</a>
           </div>
@@ -1028,11 +1202,11 @@ function renderGuideIndexPage() {
           </section>
         </section>
         <aside class="community-right-rail">
-          <section class="community-stat-card is-compact" aria-label="자료실 현황">
-            <strong>자료실</strong>
+          <section class="community-stat-card is-compact" aria-label="계산 기준 현황">
+            <strong>계산 기준</strong>
             <p>문서 ${formatInteger(SEO_GUIDES.length)} · FAQ ${formatInteger(SEO_GUIDES.reduce((sum, guide) => sum + guide.faq.length, 0))}</p>
           </section>
-          ${renderCommunityBoardNav("resources")}
+          ${renderTrendMiniPanel()}
           ${renderCommunityTagPanel()}
         </aside>
       </section>
@@ -1270,6 +1444,40 @@ function buildGuideJsonLd(guide, canonicalUrl) {
   };
 }
 
+function buildTrendPageJsonLd(title, description, canonicalUrl, trends) {
+  const items = trends.providers
+    .flatMap((provider) => provider.items.map((item) => ({ provider: provider.label, ...item })))
+    .slice(0, 30);
+
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      buildOrganizationNode(),
+      {
+        "@type": "CollectionPage",
+        "@id": `${canonicalUrl}#webpage`,
+        name: title,
+        description,
+        url: canonicalUrl,
+        inLanguage: "ko-KR",
+        isPartOf: {
+          "@id": `${PUBLIC_SITE_URL}/#website`,
+        },
+      },
+      {
+        "@type": "ItemList",
+        "@id": `${canonicalUrl}#items`,
+        itemListElement: items.map((item, index) => ({
+          "@type": "ListItem",
+          position: index + 1,
+          name: `${item.provider}: ${item.title}`,
+          url: item.url || canonicalUrl,
+        })),
+      },
+    ],
+  };
+}
+
 function buildCommunityIndexJsonLd(title, description, canonicalUrl, posts) {
   return {
     "@context": "https://schema.org",
@@ -1483,13 +1691,167 @@ function buildOrganizationNode() {
   };
 }
 
+async function getSearchTrends() {
+  const now = Date.now();
+  if (searchTrendCache.data && searchTrendCache.expiresAt > now) {
+    return searchTrendCache.data;
+  }
+
+  const providers = await Promise.all([
+    fetchGoogleSearchTrends(),
+    fetchConfiguredTrendProvider({
+      key: "naver",
+      label: "네이버",
+      url: NAVER_TREND_API_URL,
+      message: "네이버 트렌드 제공 경로를 연결하면 표시됩니다.",
+    }),
+    fetchConfiguredTrendProvider({
+      key: "daum",
+      label: "다음",
+      url: DAUM_TREND_API_URL,
+      message: "다음 트렌드 제공 경로를 연결하면 표시됩니다.",
+    }),
+  ]);
+  const data = {
+    updatedAt: new Date().toISOString(),
+    cacheTtlSeconds: Math.round(SEARCH_TREND_CACHE_TTL_MS / 1000),
+    providers,
+  };
+
+  searchTrendCache = {
+    expiresAt: now + SEARCH_TREND_CACHE_TTL_MS,
+    data,
+  };
+
+  return data;
+}
+
+async function fetchGoogleSearchTrends() {
+  try {
+    const response = await fetch(GOOGLE_TRENDS_RSS_URL, {
+      headers: {
+        Accept: "application/rss+xml, application/xml, text/xml",
+        "User-Agent": "rocket-growth-calculator/1.0",
+      },
+    });
+    if (!response.ok) {
+      throw new Error(`Google Trends RSS ${response.status}`);
+    }
+    const xml = await response.text();
+    const items = parseGoogleTrendsRss(xml).slice(0, 10);
+    return {
+      key: "google",
+      label: "Google",
+      status: items.length ? "ok" : "empty",
+      updatedAt: new Date().toISOString(),
+      sourceUrl: GOOGLE_TRENDS_RSS_URL,
+      items,
+      message: items.length ? "" : "Google Trends RSS에서 검색어를 찾지 못했습니다.",
+    };
+  } catch (error) {
+    return {
+      key: "google",
+      label: "Google",
+      status: "error",
+      updatedAt: new Date().toISOString(),
+      sourceUrl: GOOGLE_TRENDS_RSS_URL,
+      items: [],
+      message: "Google Trends 연결을 확인해 주세요.",
+    };
+  }
+}
+
+async function fetchConfiguredTrendProvider({ key, label, url, message }) {
+  if (!url) {
+    return {
+      key,
+      label,
+      status: "unconfigured",
+      updatedAt: "",
+      sourceUrl: "",
+      items: [],
+      message,
+    };
+  }
+
+  try {
+    const response = await fetch(url, {
+      headers: {
+        Accept: "application/json",
+        "User-Agent": "rocket-growth-calculator/1.0",
+      },
+    });
+    if (!response.ok) {
+      throw new Error(`${label} trend API ${response.status}`);
+    }
+    const payload = await response.json();
+    const sourceItems = Array.isArray(payload) ? payload : Array.isArray(payload.items) ? payload.items : [];
+    const items = sourceItems
+      .map((item) => ({
+        title: normalizeText(item.title || item.keyword || item.query || item.name, 80),
+        traffic: normalizeText(item.traffic || item.volume || item.rankText || "", 40),
+        url: normalizeText(item.url || item.link || "", 300),
+      }))
+      .filter((item) => item.title)
+      .slice(0, 10);
+
+    return {
+      key,
+      label,
+      status: items.length ? "ok" : "empty",
+      updatedAt: new Date().toISOString(),
+      sourceUrl: url,
+      items,
+      message: items.length ? "" : "연결된 API에서 표시할 검색어를 찾지 못했습니다.",
+    };
+  } catch (error) {
+    return {
+      key,
+      label,
+      status: "error",
+      updatedAt: new Date().toISOString(),
+      sourceUrl: url,
+      items: [],
+      message: `${label} 트렌드 연결을 확인해 주세요.`,
+    };
+  }
+}
+
+function parseGoogleTrendsRss(xml) {
+  return [...String(xml || "").matchAll(/<item>([\s\S]*?)<\/item>/gi)].map((match) => {
+    const block = match[1];
+    return {
+      title: decodeXmlText(extractXmlTag(block, "title")),
+      traffic: decodeXmlText(extractXmlTag(block, "ht:approx_traffic") || extractXmlTag(block, "approx_traffic")),
+      url: decodeXmlText(extractXmlTag(block, "link")),
+    };
+  }).filter((item) => item.title);
+}
+
+function extractXmlTag(block, tagName) {
+  const escapedTag = tagName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const match = String(block || "").match(new RegExp(`<${escapedTag}[^>]*>([\\s\\S]*?)<\\/${escapedTag}>`, "i"));
+  return match ? match[1] : "";
+}
+
+function decodeXmlText(value) {
+  return String(value || "")
+    .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, "$1")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .trim();
+}
+
 function getCalculatorHref(slug) {
   const routes = {
     "rocket-growth-calculator": "/",
     "margin-price-calculator": "/community/final-margin",
     "china-purchase-cost": "/community/china-sourcing",
     "ad-break-even-roas": "/community/coupang-selling-cost",
-    "cash-flow-calculator": "/community/resources",
+    "cash-flow-calculator": "/guides/cash-flow-calculator",
     "lcl-logistics-cost": "china-korea",
     "import-vat-customs": "china-korea",
     "coupang-pallet-cost": "korea-coupang",
@@ -1541,6 +1903,7 @@ function renderSitemapXml() {
   const urls = [
     { loc: `${PUBLIC_SITE_URL}/`, priority: "1.0", changefreq: "weekly" },
     { loc: `${PUBLIC_SITE_URL}/community`, priority: "0.9", changefreq: "weekly" },
+    { loc: `${PUBLIC_SITE_URL}/trends`, priority: "0.8", changefreq: "daily" },
     ...communityCategories,
     ...communityPosts,
     { loc: `${PUBLIC_SITE_URL}/guides`, priority: "0.8", changefreq: "monthly" },
@@ -1605,13 +1968,13 @@ function renderLlmsTxt() {
     "",
     "## 셀러 커뮤니티",
     `- 커뮤니티 홈: ${PUBLIC_SITE_URL}/community`,
+    `- 검색 트렌드: ${PUBLIC_SITE_URL}/trends`,
     `- 중국사입 단계: ${PUBLIC_SITE_URL}/community/china-sourcing`,
     `- 중국→한국 물류: ${PUBLIC_SITE_URL}/community/china-korea-logistics`,
     `- 한국→쿠팡 입고: ${PUBLIC_SITE_URL}/community/korea-coupang-inbound`,
     `- 쿠팡 소모 비용: ${PUBLIC_SITE_URL}/community/coupang-selling-cost`,
     `- 최종 비용·마진: ${PUBLIC_SITE_URL}/community/final-margin`,
     `- 질문답변: ${PUBLIC_SITE_URL}/community/qna`,
-    `- 자료실: ${PUBLIC_SITE_URL}/community/resources`,
     communityList,
     "",
     "## 대표 질문",
