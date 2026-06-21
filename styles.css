@@ -4948,9 +4948,12 @@ body.wc-save-lock {
 }
 
 .mvp-board-head a,
+.mvp-board-head button,
 .mvp-finance-report a,
 .mvp-workspace-result a,
-.mvp-phone-frame a {
+.mvp-phone-frame a,
+.mvp-phone-frame button,
+.mvp-action-row button {
   align-self: start;
   display: inline-flex;
   justify-content: center;
@@ -4961,6 +4964,45 @@ body.wc-save-lock {
   background: #2f80ed;
   color: #fff;
   font-weight: 900;
+}
+
+.mvp-board-head button,
+.mvp-phone-frame button,
+.mvp-action-row button {
+  border: 0;
+  cursor: pointer;
+}
+
+.mvp-action-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.mvp-action-row button + button {
+  background: #e8edf5;
+  color: #111827;
+}
+
+.mvp-board-calculator {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 280px;
+  gap: 16px;
+  padding: 18px 20px;
+  border-bottom: 1px solid #d8dee8;
+  background: #f8fafc;
+}
+
+.mvp-board-form {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.mvp-board-result {
+  display: grid;
+  gap: 8px;
 }
 
 .mvp-board-table article {
@@ -5008,14 +5050,12 @@ body.wc-save-lock {
 
 .mvp-finance-inputs {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
   margin-top: 28px;
 }
 
-.mvp-finance-inputs label,
-.mvp-workspace-form label,
-.mvp-phone-frame label {
+.mvp-input-field {
   display: grid;
   gap: 8px;
   color: #536174;
@@ -5023,18 +5063,89 @@ body.wc-save-lock {
   font-weight: 900;
 }
 
-.mvp-finance-inputs input,
-.mvp-workspace-form input,
-.mvp-phone-frame input {
-  height: 48px;
-  padding: 0 14px;
-  border: 1px solid #cfd8e6;
+.mvp-input-field > div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  min-height: 48px;
+  border: 1px solid #c8d4e5;
   border-radius: 12px;
   background: #fff;
+  overflow: hidden;
+}
+
+.mvp-input-field input {
+  height: 48px;
+  padding: 0 14px;
+  border: 0;
+  background: transparent;
   color: #111827;
   font: inherit;
   font-size: 18px;
   font-weight: 800;
+  outline: none;
+}
+
+.mvp-input-field input:focus {
+  box-shadow: inset 0 0 0 2px #2f80ed;
+}
+
+.mvp-input-field em {
+  padding-right: 12px;
+  color: #617086;
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.mvp-output-card {
+  display: grid;
+  gap: 5px;
+  padding: 12px;
+  border: 1px solid #d8dee8;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.mvp-output-card.is-primary {
+  border-color: #bfd7ff;
+  background: #eaf3ff;
+}
+
+.mvp-output-card span {
+  color: #536174;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.mvp-output-card strong,
+.mvp-output-card [data-mvp-output] {
+  color: #111827;
+  font-size: 20px;
+  font-weight: 900;
+  line-height: 28px;
+}
+
+.mvp-output-card .is-negative,
+[data-mvp-output].is-negative {
+  color: #e5484d !important;
+}
+
+[data-mvp-output="status"] {
+  margin: 0;
+  color: #536174;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 20px;
+}
+
+[data-mvp-output="status"][data-tone="danger"] {
+  color: #c33136;
+}
+
+[data-mvp-output="status"][data-tone="good"] {
+  color: #0b7a45;
 }
 
 .mvp-finance-report {
@@ -5056,6 +5167,14 @@ body.wc-save-lock {
   justify-content: space-between;
   padding: 12px 0;
   border-top: 1px solid rgb(255 255 255 / 16%);
+}
+
+.mvp-finance-report p {
+  margin: 0;
+  color: #cbd5e1;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 20px;
 }
 
 .mvp-finance-report a {
@@ -5122,6 +5241,11 @@ body.wc-save-lock {
 .mvp-workspace-result strong {
   font-size: 26px;
   line-height: 34px;
+}
+
+.mvp-result-grid {
+  display: grid;
+  gap: 8px;
 }
 
 .mvp-workspace-result p {
@@ -5192,6 +5316,38 @@ body.wc-save-lock {
 
 .mvp-phone-frame aside strong {
   font-size: 30px;
+}
+
+.mvp-phone-frame aside em {
+  color: #2475ee;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 900;
+}
+
+.mvp-phone-more {
+  display: grid;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid #d8dee8;
+  border-radius: 14px;
+}
+
+.mvp-phone-more summary {
+  cursor: pointer;
+  color: #2475ee;
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.mvp-phone-more[open] summary {
+  margin-bottom: 12px;
+}
+
+.mvp-phone-summary {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
 }
 
 .community-forum-shell {
@@ -7661,6 +7817,7 @@ em {
   .trend-provider-grid,
   .mvp-index-grid,
   .mvp-forum-layout,
+  .mvp-board-calculator,
   .mvp-finance-layout,
   .mvp-workspace-layout {
     grid-template-columns: 1fr;
@@ -7676,6 +7833,11 @@ em {
   }
 
   .mvp-finance-inputs {
+    grid-template-columns: 1fr;
+  }
+
+  .mvp-board-form,
+  .mvp-phone-summary {
     grid-template-columns: 1fr;
   }
 

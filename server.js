@@ -587,6 +587,7 @@ function renderMvpVariantPage(version) {
       </header>
       ${variant.render()}
     </main>`,
+    script: renderMvpCalculatorScript(),
   });
 }
 
@@ -627,8 +628,127 @@ function getMvpVariants() {
   ];
 }
 
+function renderMvpInput(field, label, value, unit) {
+  return `<label class="mvp-input-field">
+    <span>${escapeHtml(label)}</span>
+    <div>
+      <input type="number" inputmode="decimal" data-mvp-field="${escapeHtml(field)}" value="${escapeHtml(value)}" />
+      <em>${escapeHtml(unit)}</em>
+    </div>
+  </label>`;
+}
+
+function renderMvpOutput(label, key, format = "money", tone = "") {
+  return `<article class="mvp-output-card ${tone ? `is-${escapeHtml(tone)}` : ""}">
+    <span>${escapeHtml(label)}</span>
+    <strong data-mvp-output="${escapeHtml(key)}" data-mvp-format="${escapeHtml(format)}">0${format === "percent" ? "%" : "원"}</strong>
+  </article>`;
+}
+
+function renderMvpCalculatorScript() {
+  return `<script>
+    (function () {
+      var examples = {
+        salePrice: 23900,
+        unitCny: 8.5,
+        quantity: 100,
+        exchangeRate: 190,
+        logistics: 420000,
+        coupangFeeRate: 12,
+        adCost: 150000
+      };
+
+      function toNumber(value) {
+        var number = Number(String(value || "").replace(/[^0-9.-]/g, ""));
+        return Number.isFinite(number) ? number : 0;
+      }
+
+      function read(calc, field) {
+        var input = calc.querySelector('[data-mvp-field="' + field + '"]');
+        return input ? toNumber(input.value) : 0;
+      }
+
+      function setField(calc, field, value) {
+        var input = calc.querySelector('[data-mvp-field="' + field + '"]');
+        if (input) input.value = value;
+      }
+
+      function formatMoney(value) {
+        var sign = value < 0 ? "-" : "";
+        return sign + Math.abs(Math.round(value)).toLocaleString("ko-KR") + "원";
+      }
+
+      function formatPercent(value) {
+        if (!Number.isFinite(value)) return "0%";
+        return Math.round(value * 10) / 10 + "%";
+      }
+
+      function write(calc, key, value, format) {
+        calc.querySelectorAll('[data-mvp-output="' + key + '"]').forEach(function (node) {
+          node.textContent = format === "percent" ? formatPercent(value) : formatMoney(value);
+          node.classList.toggle("is-negative", value < 0);
+        });
+      }
+
+      function calculate(calc) {
+        var salePrice = read(calc, "salePrice");
+        var unitCny = read(calc, "unitCny");
+        var quantity = read(calc, "quantity");
+        var exchangeRate = read(calc, "exchangeRate");
+        var logistics = read(calc, "logistics");
+        var coupangFeeRate = read(calc, "coupangFeeRate");
+        var adCost = read(calc, "adCost");
+        var purchaseTotal = unitCny * quantity * exchangeRate;
+        var feeTotal = salePrice * quantity * coupangFeeRate / 100;
+        var totalSales = salePrice * quantity;
+        var totalCost = purchaseTotal + logistics + feeTotal + adCost;
+        var totalMargin = totalSales - totalCost;
+        var unitCost = quantity > 0 ? totalCost / quantity : 0;
+        var unitMargin = quantity > 0 ? totalMargin / quantity : 0;
+        var marginRate = totalSales > 0 ? totalMargin / totalSales * 100 : 0;
+        var minRoas = adCost > 0 ? totalSales / adCost * 100 : 0;
+        var logisticsRate = totalCost > 0 ? logistics / totalCost * 100 : 0;
+        write(calc, "totalSales", totalSales, "money");
+        write(calc, "purchaseTotal", purchaseTotal, "money");
+        write(calc, "totalCost", totalCost, "money");
+        write(calc, "totalMargin", totalMargin, "money");
+        write(calc, "unitCost", unitCost, "money");
+        write(calc, "unitMargin", unitMargin, "money");
+        write(calc, "marginRate", marginRate, "percent");
+        write(calc, "minRoas", minRoas, "percent");
+        write(calc, "logisticsRate", logisticsRate, "percent");
+        calc.querySelectorAll('[data-mvp-output="status"]').forEach(function (node) {
+          node.textContent = totalMargin < 0
+            ? "현재 입력값 기준 손실입니다. 판매가나 물류·광고비를 다시 봐야 합니다."
+            : "현재 입력값 기준 예상마진이 남습니다.";
+          node.dataset.tone = totalMargin < 0 ? "danger" : "good";
+        });
+      }
+
+      document.querySelectorAll("[data-mvp-calculator]").forEach(function (calc) {
+        calc.addEventListener("input", function (event) {
+          if (event.target.matches("[data-mvp-field]")) calculate(calc);
+        });
+        calc.querySelectorAll("[data-mvp-example]").forEach(function (button) {
+          button.addEventListener("click", function () {
+            Object.keys(examples).forEach(function (field) { setField(calc, field, examples[field]); });
+            calculate(calc);
+          });
+        });
+        calc.querySelectorAll("[data-mvp-reset]").forEach(function (button) {
+          button.addEventListener("click", function () {
+            Object.keys(examples).forEach(function (field) { setField(calc, field, 0); });
+            calculate(calc);
+          });
+        });
+        calculate(calc);
+      });
+    })();
+  </script>`;
+}
+
 function renderMvpForum() {
-  return `<section class="mvp-forum-layout">
+  return `<section class="mvp-forum-layout" data-mvp-calculator>
     <aside class="mvp-board-side">
       <strong>로켓그로스</strong>
       <a class="is-active" href="#mvp">전체 질문</a>
@@ -642,7 +762,25 @@ function renderMvpForum() {
           <span>셀러 질문 중심</span>
           <h1>비슷한 계산 사례부터 찾고 시작합니다.</h1>
         </div>
-        <a href="/?calc=china-sourcing">계산 시작</a>
+        <button type="button" data-mvp-example>예시 불러오기</button>
+      </div>
+      <div class="mvp-board-calculator">
+        <div class="mvp-board-form">
+          ${renderMvpInput("salePrice", "1개 판매가", 23900, "원")}
+          ${renderMvpInput("unitCny", "상품 단가", 8.5, "위안")}
+          ${renderMvpInput("quantity", "수량", 100, "개")}
+          ${renderMvpInput("exchangeRate", "환율", 190, "원")}
+          ${renderMvpInput("logistics", "물류·입고비", 420000, "원")}
+          ${renderMvpInput("coupangFeeRate", "쿠팡 수수료", 12, "%")}
+          ${renderMvpInput("adCost", "광고비", 150000, "원")}
+        </div>
+        <aside class="mvp-board-result">
+          ${renderMvpOutput("총 예상마진", "totalMargin", "money", "primary")}
+          ${renderMvpOutput("1개당 원가", "unitCost", "money")}
+          ${renderMvpOutput("마진율", "marginRate", "percent")}
+          ${renderMvpOutput("최소 ROAS", "minRoas", "percent")}
+          <p data-mvp-output="status">입력값을 바꾸면 결과가 바로 바뀝니다.</p>
+        </aside>
       </div>
       <div class="mvp-board-table">
         ${[
@@ -664,28 +802,39 @@ function renderMvpForum() {
 }
 
 function renderMvpFinance() {
-  return `<section class="mvp-finance-layout">
+  return `<section class="mvp-finance-layout" data-mvp-calculator>
     <div class="mvp-finance-copy">
       <span>판매 전 예상 리포트</span>
       <h1>마진이 남는지 먼저 보고, 부족한 비용을 찾습니다.</h1>
       <div class="mvp-finance-inputs">
-        <label>판매가 <input value="23,900원" readonly /></label>
-        <label>수량 <input value="100개" readonly /></label>
-        <label>총 원가 <input value="1,420,000원" readonly /></label>
+        ${renderMvpInput("salePrice", "1개 판매가", 23900, "원")}
+        ${renderMvpInput("unitCny", "상품 단가", 8.5, "위안")}
+        ${renderMvpInput("quantity", "수량", 100, "개")}
+        ${renderMvpInput("exchangeRate", "환율", 190, "원")}
+        ${renderMvpInput("logistics", "물류·입고비", 420000, "원")}
+        ${renderMvpInput("coupangFeeRate", "쿠팡 수수료", 12, "%")}
+        ${renderMvpInput("adCost", "광고비", 150000, "원")}
+      </div>
+      <div class="mvp-action-row">
+        <button type="button" data-mvp-example>예시 불러오기</button>
+        <button type="button" data-mvp-reset>초기화</button>
       </div>
     </div>
     <aside class="mvp-finance-report">
       <span>예상마진</span>
-      <strong>278,000원</strong>
-      <div><b>마진율</b><em>11.6%</em></div>
-      <div><b>최소 ROAS</b><em>420%</em></div>
-      <a href="/?calc=final">5단계 상세 보기</a>
+      <strong data-mvp-output="totalMargin">0원</strong>
+      <div><b>총 판매액</b><em data-mvp-output="totalSales">0원</em></div>
+      <div><b>총 비용</b><em data-mvp-output="totalCost">0원</em></div>
+      <div><b>1개당 원가</b><em data-mvp-output="unitCost">0원</em></div>
+      <div><b>마진율</b><em data-mvp-output="marginRate">0%</em></div>
+      <div><b>최소 ROAS</b><em data-mvp-output="minRoas">0%</em></div>
+      <p data-mvp-output="status">입력값을 바꾸면 리포트가 바로 바뀝니다.</p>
     </aside>
   </section>`;
 }
 
 function renderMvpWorkspace() {
-  return `<section class="mvp-workspace-layout">
+  return `<section class="mvp-workspace-layout" data-mvp-calculator>
     <aside class="mvp-workspace-nav">
       <strong>계산 단계</strong>
       ${["중국사입", "중국→한국", "한국→쿠팡", "쿠팡 소모", "최종 비용"].map((item, index) => `<a class="${index === 1 ? "is-active" : ""}" href="#mvp">${item}</a>`).join("")}
@@ -695,32 +844,58 @@ function renderMvpWorkspace() {
         <span>2단계</span>
         <h1>중국→한국 물류</h1>
       </div>
-      <label>총 CBM <input value="5.5" readonly /></label>
-      <label>LCL 해상운임 <input value="560,000원" readonly /></label>
-      <label>통관·부가세 <input value="83,670원" readonly /></label>
+      ${renderMvpInput("salePrice", "1개 판매가", 23900, "원")}
+      ${renderMvpInput("unitCny", "상품 단가", 8.5, "위안")}
+      ${renderMvpInput("quantity", "수량", 100, "개")}
+      ${renderMvpInput("exchangeRate", "환율", 190, "원")}
+      ${renderMvpInput("logistics", "물류·입고비", 420000, "원")}
+      ${renderMvpInput("coupangFeeRate", "쿠팡 수수료", 12, "%")}
+      ${renderMvpInput("adCost", "광고비", 150000, "원")}
+      <div class="mvp-action-row">
+        <button type="button" data-mvp-example>예시 불러오기</button>
+        <button type="button" data-mvp-reset>초기화</button>
+      </div>
     </section>
     <aside class="mvp-workspace-result">
       <span>검수 결과</span>
-      <strong>물류비 비중 31%</strong>
-      <p>CBM과 국내 운송비가 총원가에 크게 반영됩니다.</p>
-      <a href="/?calc=china-korea">계산기에서 확인</a>
+      <strong data-mvp-output="totalMargin">0원</strong>
+      <div class="mvp-result-grid">
+        ${renderMvpOutput("총 판매액", "totalSales", "money")}
+        ${renderMvpOutput("총 비용", "totalCost", "money")}
+        ${renderMvpOutput("1개당 원가", "unitCost", "money")}
+        ${renderMvpOutput("마진율", "marginRate", "percent")}
+        ${renderMvpOutput("물류 비중", "logisticsRate", "percent")}
+      </div>
+      <p data-mvp-output="status">입력값을 바꾸면 검수 결과가 바로 바뀝니다.</p>
     </aside>
   </section>`;
 }
 
 function renderMvpWizard() {
-  return `<section class="mvp-wizard-phone">
+  return `<section class="mvp-wizard-phone" data-mvp-calculator>
     <div class="mvp-phone-frame">
       <header><span>1/5</span><strong>중국사입</strong></header>
       <div class="mvp-phone-progress"><i style="width: 20%"></i></div>
-      <label>상품 단가 <input value="8.5 위안" readonly /></label>
-      <label>발주 수량 <input value="100개" readonly /></label>
-      <label>적용 환율 <input value="190원" readonly /></label>
+      ${renderMvpInput("salePrice", "1개 판매가", 23900, "원")}
+      ${renderMvpInput("unitCny", "상품 단가", 8.5, "위안")}
+      ${renderMvpInput("quantity", "발주 수량", 100, "개")}
+      ${renderMvpInput("exchangeRate", "적용 환율", 190, "원")}
+      <details class="mvp-phone-more">
+        <summary>물류·수수료 입력</summary>
+        ${renderMvpInput("logistics", "물류·입고비", 420000, "원")}
+        ${renderMvpInput("coupangFeeRate", "쿠팡 수수료", 12, "%")}
+        ${renderMvpInput("adCost", "광고비", 150000, "원")}
+      </details>
       <aside>
-        <span>현재까지 원가</span>
-        <strong>161,500원</strong>
+        <span>총 예상마진</span>
+        <strong data-mvp-output="totalMargin">0원</strong>
+        <em data-mvp-output="marginRate">0%</em>
       </aside>
-      <a href="/?calc=china-sourcing">다음 단계로 계산</a>
+      <div class="mvp-phone-summary">
+        ${renderMvpOutput("1개당 원가", "unitCost", "money")}
+        ${renderMvpOutput("최소 ROAS", "minRoas", "percent")}
+      </div>
+      <button type="button" data-mvp-example>예시 불러오기</button>
     </div>
   </section>`;
 }
