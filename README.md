@@ -40,6 +40,22 @@ Kakao Developers settings:
 
 Without Kakao keys, the calculator still works, but product saving is blocked with a login/setup message.
 
+## Handoff / MVP Variants
+
+Current project handoff documentation is in:
+
+```text
+docs/handoff/current-project-handoff.md
+```
+
+MVP1 to MVP5 are documented separately in:
+
+```text
+docs/mvp-variants/
+```
+
+MVP2 to MVP5 reuse the same calculator logic as MVP1 and only change the route-level body class and CSS structure. Do not duplicate calculator formulas into separate MVP files unless a larger refactor is explicitly approved.
+
 ## SEO / AEO / GEO
 
 The server injects `PUBLIC_SITE_URL` into canonical links, Open Graph URLs, JSON-LD, `robots.txt`, `sitemap.xml`, and `llms.txt`.
