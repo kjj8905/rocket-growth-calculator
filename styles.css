@@ -9232,3 +9232,455 @@ em {
     padding: 12px 0;
   }
 }
+
+/* Feature-preserving MVP variants.
+   /mvp/2-5 render the real calculator app and only change the visual system. */
+body.mvp-variant-active {
+  min-height: 100vh;
+}
+
+.mvp-variant-notice {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 18px;
+  width: calc(100% - 40px);
+  max-width: 1180px;
+  margin: 18px auto 0;
+  padding: 14px 16px;
+  border: 1px solid var(--ui-border);
+  border-radius: 14px;
+  background: var(--ui-surface);
+  color: var(--ui-text);
+  box-shadow: var(--ui-shadow-subtle);
+}
+
+.mvp-variant-notice span {
+  display: block;
+  margin-bottom: 3px;
+  color: var(--ui-accent);
+  font-size: var(--ui-fs-xs);
+  font-weight: 800;
+}
+
+.mvp-variant-notice strong {
+  display: block;
+  font-size: var(--ui-fs-lg);
+  line-height: 1.35;
+}
+
+.mvp-variant-notice p {
+  margin: 2px 0 0;
+  color: var(--ui-text-muted);
+  font-size: var(--ui-fs-sm);
+  line-height: 1.5;
+}
+
+.mvp-variant-notice nav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.mvp-variant-notice a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
+  padding: 0 13px;
+  border: 1px solid var(--ui-border);
+  border-radius: 999px;
+  color: var(--ui-text);
+  font-size: var(--ui-fs-sm);
+  font-weight: 800;
+  text-decoration: none;
+  background: var(--ui-surface);
+}
+
+.mvp-variant-notice a.is-active {
+  border-color: var(--ui-accent);
+  background: var(--ui-accent);
+  color: #ffffff;
+}
+
+body.mvp-variant-active .app-shell {
+  padding-top: 28px;
+}
+
+body.mvp-theme-2 {
+  --blue-500: #5645d4;
+  --blue-600: #4738bd;
+  --blue-50: #f0ecff;
+  --ui-accent: #5645d4;
+  --ui-accent-soft: #f0ecff;
+  --ui-bg: #fafaf9;
+  --ui-surface-soft: #f6f5f4;
+  --ui-border: #e5e3df;
+  --ui-border-strong: #d6d1ca;
+  --ui-text: #1f1f1d;
+  --ui-text-muted: #5f5b54;
+  background: #fafaf9;
+}
+
+body.mvp-theme-2 .site-nav-panel,
+body.mvp-theme-2 .quick-home-card,
+body.mvp-theme-2 .home-expand-panel,
+body.mvp-theme-2 .form-panel,
+body.mvp-theme-2 .preview-panel,
+body.mvp-theme-2 .stage-help-summary,
+body.mvp-theme-2 .product-box,
+body.mvp-theme-2 .workspace,
+body.mvp-theme-2 .community-shell > section,
+body.mvp-theme-2 .trend-page,
+body.mvp-theme-2 .guide-shell > section {
+  border-color: #e5e3df;
+  border-radius: 16px;
+  box-shadow: none;
+}
+
+body.mvp-theme-2 .site-nav-panel {
+  align-items: center;
+  background: #fffdfa;
+}
+
+body.mvp-theme-2 .calculator-category-nav button.is-active,
+body.mvp-theme-2 .calculator-category-nav a:hover,
+body.mvp-theme-2 .quick-home-detail-button,
+body.mvp-theme-2 .primary-small-button {
+  background: #5645d4;
+  color: #ffffff;
+}
+
+body.mvp-theme-2 .calc-banner {
+  border-radius: 14px;
+  background: #5645d4;
+  box-shadow: none;
+}
+
+body.mvp-theme-2 .mock-field input,
+body.mvp-theme-2 .mock-field select,
+body.mvp-theme-2 .product-name-field input,
+body.mvp-theme-2 .wc-save-field input,
+body.mvp-theme-2 .wc-save-field textarea {
+  border-color: #cfc8bf;
+  background: #fffdfa;
+}
+
+body.mvp-theme-3 {
+  --blue-500: #0f7c49;
+  --blue-600: #0a6339;
+  --blue-50: #effbe8;
+  --green-500: #20a464;
+  --ui-accent: #0f7c49;
+  --ui-accent-soft: #effbe8;
+  --ui-bg: #f5f8f1;
+  --ui-surface-soft: #edf4e8;
+  --ui-border: #c9d8be;
+  --ui-border-strong: #aec4a2;
+  --ui-text: #0e0f0c;
+  --ui-text-muted: #4a5145;
+  background: #e8ebe6;
+}
+
+body.mvp-theme-3 .intro {
+  padding: 18px 20px;
+  border: 0;
+  border-radius: 18px;
+  background: #163300;
+  color: #ffffff;
+}
+
+body.mvp-theme-3 .intro .eyebrow,
+body.mvp-theme-3 .intro #login-status,
+body.mvp-theme-3 .intro .account-status span {
+  color: #dff8cf;
+}
+
+body.mvp-theme-3 .home-title-button {
+  color: #ffffff;
+}
+
+body.mvp-theme-3 .header-account-box {
+  border-color: rgb(159 232 112 / 35%);
+  background: rgb(255 255 255 / 10%);
+  color: #ffffff;
+}
+
+body.mvp-theme-3 .site-nav-panel,
+body.mvp-theme-3 .quick-home-card,
+body.mvp-theme-3 .form-panel,
+body.mvp-theme-3 .preview-panel,
+body.mvp-theme-3 .stage-help-summary,
+body.mvp-theme-3 .home-expand-panel,
+body.mvp-theme-3 .product-box {
+  border-color: #c9d8be;
+  background: #fbfff7;
+}
+
+body.mvp-theme-3 .calculator-category-nav button.is-active,
+body.mvp-theme-3 .quick-home-detail-button,
+body.mvp-theme-3 .primary-small-button {
+  background: #9fe870;
+  color: #0e0f0c;
+}
+
+body.mvp-theme-3 .calc-banner {
+  border-radius: 10px;
+  background: #163300;
+  color: #ffffff;
+}
+
+body.mvp-theme-3 .calc-banner-active,
+body.mvp-theme-3 .calc-banner.is-start-highlight {
+  background: #9fe870;
+  color: #0e0f0c;
+}
+
+body.mvp-theme-3 .result-card,
+body.mvp-theme-3 .computed-output-item,
+body.mvp-theme-3 .cost-summary-row,
+body.mvp-theme-3 .final-profit-grid > div {
+  border-color: #c9d8be;
+  background: #ffffff;
+}
+
+body.mvp-theme-4 {
+  --blue-50: #1b1d2e;
+  --blue-500: #6e78ff;
+  --blue-600: #828fff;
+  --grey-50: #07080d;
+  --grey-100: #11131a;
+  --grey-200: #242736;
+  --grey-300: #343849;
+  --grey-400: #6c7280;
+  --grey-500: #8f96a8;
+  --grey-600: #b8bfce;
+  --grey-700: #d3d8e5;
+  --grey-800: #e8ebf5;
+  --grey-900: #f7f8f8;
+  --white: #101217;
+  --ui-bg: #07080d;
+  --ui-surface: #101217;
+  --ui-surface-soft: #151824;
+  --ui-border: #242736;
+  --ui-border-strong: #343849;
+  --ui-text: #f7f8f8;
+  --ui-text-muted: #b8bfce;
+  --ui-text-faint: #8f96a8;
+  --ui-accent: #6e78ff;
+  --ui-accent-soft: #1b1d2e;
+  background: #07080d;
+  color: #f7f8f8;
+}
+
+body.mvp-theme-4 .mvp-variant-notice,
+body.mvp-theme-4 .site-nav-panel,
+body.mvp-theme-4 .quick-home-card,
+body.mvp-theme-4 .home-expand-panel,
+body.mvp-theme-4 .workspace,
+body.mvp-theme-4 .form-panel,
+body.mvp-theme-4 .preview-panel,
+body.mvp-theme-4 .stage-help-summary,
+body.mvp-theme-4 .product-box,
+body.mvp-theme-4 .wc-save-card,
+body.mvp-theme-4 .save-confirm-card,
+body.mvp-theme-4 .help-modal-card {
+  border-color: #242736;
+  background: #101217;
+  color: #f7f8f8;
+}
+
+body.mvp-theme-4 .home-title-button,
+body.mvp-theme-4 h1,
+body.mvp-theme-4 h2,
+body.mvp-theme-4 h3,
+body.mvp-theme-4 strong {
+  color: #f7f8f8;
+}
+
+body.mvp-theme-4 p,
+body.mvp-theme-4 li,
+body.mvp-theme-4 span,
+body.mvp-theme-4 em {
+  color: #b8bfce;
+}
+
+body.mvp-theme-4 .eyebrow,
+body.mvp-theme-4 .site-nav-copy span,
+body.mvp-theme-4 .community-page-label {
+  color: #828fff;
+}
+
+body.mvp-theme-4 input,
+body.mvp-theme-4 select,
+body.mvp-theme-4 textarea,
+body.mvp-theme-4 .computed-output-item,
+body.mvp-theme-4 .result-card,
+body.mvp-theme-4 .cost-summary-row,
+body.mvp-theme-4 .final-profit-grid > div,
+body.mvp-theme-4 .final-total-card,
+body.mvp-theme-4 .final-business-card {
+  border-color: #343849;
+  background: #151824;
+  color: #f7f8f8;
+}
+
+body.mvp-theme-4 .input-with-unit:not(.disabled) input[data-field],
+body.mvp-theme-4 .input-with-unit:not(.disabled) input[data-field]:focus,
+body.mvp-theme-4 .final-direct-field input,
+body.mvp-theme-4 .final-direct-field input:focus {
+  border-color: #4b5269;
+  background: #151824;
+  color: #f7f8f8;
+  box-shadow:
+    inset 0 0 0 1px rgb(110 120 255 / 18%),
+    0 0 0 3px rgb(110 120 255 / 10%);
+}
+
+body.mvp-theme-4 input:disabled,
+body.mvp-theme-4 .input-with-unit.disabled input {
+  border-color: #2f3445;
+  background: #0f1118;
+  color: #b8bfce;
+}
+
+body.mvp-theme-4 .input-with-unit em,
+body.mvp-theme-4 .field-label-text,
+body.mvp-theme-4 label span {
+  color: #d3d8e5;
+}
+
+body.mvp-theme-4 .wc-field-warning:not(.computed-field) .input-with-unit:not(.disabled) input[data-field],
+body.mvp-theme-4 .wc-field-error:not(.computed-field) .input-with-unit:not(.disabled) input[data-field],
+body.mvp-theme-4 .wc-field-valid:not(.computed-field) .input-with-unit:not(.disabled) input[data-field] {
+  background: #151824;
+  color: #f7f8f8;
+}
+
+body.mvp-theme-4 .wc-field-warning:not(.computed-field) .input-with-unit:not(.disabled) input[data-field] {
+  border-color: #f59e0b;
+  box-shadow:
+    inset 0 0 0 1px rgb(245 158 11 / 22%),
+    0 0 0 3px rgb(245 158 11 / 10%);
+}
+
+body.mvp-theme-4 .wc-field-error:not(.computed-field) .input-with-unit:not(.disabled) input[data-field] {
+  border-color: #fb7185;
+  box-shadow:
+    inset 0 0 0 1px rgb(251 113 133 / 22%),
+    0 0 0 3px rgb(251 113 133 / 10%);
+}
+
+body.mvp-theme-4 .calculator-category-nav button.is-active,
+body.mvp-theme-4 .quick-home-detail-button,
+body.mvp-theme-4 .primary-small-button {
+  background: #6e78ff;
+  color: #ffffff;
+}
+
+body.mvp-theme-4 .calc-banner {
+  border: 1px solid #343849;
+  background: #151824;
+  color: #f7f8f8;
+  box-shadow: none;
+}
+
+body.mvp-theme-4 .calc-banner-active,
+body.mvp-theme-4 .calc-banner.is-start-highlight {
+  border-color: #6e78ff;
+  background: #1b1d2e;
+}
+
+body.mvp-theme-5 {
+  --blue-50: #fff0f3;
+  --blue-500: #ff385c;
+  --blue-600: #e31c5f;
+  --ui-accent: #ff385c;
+  --ui-accent-soft: #fff0f3;
+  --ui-bg: #fff7f8;
+  --ui-surface-soft: #fff1f4;
+  --ui-border: #ebd7dc;
+  --ui-border-strong: #dcc2ca;
+  --ui-text: #222222;
+  --ui-text-muted: #5f5f5f;
+  background: #fff7f8;
+}
+
+body.mvp-theme-5 .app-shell {
+  max-width: 1120px;
+}
+
+body.mvp-theme-5 .site-nav-panel,
+body.mvp-theme-5 .quick-home-card,
+body.mvp-theme-5 .home-expand-panel,
+body.mvp-theme-5 .workspace,
+body.mvp-theme-5 .form-panel,
+body.mvp-theme-5 .preview-panel,
+body.mvp-theme-5 .stage-help-summary,
+body.mvp-theme-5 .product-box {
+  border-color: #ebd7dc;
+  border-radius: 18px;
+  background: #ffffff;
+}
+
+body.mvp-theme-5 .calculator-category-nav,
+body.mvp-theme-5 .quick-switch {
+  gap: 10px;
+}
+
+body.mvp-theme-5 .calculator-category-nav button,
+body.mvp-theme-5 .calculator-category-nav a,
+body.mvp-theme-5 .quick-switch button {
+  min-height: 46px;
+  border-radius: 999px;
+}
+
+body.mvp-theme-5 .calculator-category-nav button.is-active,
+body.mvp-theme-5 .quick-home-detail-button,
+body.mvp-theme-5 .primary-small-button {
+  background: #ff385c;
+  color: #ffffff;
+}
+
+body.mvp-theme-5 .calc-banner {
+  min-height: 108px;
+  border-radius: 18px;
+  background: #222222;
+  color: #ffffff;
+  box-shadow: none;
+}
+
+body.mvp-theme-5 .calc-banner-active,
+body.mvp-theme-5 .calc-banner.is-start-highlight {
+  background: #ff385c;
+}
+
+body.mvp-theme-5 .mock-field input,
+body.mvp-theme-5 .mock-field select,
+body.mvp-theme-5 .final-direct-field input,
+body.mvp-theme-5 .product-name-field input {
+  min-height: 54px;
+  border-color: #cfcfcf;
+  border-radius: 14px;
+  background: #ffffff;
+}
+
+@media (max-width: 760px) {
+  .mvp-variant-notice {
+    align-items: stretch;
+    flex-direction: column;
+    width: calc(100% - 24px);
+  }
+
+  .mvp-variant-notice nav {
+    justify-content: flex-start;
+  }
+
+  body.mvp-theme-3 .intro {
+    padding: 16px;
+  }
+
+  body.mvp-theme-5 .calc-banner {
+    min-height: 82px;
+  }
+}
