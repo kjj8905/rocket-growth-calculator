@@ -595,7 +595,7 @@ function renderCommunityVoteCard(post) {
       <div class="community-vote-content">
         <div class="community-vote-top">
           ${post.isNotice ? `<span class="community-pin-badge">공지</span>` : ""}
-          <span>r/wingcoupang</span>
+          <span>${escapeHtml((COMMUNITY_CATEGORIES[post.category] || COMMUNITY_CATEGORIES["final-margin"]).label)}</span>
           <span>${escapeHtml(authorName)}</span>
           ${dateLabel ? `<time datetime="${escapeHtml(post.createdAt)}">${escapeHtml(dateLabel)}</time>` : ""}
         </div>
@@ -606,9 +606,31 @@ function renderCommunityVoteCard(post) {
           <button type="button" data-community-reaction="bookmark" data-post-slug="${escapeHtml(post.slug)}">저장</button>
         </div>
       </div>
+      ${renderCommunityPostThumb(post)}
       ${dateLabel ? `<time class="community-vote-date" datetime="${escapeHtml(post.createdAt)}">${escapeHtml(dateLabel)}</time>` : ""}
     </div>
   </article>`;
+}
+
+function renderCommunityPostThumb(post, mode = "small") {
+  const category = COMMUNITY_CATEGORIES[post.category] || COMMUNITY_CATEGORIES["final-margin"];
+  const className = `community-post-thumb is-${escapeHtml(post.category)} ${mode === "large" ? "is-large" : ""}`;
+  return `<div class="${className}" aria-hidden="true">
+    <span>${escapeHtml(category.label)}</span>
+    <strong>${escapeHtml(getCommunityThumbTitle(post.category))}</strong>
+  </div>`;
+}
+
+function getCommunityThumbTitle(categorySlug) {
+  const titles = {
+    "china-sourcing": "원가",
+    "china-korea-logistics": "LCL",
+    "korea-coupang-inbound": "입고",
+    "coupang-selling-cost": "수수료",
+    "final-margin": "마진",
+    qna: "Q&A",
+  };
+  return titles[categorySlug] || "계산";
 }
 
 function renderCommunityFeed(posts, emptyText = "아직 등록된 글이 없습니다.") {
@@ -636,21 +658,17 @@ function renderCommunityPinned(notices) {
 }
 
 function renderCommunityLeftRail() {
-  return `<aside class="community-left-rail" aria-label="커뮤니티 참여">
-    <section class="community-join-card">
+  return `<aside class="community-left-rail" aria-label="커뮤니티 이동">
+    <a class="community-join-card" href="/community" aria-label="커뮤니티 홈">
       <span class="community-join-mark">r/</span>
-      <strong>쿠팡셀러 커뮤니티</strong>
-      <p>비용 계산 중 막힌 부분을 질문하고, 다른 셀러의 실제 사례를 확인합니다.</p>
-      <div>
-        <a href="#community-write">질문 남기기</a>
-        <a href="/">계산기 홈</a>
-      </div>
-    </section>
+      <strong>wingcoupang</strong>
+    </a>
     <nav class="community-left-nav" aria-label="빠른 이동">
-      <a href="/community">전체 피드</a>
-      <a href="/community/qna">질문답변</a>
-      <a href="/community/resources">자료실</a>
-      <a href="/guides">계산 기준</a>
+      <a href="/community">홈</a>
+      <a href="/">계산기</a>
+      <a href="/community/qna">질문</a>
+      <a href="/trends">트렌드</a>
+      <a href="/guides">기준</a>
     </nav>
   </aside>`;
 }
@@ -659,16 +677,75 @@ function renderCommunityAboutCard() {
   const counts = getCommunityCategoryCounts();
   const total = Object.values(counts).reduce((sum, count) => sum + count, 0);
   const qnaCount = counts.qna || 0;
-  return `<section class="community-about-card" aria-label="커뮤니티 정보">
+  return `<section class="community-about-card" aria-label="계산기 연결">
     <div class="community-about-logo">r/</div>
-    <h2>wingcoupang</h2>
-    <p>로켓그로스 비용, 중국사입, LCL, 쿠팡 입고를 실제 셀러 관점으로 묻고 답하는 공간입니다.</p>
+    <h2>로켓그로스 계산기</h2>
+    <p>글을 읽다가 필요한 숫자는 계산기로 바로 확인하세요.</p>
     <dl>
       <div><dt>게시글</dt><dd>${formatInteger(total)}</dd></div>
       <div><dt>질문</dt><dd>${formatInteger(qnaCount)}</dd></div>
     </dl>
-    <a href="#community-write">글쓰기</a>
+    <a href="/">계산기 열기</a>
   </section>`;
+}
+
+function renderCommunityPostBridge(post, category) {
+  const guideHref = getCommunityGuideHref(post.category);
+  return `<section class="community-post-bridge" aria-label="계산기 연결">
+    <strong>이 글을 계산기로 확인</strong>
+    <p>${escapeHtml(category.label)} 단계에서 같은 항목을 바로 입력해 볼 수 있습니다.</p>
+    <div>
+      <a class="is-primary" href="${escapeHtml(getCommunityCalculatorHref(post.category))}">계산기 열기</a>
+      <a href="${escapeHtml(guideHref)}">기준 보기</a>
+    </div>
+  </section>`;
+}
+
+function renderCommunityRelatedPanel(posts) {
+  if (!posts.length) return "";
+  return `<section class="community-related-feed" aria-label="관련 게시글">
+    <div class="community-related-feed-head">
+      <strong>관련 게시글</strong>
+      <span>${formatInteger(posts.length)}개</span>
+    </div>
+    <div>
+      ${posts
+        .map(
+          (post) => `<a class="community-related-item" href="/community/${escapeHtml(post.slug)}">
+            ${renderCommunityPostThumb(post)}
+            <span>
+              <strong>${escapeHtml(post.title)}</strong>
+              <em>댓글 ${formatInteger(post.commentsCount)} · 조회 ${formatInteger(post.views)}</em>
+            </span>
+          </a>`,
+        )
+        .join("")}
+    </div>
+  </section>`;
+}
+
+function getCommunityCalculatorHref(categorySlug) {
+  const routes = {
+    "china-sourcing": "/?calc=china",
+    "china-korea-logistics": "/?calc=china-korea",
+    "korea-coupang-inbound": "/?calc=korea-coupang",
+    "coupang-selling-cost": "/?calc=coupang",
+    "final-margin": "/?calc=final",
+    qna: "/",
+  };
+  return routes[categorySlug] || "/";
+}
+
+function getCommunityGuideHref(categorySlug) {
+  const routes = {
+    "china-sourcing": "/guides/china-purchase-cost",
+    "china-korea-logistics": "/guides/lcl-logistics-cost",
+    "korea-coupang-inbound": "/guides/coupang-pallet-cost",
+    "coupang-selling-cost": "/guides/coupang-fee",
+    "final-margin": "/guides/rocket-growth-calculator",
+    qna: "/guides",
+  };
+  return routes[categorySlug] || "/guides";
 }
 
 function renderCommunityPager(basePath, page, totalPages, search, sort, tag) {
@@ -703,9 +780,6 @@ function renderCommunityIndexPage(query = {}) {
   const page = Math.min(Math.max(1, Number(query.page) || 1), totalPages);
   const posts = getCommunityPosts({ ...feedOptions, limit: pageSize, offset: (page - 1) * pageSize });
   const notices = !search && !tag && page === 1 ? getCommunityPosts({ notice: true, sort: "new", limit: 3 }) : [];
-  const popularPosts = getCommunityPosts({ notice: false, sort: "top", limit: 5 });
-  const qnaPosts = getCommunityPosts({ category: "qna", sort: "new", limit: 4 });
-
   const title = "쿠팡셀러 커뮤니티 | 로켓그로스 계산기";
   const description =
     "쿠팡셀러와 개인셀러를 위한 로켓그로스 5단계 커뮤니티입니다. 중국사입, 중국→한국 물류, 한국→쿠팡 입고, 쿠팡 소모 비용, 최종 비용을 단계별로 묻고 답합니다.";
@@ -727,7 +801,10 @@ function renderCommunityIndexPage(query = {}) {
               <span class="community-page-label">${escapeHtml(subLabel)}</span>
               <h1 id="community-title">${escapeHtml(heading)}</h1>
             </div>
-            <a class="community-head-action" href="#community-write">글쓰기</a>
+            <div class="community-head-actions">
+              <a class="community-head-action is-muted" href="/">계산기</a>
+              <a class="community-head-action" href="#community-write">글쓰기</a>
+            </div>
           </div>
           ${renderCommunitySortBar("/community", sort, search, tag)}
           ${renderCommunityPinned(notices)}
@@ -737,9 +814,7 @@ function renderCommunityIndexPage(query = {}) {
         <aside class="community-right-rail">
           ${renderCommunityAboutCard()}
           <div id="community-write">${renderCommunityWritePanel()}</div>
-          ${renderCommunityCollapsedPostPanel("인기 글", popularPosts)}
-          ${renderCommunityStats()}
-          ${renderCommunityCollapsedPostPanel("최근 질문", qnaPosts)}
+          ${renderTrendMiniPanel()}
         </aside>
       </section>
     </main>`,
@@ -761,7 +836,6 @@ function renderCommunityCategoryPage(categorySlug, query = {}) {
   const posts = getCommunityPosts({ ...feedOptions, limit: pageSize, offset: (page - 1) * pageSize });
   const notices =
     !search && page === 1 ? getCommunityPosts({ category: category.slug, notice: true, sort: "new", limit: 3 }) : [];
-  const popularPosts = getCommunityPosts({ category: category.slug, notice: false, sort: "top", limit: 5 });
   const canonicalUrl = `${PUBLIC_SITE_URL}/community/${category.slug}`;
   const heading = search ? `‘${search}’ 검색 결과` : category.title;
   const subLabel = search ? `${category.label} · ${formatInteger(total)}개` : category.label;
@@ -780,7 +854,10 @@ function renderCommunityCategoryPage(categorySlug, query = {}) {
               <span class="community-page-label">${escapeHtml(subLabel)}</span>
               <h1 id="community-category-title">${escapeHtml(heading)}</h1>
             </div>
-            <a class="community-head-action" href="#community-write">글쓰기</a>
+            <div class="community-head-actions">
+              <a class="community-head-action is-muted" href="${escapeHtml(getCommunityCalculatorHref(category.slug))}">계산기</a>
+              <a class="community-head-action" href="#community-write">글쓰기</a>
+            </div>
           </div>
           ${renderCommunitySortBar(basePath, sort, search, "")}
           ${renderCommunityPinned(notices)}
@@ -790,7 +867,6 @@ function renderCommunityCategoryPage(categorySlug, query = {}) {
         <aside class="community-right-rail">
           ${renderCommunityAboutCard()}
           <div id="community-write">${renderCommunityWritePanel(category.slug)}</div>
-          ${renderCommunityCollapsedPostPanel("인기 글", popularPosts)}
           ${renderTrendMiniPanel()}
         </aside>
       </section>
@@ -812,52 +888,57 @@ function renderCommunityPostPage(post) {
     canonicalUrl,
     body: `<main class="community-shell">
       ${renderCommunityHeader(post.category)}
-      <article class="community-post-article" data-community-post="${escapeHtml(post.slug)}">
-        <div class="community-post-kicker">
-          <a href="/community/${escapeHtml(category.slug)}">${escapeHtml(category.label)}</a>
-          <span>조회 ${formatInteger(post.views)}</span>
-          <span>댓글 ${formatInteger(comments.length)}</span>
-        </div>
-        <h1>${escapeHtml(post.title)}</h1>
-        <div class="guide-section-list">
-          ${post.sections
-            .map(
-              (section) => `<section>
-                <h2>${escapeHtml(section.heading)}</h2>
-                ${section.body.map((paragraph) => `<p>${escapeHtml(paragraph)}</p>`).join("")}
-              </section>`,
-            )
-            .join("")}
-        </div>
-        <div class="community-post-actions is-minimal">
-          <a href="/?calc=final">계산기로 확인</a>
-        </div>
-      </article>
-      <details class="community-comments" aria-labelledby="community-comments-title">
-        <summary class="community-comments-head">
-          <strong id="community-comments-title">댓글 ${formatInteger(comments.length)}개</strong>
-          <span>질문 남기기</span>
-        </summary>
-        <form class="community-comment-form" data-community-comment-form data-post-slug="${escapeHtml(post.slug)}">
-          <textarea name="body" rows="4" maxlength="1500" placeholder="추가 질문, 실제 견적 차이, 본인 사례를 남겨주세요."></textarea>
-          <button class="primary-small-button" type="submit">댓글 남기기</button>
-          <a class="community-comment-login" href="/auth/kakao/start">카카오로 시작하기</a>
-          <p data-community-message></p>
-        </form>
-        <div class="community-comment-list">
-          ${comments.length
-            ? comments.map((comment) => `<article>
-                <strong>${escapeHtml(comment.authorName)}</strong>
-                <p>${escapeHtml(comment.body)}</p>
-                <time datetime="${escapeHtml(comment.createdAt)}">${formatDate(comment.createdAt)}</time>
-              </article>`).join("")
-            : `<p class="community-empty">아직 댓글이 없습니다. 첫 질문을 남겨보세요.</p>`}
-        </div>
-      </details>
-      ${relatedPosts.length ? `<details class="guide-related community-related">
-        <summary>관련 글 ${formatInteger(relatedPosts.length)}개</summary>
-        <div>${relatedPosts.map((item) => `<a href="/community/${item.slug}">${escapeHtml(item.title)}</a>`).join("")}</div>
-      </details>` : ""}
+      <section class="community-workspace community-reddit-layout is-post-detail">
+        ${renderCommunityLeftRail()}
+        <section class="community-detail-main">
+          <article class="community-post-article" data-community-post="${escapeHtml(post.slug)}">
+            <div class="community-post-kicker">
+              <a href="/community/${escapeHtml(category.slug)}">${escapeHtml(category.label)}</a>
+              <span>조회 ${formatInteger(post.views)}</span>
+              <span>댓글 ${formatInteger(comments.length)}</span>
+            </div>
+            <h1>${escapeHtml(post.title)}</h1>
+            ${renderCommunityPostThumb(post, "large")}
+            <p class="community-post-summary">${escapeHtml(post.summary)}</p>
+            <div class="guide-section-list">
+              ${post.sections
+                .map(
+                  (section) => `<section>
+                    <h2>${escapeHtml(section.heading)}</h2>
+                    ${section.body.map((paragraph) => `<p>${escapeHtml(paragraph)}</p>`).join("")}
+                  </section>`,
+                )
+                .join("")}
+            </div>
+          </article>
+          <details class="community-comments" aria-labelledby="community-comments-title" open>
+            <summary class="community-comments-head">
+              <strong id="community-comments-title">댓글 ${formatInteger(comments.length)}개</strong>
+              <span>질문 남기기</span>
+            </summary>
+            <form class="community-comment-form" data-community-comment-form data-post-slug="${escapeHtml(post.slug)}">
+              <textarea name="body" rows="4" maxlength="1500" placeholder="추가 질문, 실제 견적 차이, 본인 사례를 남겨주세요."></textarea>
+              <button class="primary-small-button" type="submit">댓글 남기기</button>
+              <a class="community-comment-login" href="/auth/kakao/start">카카오로 시작하기</a>
+              <p data-community-message></p>
+            </form>
+            <div class="community-comment-list">
+              ${comments.length
+                ? comments.map((comment) => `<article>
+                    <strong>${escapeHtml(comment.authorName)}</strong>
+                    <p>${escapeHtml(comment.body)}</p>
+                    <time datetime="${escapeHtml(comment.createdAt)}">${formatDate(comment.createdAt)}</time>
+                  </article>`).join("")
+                : `<p class="community-empty">아직 댓글이 없습니다. 첫 질문을 남겨보세요.</p>`}
+            </div>
+          </details>
+        </section>
+        <aside class="community-right-rail">
+          ${renderCommunityPostBridge(post, category)}
+          ${renderCommunityRelatedPanel(relatedPosts)}
+          ${renderCommunityAboutCard()}
+        </aside>
+      </section>
     </main>`,
     jsonLd: buildCommunityPostJsonLd(post, canonicalUrl, comments),
     script: renderCommunityScript(post.slug),
@@ -874,7 +955,10 @@ function renderCommunityHeader(activeKey) {
   ];
 
   return `<header class="community-topbar">
-    <a class="community-brand" href="/">로켓그로스 계산기</a>
+    <a class="community-brand" href="/community"><span>r/</span> wingcoupang</a>
+    <form class="community-global-search" method="get" action="/community" role="search">
+      <input type="search" name="q" placeholder="커뮤니티 검색" aria-label="커뮤니티 전체 검색" />
+    </form>
     <nav aria-label="커뮤니티 메뉴">
       ${navItems
         .map((item) => {
