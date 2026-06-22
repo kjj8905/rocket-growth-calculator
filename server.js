@@ -583,19 +583,23 @@ function renderCommunitySortBar(basePath, activeSort, search, tag) {
 }
 
 function renderCommunityVoteCard(post) {
-  const category = COMMUNITY_CATEGORIES[post.category] || COMMUNITY_CATEGORIES["final-margin"];
   const dateLabel = formatDate(post.createdAt);
+  const authorName = post.authorName || "셀러";
   return `<article class="community-vote-card${post.isNotice ? " is-notice" : ""}">
     <a class="community-vote-body" href="/community/${escapeHtml(post.slug)}">
-      <strong class="community-vote-title">${escapeHtml(post.title)}</strong>
-      <div class="community-vote-meta">
-        <span class="community-vote-category">
-          ${post.isNotice ? `<span class="community-pin-badge">공지</span>` : ""}
-          <span class="community-post-cat">${escapeHtml(category.label)}</span>
-        </span>
-        <span class="community-vote-foot">댓글 ${formatInteger(post.commentsCount)} · 조회 ${formatInteger(post.views)}</span>
-        ${dateLabel ? `<time class="community-vote-date" datetime="${escapeHtml(post.createdAt)}">${escapeHtml(dateLabel)}</time>` : ""}
+      <div class="community-vote-stats" aria-label="게시글 반응">
+        <span><strong>${formatInteger(post.commentsCount)}</strong><em>댓글</em></span>
+        <span><strong>${formatInteger(post.views)}</strong><em>조회</em></span>
       </div>
+      <div class="community-vote-content">
+        <div class="community-vote-top">
+          ${post.isNotice ? `<span class="community-pin-badge">공지</span>` : ""}
+          <span>${escapeHtml(authorName)}</span>
+          ${dateLabel ? `<time datetime="${escapeHtml(post.createdAt)}">${escapeHtml(dateLabel)}</time>` : ""}
+        </div>
+        <strong class="community-vote-title">${escapeHtml(post.title)}</strong>
+      </div>
+      ${dateLabel ? `<time class="community-vote-date" datetime="${escapeHtml(post.createdAt)}">${escapeHtml(dateLabel)}</time>` : ""}
     </a>
   </article>`;
 }
@@ -681,7 +685,6 @@ function renderCommunityIndexPage(query = {}) {
             </div>
             <a class="community-head-action" href="#community-write">글쓰기</a>
           </div>
-          ${renderCommunityStageTabs("community")}
           ${renderCommunitySortBar("/community", sort, search, tag)}
           ${renderCommunityPinned(notices)}
           ${renderCommunityFeed(posts, search ? "검색 결과가 없습니다. 다른 키워드로 찾아보세요." : "아직 등록된 글이 없습니다.")}
@@ -733,7 +736,6 @@ function renderCommunityCategoryPage(categorySlug, query = {}) {
             </div>
             <a class="community-head-action" href="#community-write">글쓰기</a>
           </div>
-          ${renderCommunityStageTabs(category.slug)}
           ${renderCommunitySortBar(basePath, sort, search, "")}
           ${renderCommunityPinned(notices)}
           ${renderCommunityFeed(posts, search ? "검색 결과가 없습니다. 다른 키워드로 찾아보세요." : "이 게시판에는 아직 글이 없습니다.")}
@@ -836,38 +838,6 @@ function renderCommunityHeader(activeKey) {
         .join("")}
     </nav>
   </header>`;
-}
-
-function renderCommunityStageTabs(activeKey = "community") {
-  const counts = getCommunityCategoryCounts();
-  const totalCount = Object.values(counts).reduce((sum, count) => sum + count, 0);
-  const items = [
-    { slug: "community", label: "전체", href: "/community", count: totalCount },
-    ...COMMUNITY_STAGE_SLUGS.map((slug) => ({
-      slug,
-      label: COMMUNITY_CATEGORIES[slug].label,
-      href: `/community/${slug}`,
-      count: counts[slug] || 0,
-    })),
-    {
-      slug: "qna",
-      label: "질문답변",
-      href: "/community/qna",
-      count: counts.qna || 0,
-    },
-  ];
-
-  return `<nav class="community-feed-tabs community-stage-tabs" aria-label="커뮤니티 단계">
-    ${items
-      .map((item) => {
-        const isActive = item.slug === activeKey || (activeKey === "community" && item.slug === "community");
-        return `<a class="${isActive ? "is-active" : ""}" href="${item.href}" ${isActive ? 'aria-current="page"' : ""}>
-          <span>${escapeHtml(item.label)}</span>
-          <em>${formatInteger(item.count)}</em>
-        </a>`;
-      })
-      .join("")}
-  </nav>`;
 }
 
 function renderCommunityCategoryNav(activeKey = "community", mode = "default") {
@@ -979,14 +949,12 @@ function renderCommunityCollapsedPostPanel(title, posts) {
 }
 
 function renderCommunityPostCard(post, mode = "default") {
-  const category = COMMUNITY_CATEGORIES[post.category] || COMMUNITY_CATEGORIES["final-margin"];
   const isCompact = mode === "compact";
   const dateLabel = formatDate(post.createdAt);
   return `<a class="community-post-card ${isCompact ? "is-compact" : ""}" href="/community/${post.slug}">
     <div class="community-post-main">
       <strong class="community-post-title">${escapeHtml(post.title)}</strong>
       <div class="community-post-meta">
-        <span class="community-post-cat">${escapeHtml(category.label)}</span>
         <span>댓글 ${formatInteger(post.commentsCount)} · 조회 ${formatInteger(post.views)}</span>
         ${dateLabel ? `<time datetime="${escapeHtml(post.createdAt)}">${escapeHtml(dateLabel)}</time>` : ""}
       </div>

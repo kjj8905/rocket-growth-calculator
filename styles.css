@@ -8422,13 +8422,57 @@ em {
 /* Body */
 .community-shell .community-vote-body {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 158px;
-  gap: 12px;
+  grid-template-columns: 72px minmax(0, 1fr) 118px;
+  gap: 0;
   align-items: center;
-  min-height: 62px;
-  padding: 10px 14px;
+  min-height: 70px;
+  padding: 0;
   color: inherit;
   text-decoration: none;
+}
+
+.community-shell .community-vote-stats {
+  align-self: stretch;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 4px;
+  padding: 9px 6px;
+  border-right: 1px solid var(--ui-border);
+  background: var(--ui-surface-soft);
+  color: var(--ui-text-faint);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.community-shell .community-vote-card.is-notice .community-vote-stats {
+  background: rgba(47, 128, 237, 0.08);
+}
+
+.community-shell .community-vote-stats span {
+  display: grid;
+  justify-items: center;
+  gap: 1px;
+  line-height: 1.1;
+}
+
+.community-shell .community-vote-stats strong {
+  color: var(--ui-text);
+  font-size: 13px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.community-shell .community-vote-stats em {
+  color: var(--ui-text-faint);
+  font-style: normal;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.community-shell .community-vote-content {
+  min-width: 0;
+  padding: 11px 14px;
 }
 
 .community-shell .community-vote-top {
@@ -8436,24 +8480,22 @@ em {
   flex-wrap: wrap;
   align-items: center;
   gap: 8px;
+  margin-bottom: 5px;
   color: var(--ui-text-faint);
   font-size: 12px;
-  font-weight: 500;
-}
-
-.community-shell .community-vote-top .community-post-cat {
-  color: var(--ui-accent);
   font-weight: 600;
 }
 
-.community-shell .community-vote-top > span + span:not(.community-pin-badge)::before {
+.community-shell .community-vote-top > span + span:not(.community-pin-badge)::before,
+.community-shell .community-vote-top > span + time::before {
   content: "·";
   margin-right: 8px;
   color: var(--ui-border-strong);
 }
 
-.community-shell .community-vote-top .community-pin-badge + .community-post-cat::before {
-  content: none;
+.community-shell .community-vote-top time {
+  display: none;
+  color: var(--ui-text-faint);
 }
 
 .community-shell .community-vote-title {
@@ -8483,58 +8525,18 @@ em {
   -webkit-line-clamp: 1;
 }
 
-.community-shell .community-vote-meta {
-  min-width: 0;
-  display: grid;
-  justify-items: end;
-  gap: 2px;
-  color: var(--ui-text-faint);
-  font-size: 12px;
-  font-weight: 600;
-  line-height: 1.35;
-  text-align: right;
-}
-
-.community-shell .community-vote-category {
-  max-width: 100%;
+.community-shell .community-vote-date {
   display: inline-flex;
   align-items: center;
-  justify-content: flex-end;
-  gap: 5px;
-  overflow: hidden;
-  color: var(--ui-accent);
-  font-size: 12px;
-  font-weight: 800;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-
-.community-shell .community-vote-foot {
-  display: block;
+  justify-self: end;
   overflow: hidden;
   max-width: 100%;
-  margin-top: 0;
-  color: var(--ui-text-faint);
-  font-size: 12px;
-  font-weight: 600;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-
-.community-shell .community-vote-date {
-  display: block;
-  overflow: hidden;
-  max-width: 100%;
+  padding: 0 14px 0 6px;
   color: var(--ui-text-faint);
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 700;
   white-space: nowrap;
   text-overflow: ellipsis;
-}
-
-.community-shell .community-vote-foot .community-vote-comments {
-  color: var(--ui-text-muted);
-  font-weight: 600;
 }
 
 /* ---- Compact title-only board rows ------------------------------------- */
@@ -8671,14 +8673,28 @@ em {
   }
 
   .community-shell .community-vote-body {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 7px;
-    padding: 12px 13px;
+    grid-template-columns: 56px minmax(0, 1fr);
+    min-height: 66px;
   }
 
-  .community-shell .community-vote-meta {
-    justify-items: start;
-    text-align: left;
+  .community-shell .community-vote-stats {
+    padding: 8px 4px;
+  }
+
+  .community-shell .community-vote-content {
+    padding: 10px 12px;
+  }
+
+  .community-shell .community-vote-date {
+    display: none;
+  }
+
+  .community-shell .community-vote-top time {
+    display: inline;
+  }
+
+  .community-shell .community-vote-title {
+    font-size: 14.5px;
   }
 
   .community-shell .community-search {
