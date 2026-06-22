@@ -586,21 +586,28 @@ function renderCommunityVoteCard(post) {
   const dateLabel = formatDate(post.createdAt);
   const authorName = post.authorName || "셀러";
   return `<article class="community-vote-card${post.isNotice ? " is-notice" : ""}">
-    <a class="community-vote-body" href="/community/${escapeHtml(post.slug)}">
-      <div class="community-vote-stats" aria-label="게시글 반응">
-        <span><strong>${formatInteger(post.commentsCount)}</strong><em>댓글</em></span>
-        <span><strong>${formatInteger(post.views)}</strong><em>조회</em></span>
+    <div class="community-vote-body">
+      <div class="community-vote-stats" aria-label="추천과 조회">
+        <button type="button" data-community-reaction="like" data-post-slug="${escapeHtml(post.slug)}" aria-label="추천">▲</button>
+        <strong>${formatInteger(post.likesCount || 0)}</strong>
+        <span>추천</span>
       </div>
       <div class="community-vote-content">
         <div class="community-vote-top">
           ${post.isNotice ? `<span class="community-pin-badge">공지</span>` : ""}
+          <span>r/wingcoupang</span>
           <span>${escapeHtml(authorName)}</span>
           ${dateLabel ? `<time datetime="${escapeHtml(post.createdAt)}">${escapeHtml(dateLabel)}</time>` : ""}
         </div>
-        <strong class="community-vote-title">${escapeHtml(post.title)}</strong>
+        <a class="community-vote-title" href="/community/${escapeHtml(post.slug)}">${escapeHtml(post.title)}</a>
+        <div class="community-vote-actions" aria-label="게시글 작업">
+          <a href="/community/${escapeHtml(post.slug)}#comments">댓글 ${formatInteger(post.commentsCount)}</a>
+          <span>조회 ${formatInteger(post.views)}</span>
+          <button type="button" data-community-reaction="bookmark" data-post-slug="${escapeHtml(post.slug)}">저장</button>
+        </div>
       </div>
       ${dateLabel ? `<time class="community-vote-date" datetime="${escapeHtml(post.createdAt)}">${escapeHtml(dateLabel)}</time>` : ""}
-    </a>
+    </div>
   </article>`;
 }
 
@@ -626,6 +633,42 @@ function renderCommunityPinned(notices) {
       )
       .join("")}
   </div>`;
+}
+
+function renderCommunityLeftRail() {
+  return `<aside class="community-left-rail" aria-label="커뮤니티 참여">
+    <section class="community-join-card">
+      <span class="community-join-mark">r/</span>
+      <strong>쿠팡셀러 커뮤니티</strong>
+      <p>비용 계산 중 막힌 부분을 질문하고, 다른 셀러의 실제 사례를 확인합니다.</p>
+      <div>
+        <a href="#community-write">질문 남기기</a>
+        <a href="/">계산기 홈</a>
+      </div>
+    </section>
+    <nav class="community-left-nav" aria-label="빠른 이동">
+      <a href="/community">전체 피드</a>
+      <a href="/community/qna">질문답변</a>
+      <a href="/community/resources">자료실</a>
+      <a href="/guides">계산 기준</a>
+    </nav>
+  </aside>`;
+}
+
+function renderCommunityAboutCard() {
+  const counts = getCommunityCategoryCounts();
+  const total = Object.values(counts).reduce((sum, count) => sum + count, 0);
+  const qnaCount = counts.qna || 0;
+  return `<section class="community-about-card" aria-label="커뮤니티 정보">
+    <div class="community-about-logo">r/</div>
+    <h2>wingcoupang</h2>
+    <p>로켓그로스 비용, 중국사입, LCL, 쿠팡 입고를 실제 셀러 관점으로 묻고 답하는 공간입니다.</p>
+    <dl>
+      <div><dt>게시글</dt><dd>${formatInteger(total)}</dd></div>
+      <div><dt>질문</dt><dd>${formatInteger(qnaCount)}</dd></div>
+    </dl>
+    <a href="#community-write">글쓰기</a>
+  </section>`;
 }
 
 function renderCommunityPager(basePath, page, totalPages, search, sort, tag) {
@@ -676,7 +719,8 @@ function renderCommunityIndexPage(query = {}) {
     canonicalUrl,
     body: `<main class="community-shell">
       ${renderCommunityHeader("community")}
-      <section class="community-forum-shell">
+      <section class="community-workspace community-reddit-layout">
+        ${renderCommunityLeftRail()}
         <section class="community-feed-panel" aria-labelledby="community-title">
           <div class="community-feed-head">
             <div>
@@ -691,6 +735,7 @@ function renderCommunityIndexPage(query = {}) {
           ${renderCommunityPager("/community", page, totalPages, search, sort, tag)}
         </section>
         <aside class="community-right-rail">
+          ${renderCommunityAboutCard()}
           <div id="community-write">${renderCommunityWritePanel()}</div>
           ${renderCommunityCollapsedPostPanel("인기 글", popularPosts)}
           ${renderCommunityStats()}
@@ -727,7 +772,8 @@ function renderCommunityCategoryPage(categorySlug, query = {}) {
     canonicalUrl,
     body: `<main class="community-shell">
       ${renderCommunityHeader(category.slug)}
-      <section class="community-forum-shell">
+      <section class="community-workspace community-reddit-layout">
+        ${renderCommunityLeftRail()}
         <section class="community-feed-panel" aria-labelledby="community-category-title">
           <div class="community-feed-head">
             <div>
@@ -742,6 +788,7 @@ function renderCommunityCategoryPage(categorySlug, query = {}) {
           ${renderCommunityPager(basePath, page, totalPages, search, sort, "")}
         </section>
         <aside class="community-right-rail">
+          ${renderCommunityAboutCard()}
           <div id="community-write">${renderCommunityWritePanel(category.slug)}</div>
           ${renderCommunityCollapsedPostPanel("인기 글", popularPosts)}
           ${renderTrendMiniPanel()}

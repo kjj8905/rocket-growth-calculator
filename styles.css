@@ -8704,3 +8704,441 @@ em {
     flex-basis: 100%;
   }
 }
+
+/* =========================================================================
+   Community — Reddit-inspired redesign pass (2026-06-22)
+   ========================================================================= */
+.community-shell .community-reddit-layout {
+  display: grid;
+  grid-template-columns: 236px minmax(0, 1fr) 300px;
+  gap: 18px;
+  align-items: start;
+}
+
+.community-shell .community-reddit-layout .community-left-rail,
+.community-shell .community-reddit-layout .community-right-rail {
+  position: sticky;
+  top: 106px;
+}
+
+.community-shell .community-left-rail {
+  display: grid;
+  gap: 12px;
+}
+
+.community-shell .community-join-card,
+.community-shell .community-left-nav,
+.community-shell .community-about-card {
+  border: 1px solid var(--ui-border);
+  border-radius: 18px;
+  background: var(--ui-surface);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.04);
+}
+
+.community-shell .community-join-card {
+  display: grid;
+  gap: 12px;
+  min-height: 310px;
+  padding: 20px;
+  overflow: hidden;
+  position: relative;
+}
+
+.community-shell .community-join-card::after {
+  content: "";
+  position: absolute;
+  right: -46px;
+  bottom: -52px;
+  width: 160px;
+  height: 160px;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(47, 128, 237, 0.16), rgba(47, 128, 237, 0));
+  pointer-events: none;
+}
+
+.community-shell .community-join-mark,
+.community-shell .community-about-logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  background: var(--ui-accent);
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+
+.community-shell .community-join-card strong {
+  max-width: 9em;
+  color: var(--ui-text);
+  font-size: 22px;
+  font-weight: 850;
+  line-height: 1.18;
+  letter-spacing: -0.02em;
+}
+
+.community-shell .community-join-card p {
+  margin: 0;
+  color: var(--ui-text-muted);
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.community-shell .community-join-card div {
+  display: grid;
+  gap: 8px;
+  margin-top: auto;
+  position: relative;
+  z-index: 1;
+}
+
+.community-shell .community-join-card a,
+.community-shell .community-about-card > a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  border-radius: 999px;
+  background: var(--ui-accent);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.community-shell .community-join-card a + a {
+  border: 1px solid var(--ui-border);
+  background: var(--ui-surface-soft);
+  color: var(--ui-text);
+}
+
+.community-shell .community-left-nav {
+  display: grid;
+  gap: 2px;
+  padding: 8px;
+}
+
+.community-shell .community-left-nav a {
+  display: flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 0 11px;
+  border-radius: 10px;
+  color: var(--ui-text-muted);
+  font-size: 13px;
+  font-weight: 750;
+  text-decoration: none;
+}
+
+.community-shell .community-left-nav a:hover,
+.community-shell .community-left-nav a:focus-visible,
+.community-shell .community-left-nav a[aria-current="page"] {
+  background: var(--ui-accent-soft);
+  color: var(--ui-accent);
+  outline: none;
+}
+
+.community-shell .community-reddit-layout .community-feed-panel {
+  gap: 10px;
+}
+
+.community-shell .community-reddit-layout .community-feed-head {
+  padding: 18px 20px;
+  border-radius: 18px;
+  background:
+    linear-gradient(180deg, rgba(47, 128, 237, 0.1), rgba(47, 128, 237, 0) 58%),
+    var(--ui-surface);
+}
+
+.community-shell .community-reddit-layout .community-feed-head h1 {
+  margin: 0;
+  font-size: 25px;
+  font-weight: 850;
+  line-height: 1.2;
+}
+
+.community-shell .community-reddit-layout .community-page-label {
+  margin-bottom: 8px;
+  color: var(--ui-text-muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.community-shell .community-toolbar {
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.88);
+}
+
+.community-shell .community-vote-list {
+  gap: 10px;
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.community-shell .community-vote-card {
+  border: 1px solid var(--ui-border);
+  border-radius: 18px;
+  background: var(--ui-surface);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.04);
+}
+
+.community-shell .community-vote-card:last-child {
+  border-bottom: 1px solid var(--ui-border);
+}
+
+.community-shell .community-vote-card:hover {
+  border-color: rgba(47, 128, 237, 0.28);
+  background: var(--ui-surface);
+}
+
+.community-shell .community-vote-body {
+  grid-template-columns: 54px minmax(0, 1fr) auto;
+  min-height: 116px;
+}
+
+.community-shell .community-vote-stats {
+  align-content: start;
+  gap: 3px;
+  padding: 16px 8px;
+  border-right: 0;
+  border-radius: 18px 0 0 18px;
+  background: var(--ui-surface-soft);
+}
+
+.community-shell .community-vote-stats button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 28px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ui-text-muted);
+  font-size: 14px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.community-shell .community-vote-stats button:hover,
+.community-shell .community-vote-stats button:focus-visible {
+  background: var(--ui-accent-soft);
+  color: var(--ui-accent);
+  outline: none;
+}
+
+.community-shell .community-vote-stats strong {
+  font-size: 14px;
+}
+
+.community-shell .community-vote-stats span {
+  color: var(--ui-text-faint);
+  font-size: 10px;
+}
+
+.community-shell .community-vote-content {
+  display: grid;
+  gap: 8px;
+  padding: 15px 16px 13px;
+}
+
+.community-shell .community-vote-top {
+  margin: 0;
+  color: var(--ui-text-faint);
+  font-size: 12px;
+}
+
+.community-shell .community-vote-top > span:first-child:not(.community-pin-badge) {
+  color: var(--ui-text);
+  font-weight: 850;
+}
+
+.community-shell .community-vote-title {
+  color: var(--ui-text);
+  font-size: 17px;
+  font-weight: 800;
+  line-height: 1.34;
+  text-decoration: none;
+  white-space: normal;
+}
+
+.community-shell .community-vote-card:hover .community-vote-title,
+.community-shell .community-vote-title:focus-visible {
+  color: var(--ui-accent);
+  outline: none;
+}
+
+.community-shell .community-vote-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+.community-shell .community-vote-actions a,
+.community-shell .community-vote-actions span,
+.community-shell .community-vote-actions button {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--ui-surface-soft);
+  color: var(--ui-text-muted);
+  font-size: 12px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.community-shell .community-vote-actions button {
+  cursor: pointer;
+}
+
+.community-shell .community-vote-actions a:hover,
+.community-shell .community-vote-actions button:hover,
+.community-shell .community-vote-actions button:focus-visible {
+  background: var(--ui-accent-soft);
+  color: var(--ui-accent);
+  outline: none;
+}
+
+.community-shell .community-vote-date {
+  align-self: start;
+  padding: 18px 16px 0 0;
+  font-size: 12px;
+}
+
+.community-shell .community-about-card {
+  display: grid;
+  gap: 12px;
+  padding: 18px;
+}
+
+.community-shell .community-about-card h2 {
+  margin: 0;
+  color: var(--ui-text);
+  font-size: 18px;
+  font-weight: 850;
+}
+
+.community-shell .community-about-card p {
+  margin: 0;
+  color: var(--ui-text-muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.community-shell .community-about-card dl {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+}
+
+.community-shell .community-about-card dl div {
+  padding: 10px;
+  border-radius: 12px;
+  background: var(--ui-surface-soft);
+}
+
+.community-shell .community-about-card dt {
+  color: var(--ui-text-faint);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.community-shell .community-about-card dd {
+  margin: 2px 0 0;
+  color: var(--ui-text);
+  font-size: 17px;
+  font-weight: 850;
+}
+
+@media (max-width: 1120px) {
+  .community-shell .community-reddit-layout {
+    grid-template-columns: minmax(0, 1fr) 280px;
+  }
+
+  .community-shell .community-left-rail {
+    display: none;
+  }
+}
+
+@media (max-width: 820px) {
+  .community-shell .community-reddit-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .community-shell .community-reddit-layout .community-feed-head {
+    display: grid;
+    gap: 14px;
+  }
+
+  .community-shell .community-reddit-layout .community-feed-head h1 {
+    font-size: 24px;
+  }
+
+  .community-shell .community-head-action {
+    width: 100%;
+  }
+
+  .community-shell .community-toolbar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    padding: 10px;
+  }
+
+  .community-shell .community-sort {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 2px;
+  }
+
+  .community-shell .community-sort a {
+    flex: 0 0 auto;
+  }
+
+  .community-shell .community-search {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 6px;
+    width: 100%;
+    max-width: none;
+    margin-left: 0;
+  }
+
+  .community-shell .community-search input[type="search"] {
+    width: 100%;
+  }
+
+  .community-shell .community-search button {
+    width: 100%;
+    min-width: 0;
+    padding: 0;
+  }
+
+  .community-shell .community-reddit-layout .community-right-rail {
+    position: static;
+    order: 2;
+  }
+
+  .community-shell .community-vote-body {
+    grid-template-columns: 48px minmax(0, 1fr);
+    min-height: 104px;
+  }
+
+  .community-shell .community-vote-date {
+    display: none;
+  }
+
+  .community-shell .community-vote-top time {
+    display: inline;
+  }
+}
