@@ -428,7 +428,7 @@ app.get("/saved", (req, res) => {
 });
 
 app.get(["/community", "/community/"], (req, res) => {
-  res.type("html").send(renderCommunityIndexPage());
+  res.type("html").send(renderCommunityIndexPage(req.query));
 });
 
 app.get("/community/:legacyCategory(tips|cases|operations|logistics)", (req, res) => {
@@ -444,8 +444,12 @@ app.get("/community/trends", (req, res) => {
   res.redirect(301, "/trends");
 });
 
+app.get(["/mvp", "/mvp/:variant"], (req, res) => {
+  res.redirect(302, "/community");
+});
+
 app.get("/community/:category(china-sourcing|china-korea-logistics|korea-coupang-inbound|coupang-selling-cost|final-margin|qna)", (req, res) => {
-  res.type("html").send(renderCommunityCategoryPage(req.params.category));
+  res.type("html").send(renderCommunityCategoryPage(req.params.category, req.query));
 });
 
 app.get("/community/:slug", (req, res) => {
@@ -542,14 +546,125 @@ function renderIndexHtml() {
   return fs.readFileSync(filePath, "utf8").replaceAll("__SITE_URL__", PUBLIC_SITE_URL);
 }
 
-function renderCommunityIndexPage() {
+function communityQueryString(params = {}) {
+  const parts = [];
+  if (params.sort && params.sort !== "hot") parts.push(`sort=${encodeURIComponent(params.sort)}`);
+  if (params.q) parts.push(`q=${encodeURIComponent(params.q)}`);
+  if (params.tag) parts.push(`tag=${encodeURIComponent(params.tag)}`);
+  if (params.page && Number(params.page) > 1) parts.push(`page=${Number(params.page)}`);
+  return parts.length ? `?${parts.join("&")}` : "";
+}
+
+function renderCommunitySortBar(basePath, activeSort, search, tag) {
+  const sorts = [
+    { key: "hot", label: "인기" },
+    { key: "new", label: "최신" },
+    { key: "top", label: "추천" },
+    { key: "comments", label: "댓글" },
+    { key: "views", label: "조회" },
+  ];
+  return `<div class="community-toolbar">
+    <nav class="community-sort" aria-label="정렬 기준">
+      ${sorts
+        .map((item) => {
+          const isActive = item.key === activeSort;
+          const href = `${basePath}${communityQueryString({ sort: item.key, q: search, tag })}`;
+          return `<a class="${isActive ? "is-active" : ""}" href="${escapeHtml(href)}" ${isActive ? 'aria-current="true"' : ""}>${item.label}</a>`;
+        })
+        .join("")}
+    </nav>
+    <form class="community-search" method="get" action="${escapeHtml(basePath)}" role="search">
+      ${activeSort && activeSort !== "hot" ? `<input type="hidden" name="sort" value="${escapeHtml(activeSort)}" />` : ""}
+      ${tag ? `<input type="hidden" name="tag" value="${escapeHtml(tag)}" />` : ""}
+      <input type="search" name="q" value="${escapeHtml(search)}" placeholder="제목·내용 검색" aria-label="커뮤니티 검색" />
+      <button type="submit" aria-label="검색">검색</button>
+    </form>
+  </div>`;
+}
+
+function renderCommunityVoteCard(post) {
+  const category = COMMUNITY_CATEGORIES[post.category] || COMMUNITY_CATEGORIES["final-margin"];
+  const dateLabel = formatDate(post.createdAt);
+  return `<article class="community-vote-card${post.isNotice ? " is-notice" : ""}">
+    <a class="community-vote-body" href="/community/${escapeHtml(post.slug)}">
+      <strong class="community-vote-title">${escapeHtml(post.title)}</strong>
+      <div class="community-vote-meta">
+        <span class="community-vote-category">
+          ${post.isNotice ? `<span class="community-pin-badge">공지</span>` : ""}
+          <span class="community-post-cat">${escapeHtml(category.label)}</span>
+        </span>
+        <span class="community-vote-foot">댓글 ${formatInteger(post.commentsCount)} · 조회 ${formatInteger(post.views)}</span>
+        ${dateLabel ? `<time class="community-vote-date" datetime="${escapeHtml(post.createdAt)}">${escapeHtml(dateLabel)}</time>` : ""}
+      </div>
+    </a>
+  </article>`;
+}
+
+function renderCommunityFeed(posts, emptyText = "아직 등록된 글이 없습니다.") {
+  if (!posts.length) {
+    return `<div class="community-feed-empty">${escapeHtml(emptyText)}</div>`;
+  }
+  return `<div class="community-vote-list">${posts.map(renderCommunityVoteCard).join("")}</div>`;
+}
+
+function renderCommunityPinned(notices) {
+  if (!notices.length) {
+    return "";
+  }
+  return `<div class="community-pinned" aria-label="공지">
+    ${notices
+      .map(
+        (post) => `<a class="community-pinned-row" href="/community/${escapeHtml(post.slug)}">
+        <span class="community-pin-badge">공지</span>
+        <strong>${escapeHtml(post.title)}</strong>
+        <span class="community-pinned-meta">댓글 ${formatInteger(post.commentsCount)}</span>
+      </a>`,
+      )
+      .join("")}
+  </div>`;
+}
+
+function renderCommunityPager(basePath, page, totalPages, search, sort, tag) {
+  if (totalPages <= 1) {
+    return "";
+  }
+  const href = (target) => `${escapeHtml(basePath + communityQueryString({ sort, q: search, tag, page: target }))}`;
+  const items = [];
+  if (page > 1) {
+    items.push(`<a class="community-pager-edge" href="${href(page - 1)}" rel="prev">이전</a>`);
+  }
+  const start = Math.max(1, Math.min(page - 2, totalPages - 4));
+  const end = Math.min(totalPages, start + 4);
+  for (let target = start; target <= end; target += 1) {
+    const isActive = target === page;
+    items.push(`<a class="${isActive ? "is-active" : ""}" href="${href(target)}" ${isActive ? 'aria-current="page"' : ""}>${target}</a>`);
+  }
+  if (page < totalPages) {
+    items.push(`<a class="community-pager-edge" href="${href(page + 1)}" rel="next">다음</a>`);
+  }
+  return `<nav class="community-pager" aria-label="페이지 이동">${items.join("")}</nav>`;
+}
+
+function renderCommunityIndexPage(query = {}) {
+  const sort = COMMUNITY_SORTS[query.sort] ? String(query.sort) : "hot";
+  const search = String(query.q || "").trim().slice(0, 60);
+  const tag = String(query.tag || "").trim().slice(0, 40);
+  const pageSize = 12;
+  const feedOptions = { notice: false, sort, search, tag };
+  const total = countCommunityPosts(feedOptions);
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const page = Math.min(Math.max(1, Number(query.page) || 1), totalPages);
+  const posts = getCommunityPosts({ ...feedOptions, limit: pageSize, offset: (page - 1) * pageSize });
+  const notices = !search && !tag && page === 1 ? getCommunityPosts({ notice: true, sort: "new", limit: 3 }) : [];
+  const popularPosts = getCommunityPosts({ notice: false, sort: "top", limit: 5 });
+  const qnaPosts = getCommunityPosts({ category: "qna", sort: "new", limit: 4 });
+
   const title = "쿠팡셀러 커뮤니티 | 로켓그로스 계산기";
   const description =
     "쿠팡셀러와 개인셀러를 위한 로켓그로스 5단계 커뮤니티입니다. 중국사입, 중국→한국 물류, 한국→쿠팡 입고, 쿠팡 소모 비용, 최종 비용을 단계별로 묻고 답합니다.";
   const canonicalUrl = `${PUBLIC_SITE_URL}/community`;
-  const recentPosts = getCommunityPosts({ limit: 18 });
-  const featuredPosts = getCommunityPosts({ featured: true, limit: 6 });
-  const qnaPosts = getCommunityPosts({ category: "qna", limit: 4 });
+  const heading = search ? `‘${search}’ 검색 결과` : "쿠팡셀러 비용 게시판";
+  const subLabel = search ? `${formatInteger(total)}개의 글` : "셀러 커뮤니티";
 
   return renderDocumentShell({
     title,
@@ -561,40 +676,47 @@ function renderCommunityIndexPage() {
         <section class="community-feed-panel" aria-labelledby="community-title">
           <div class="community-feed-head">
             <div>
-              <span class="community-page-label">셀러 커뮤니티</span>
-              <h1 id="community-title">쿠팡셀러 비용 게시판</h1>
+              <span class="community-page-label">${escapeHtml(subLabel)}</span>
+              <h1 id="community-title">${escapeHtml(heading)}</h1>
             </div>
-            <a class="community-head-action" href="/community/qna">질문하기</a>
+            <a class="community-head-action" href="#community-write">글쓰기</a>
           </div>
           ${renderCommunityStageTabs("community")}
-          ${renderCommunityPostSection("최신 글", recentPosts, "feed")}
-          <details class="community-collapsible-panel community-board-extra">
-            <summary>
-              <strong>고정 글</strong>
-              <span>${formatInteger(featuredPosts.length)}개</span>
-            </summary>
-            ${renderCommunityPostSection("고정 글", featuredPosts, "compact")}
-          </details>
+          ${renderCommunitySortBar("/community", sort, search, tag)}
+          ${renderCommunityPinned(notices)}
+          ${renderCommunityFeed(posts, search ? "검색 결과가 없습니다. 다른 키워드로 찾아보세요." : "아직 등록된 글이 없습니다.")}
+          ${renderCommunityPager("/community", page, totalPages, search, sort, tag)}
         </section>
         <aside class="community-right-rail">
+          <div id="community-write">${renderCommunityWritePanel()}</div>
+          ${renderCommunityCollapsedPostPanel("인기 글", popularPosts)}
           ${renderCommunityStats()}
-          ${renderCommunityWritePanel()}
-          ${renderTrendMiniPanel()}
           ${renderCommunityCollapsedPostPanel("최근 질문", qnaPosts)}
-          ${renderCommunityTagPanel()}
         </aside>
       </section>
     </main>`,
-    jsonLd: buildCommunityIndexJsonLd(title, description, canonicalUrl, featuredPosts),
+    jsonLd: buildCommunityIndexJsonLd(title, description, canonicalUrl, posts.length ? posts : popularPosts),
     script: renderCommunityScript(),
   });
 }
 
-function renderCommunityCategoryPage(categorySlug) {
+function renderCommunityCategoryPage(categorySlug, query = {}) {
   const category = COMMUNITY_CATEGORIES[categorySlug] || COMMUNITY_CATEGORIES["final-margin"];
-  const posts = getCommunityPosts({ category: category.slug, limit: 40 });
+  const basePath = `/community/${category.slug}`;
+  const sort = COMMUNITY_SORTS[query.sort] ? String(query.sort) : "hot";
+  const search = String(query.q || "").trim().slice(0, 60);
+  const pageSize = 12;
+  const feedOptions = { category: category.slug, notice: false, sort, search };
+  const total = countCommunityPosts(feedOptions);
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const page = Math.min(Math.max(1, Number(query.page) || 1), totalPages);
+  const posts = getCommunityPosts({ ...feedOptions, limit: pageSize, offset: (page - 1) * pageSize });
+  const notices =
+    !search && page === 1 ? getCommunityPosts({ category: category.slug, notice: true, sort: "new", limit: 3 }) : [];
+  const popularPosts = getCommunityPosts({ category: category.slug, notice: false, sort: "top", limit: 5 });
   const canonicalUrl = `${PUBLIC_SITE_URL}/community/${category.slug}`;
-  const featuredPosts = getCommunityPosts({ featured: true, limit: 4 });
+  const heading = search ? `‘${search}’ 검색 결과` : category.title;
+  const subLabel = search ? `${category.label} · ${formatInteger(total)}개` : category.label;
 
   return renderDocumentShell({
     title: `${category.title} | 로켓그로스 계산기 커뮤니티`,
@@ -606,19 +728,21 @@ function renderCommunityCategoryPage(categorySlug) {
         <section class="community-feed-panel" aria-labelledby="community-category-title">
           <div class="community-feed-head">
             <div>
-              <span class="community-page-label">${escapeHtml(category.label)}</span>
-              <h1 id="community-category-title">${escapeHtml(category.title)}</h1>
+              <span class="community-page-label">${escapeHtml(subLabel)}</span>
+              <h1 id="community-category-title">${escapeHtml(heading)}</h1>
             </div>
-            <a class="community-head-action" href="/community">전체 보기</a>
+            <a class="community-head-action" href="#community-write">글쓰기</a>
           </div>
           ${renderCommunityStageTabs(category.slug)}
-          ${renderCommunityPostSection(`${category.label} 글`, posts, "feed")}
+          ${renderCommunitySortBar(basePath, sort, search, "")}
+          ${renderCommunityPinned(notices)}
+          ${renderCommunityFeed(posts, search ? "검색 결과가 없습니다. 다른 키워드로 찾아보세요." : "이 게시판에는 아직 글이 없습니다.")}
+          ${renderCommunityPager(basePath, page, totalPages, search, sort, "")}
         </section>
         <aside class="community-right-rail">
-          ${renderCommunityWritePanel(category.slug)}
+          <div id="community-write">${renderCommunityWritePanel(category.slug)}</div>
+          ${renderCommunityCollapsedPostPanel("인기 글", popularPosts)}
           ${renderTrendMiniPanel()}
-          ${renderCommunityCollapsedPostPanel("추천 글", featuredPosts)}
-          ${renderCommunityTagPanel()}
         </aside>
       </section>
     </main>`,
@@ -693,10 +817,10 @@ function renderCommunityPostPage(post) {
 
 function renderCommunityHeader(activeKey) {
   const navItems = [
-    { key: "calculator", label: "계산기 홈", href: "/" },
+    { key: "calculator", label: "로켓계산기", href: "/" },
+    { key: "trends", label: "검색 트렌드", href: "/trends" },
     { key: "community", label: "셀러 커뮤니티", href: "/community" },
     { key: "qna", label: "질문답변", href: "/community/qna" },
-    { key: "trends", label: "검색 트렌드", href: "/trends" },
     { key: "guides", label: "계산 기준", href: "/guides" },
   ];
 
@@ -716,9 +840,9 @@ function renderCommunityHeader(activeKey) {
 
 function renderCommunityStageTabs(activeKey = "community") {
   const counts = getCommunityCategoryCounts();
-  const stageCount = COMMUNITY_STAGE_SLUGS.reduce((sum, slug) => sum + (counts[slug] || 0), 0);
+  const totalCount = Object.values(counts).reduce((sum, count) => sum + count, 0);
   const items = [
-    { slug: "community", label: "전체", href: "/community", count: stageCount },
+    { slug: "community", label: "전체", href: "/community", count: totalCount },
     ...COMMUNITY_STAGE_SLUGS.map((slug) => ({
       slug,
       label: COMMUNITY_CATEGORIES[slug].label,
@@ -857,16 +981,14 @@ function renderCommunityCollapsedPostPanel(title, posts) {
 function renderCommunityPostCard(post, mode = "default") {
   const category = COMMUNITY_CATEGORIES[post.category] || COMMUNITY_CATEGORIES["final-margin"];
   const isCompact = mode === "compact";
-  const dateLabel = formatDate(post.updatedAt || post.createdAt);
+  const dateLabel = formatDate(post.createdAt);
   return `<a class="community-post-card ${isCompact ? "is-compact" : ""}" href="/community/${post.slug}">
     <div class="community-post-main">
       <strong class="community-post-title">${escapeHtml(post.title)}</strong>
-      ${isCompact ? "" : `<p class="community-post-excerpt">${escapeHtml(post.summary)}</p>`}
       <div class="community-post-meta">
         <span class="community-post-cat">${escapeHtml(category.label)}</span>
-        ${dateLabel ? `<span>${escapeHtml(dateLabel)}</span>` : ""}
-        <span>댓글 ${formatInteger(post.commentsCount)}</span>
-        ${isCompact ? "" : `<span>조회 ${formatInteger(post.views)}</span>`}
+        <span>댓글 ${formatInteger(post.commentsCount)} · 조회 ${formatInteger(post.views)}</span>
+        ${dateLabel ? `<time datetime="${escapeHtml(post.createdAt)}">${escapeHtml(dateLabel)}</time>` : ""}
       </div>
     </div>
   </a>`;
@@ -976,27 +1098,29 @@ function renderTrendPage(trends) {
 }
 
 function renderTrendProviderCard(provider) {
-  const statusLabel = provider.status === "ok" ? "표시 중" : provider.status === "unconfigured" ? "준비 중" : "확인 필요";
+  const statusLabel = formatTrendBaseTime(provider.updatedAt);
   const items = provider.items.slice(0, 10);
   return `<article class="trend-provider-card" data-trend-provider="${escapeHtml(provider.key)}">
     <header>
       <div>
-        <span>${escapeHtml(statusLabel)}</span>
+        <span class="trend-base-time"><i aria-hidden="true"></i>${escapeHtml(statusLabel)}</span>
         <h2>${escapeHtml(provider.label)}</h2>
       </div>
-      <time datetime="${escapeHtml(provider.updatedAt || "")}">${provider.updatedAt ? formatDate(provider.updatedAt) : "대기"}</time>
     </header>
     ${
       items.length
         ? `<ol class="trend-keyword-list">
             ${items
-              .map(
-                (item, index) => `<li>
-                  <b>${index + 1}</b>
-                  ${item.url ? `<a href="${escapeHtml(item.url)}" rel="nofollow noopener" target="_blank">${escapeHtml(item.title)}</a>` : `<span>${escapeHtml(item.title)}</span>`}
+              .map((item, index) => {
+                const rank = index + 1;
+                const itemUrl = item.url || buildTrendSearchUrl(provider.key, item.title);
+                const rankClass = rank <= 3 ? ` class="is-top-rank is-rank-${rank}"` : "";
+                return `<li${rankClass}>
+                  <b>${rank}</b>
+                  ${itemUrl ? `<a href="${escapeHtml(itemUrl)}" rel="nofollow noopener" target="_blank">${escapeHtml(item.title)}</a>` : `<span>${escapeHtml(item.title)}</span>`}
                   ${item.traffic ? `<em>${escapeHtml(item.traffic)}</em>` : ""}
-                </li>`,
-              )
+                </li>`;
+              })
               .join("")}
           </ol>`
         : `<p class="trend-provider-empty">${escapeHtml(provider.message || "표시할 검색어가 없습니다.")}</p>`
@@ -1014,16 +1138,31 @@ function renderTrendScript() {
           return ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char];
         });
       }
+      function trendBaseTime(value) {
+        if (!value) return "기준시간 대기";
+        var date = new Date(value);
+        if (Number.isNaN(date.getTime())) return "기준시간 대기";
+        return "기준시간 " + date.toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit", hour12: false });
+      }
+      function trendSearchUrl(providerKey, title) {
+        var query = encodeURIComponent(title || "");
+        if (!query) return "";
+        if (providerKey === "naver") return "https://search.naver.com/search.naver?query=" + query;
+        if (providerKey === "daum") return "https://search.daum.net/search?w=tot&q=" + query;
+        return "https://www.google.com/search?q=" + query;
+      }
       function renderProvider(provider) {
-        var status = provider.status === "ok" ? "표시 중" : provider.status === "unconfigured" ? "준비 중" : "확인 필요";
+        var status = trendBaseTime(provider.updatedAt);
         var list = (provider.items || []).slice(0, 10);
         return '<article class="trend-provider-card" data-trend-provider="' + escapeText(provider.key) + '">' +
-          '<header><div><span>' + escapeText(status) + '</span><h2>' + escapeText(provider.label) + '</h2></div>' +
-          '<time>' + escapeText(provider.updatedAt ? provider.updatedAt.slice(0, 10) : "대기") + '</time></header>' +
+          '<header><div><span class="trend-base-time"><i aria-hidden="true"></i>' + escapeText(status) + '</span><h2>' + escapeText(provider.label) + '</h2></div></header>' +
           (list.length
             ? '<ol class="trend-keyword-list">' + list.map(function (item, index) {
-                return '<li><b>' + (index + 1) + '</b>' +
-                  (item.url ? '<a href="' + escapeText(item.url) + '" rel="nofollow noopener" target="_blank">' + escapeText(item.title) + '</a>' : '<span>' + escapeText(item.title) + '</span>') +
+                var rank = index + 1;
+                var itemUrl = item.url || trendSearchUrl(provider.key, item.title);
+                var rankClass = rank <= 3 ? ' class="is-top-rank is-rank-' + rank + '"' : "";
+                return '<li' + rankClass + '><b>' + rank + '</b>' +
+                  (itemUrl ? '<a href="' + escapeText(itemUrl) + '" rel="nofollow noopener" target="_blank">' + escapeText(item.title) + '</a>' : '<span>' + escapeText(item.title) + '</span>') +
                   (item.traffic ? '<em>' + escapeText(item.traffic) + '</em>' : '') + '</li>';
               }).join("") + '</ol>'
             : '<p class="trend-provider-empty">' + escapeText(provider.message || "표시할 검색어가 없습니다.") + '</p>') +
@@ -1034,7 +1173,9 @@ function renderTrendScript() {
           var response = await fetch("/api/search-trends", { headers: { "Accept": "application/json" } });
           if (!response.ok) return;
           var data = await response.json();
+          grid.classList.add("is-refreshing");
           grid.innerHTML = (data.providers || []).map(renderProvider).join("");
+          window.setTimeout(function () { grid.classList.remove("is-refreshing"); }, 700);
           if (typeof gtag === "function") gtag("event", "trend_refresh", { providers: (data.providers || []).length });
         } catch (error) {
           // Keep the server-rendered list if refresh fails.
@@ -1043,6 +1184,26 @@ function renderTrendScript() {
       window.setInterval(refreshTrends, 600000);
     })();
   </script>`;
+}
+
+function formatTrendBaseTime(value) {
+  if (!value) return "기준시간 대기";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "기준시간 대기";
+  return `기준시간 ${new Intl.DateTimeFormat("ko-KR", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+    timeZone: "Asia/Seoul",
+  }).format(date)}`;
+}
+
+function buildTrendSearchUrl(providerKey, title) {
+  const query = encodeURIComponent(String(title || "").trim());
+  if (!query) return "";
+  if (providerKey === "naver") return `https://search.naver.com/search.naver?query=${query}`;
+  if (providerKey === "daum") return `https://search.daum.net/search?w=tot&q=${query}`;
+  return `https://www.google.com/search?q=${query}`;
 }
 
 function renderCommunityFaq(post) {
@@ -1193,7 +1354,7 @@ function renderGuideIndexPage() {
               <span class="community-page-label">계산 기준</span>
               <h1 id="guide-library-title">셀러 비용 계산 기준</h1>
             </div>
-            <a class="community-head-action" href="/">계산기 홈</a>
+            <a class="community-head-action" href="/">로켓계산기</a>
           </div>
           <section class="community-post-section guide-resource-section">
             <div class="community-section-head">
@@ -1806,7 +1967,7 @@ async function fetchNaverDatalabTrends() {
         return {
           title: normalizeText(result.title, 80),
           traffic: `관심도 ${Math.round(ratio * 10) / 10}`,
-          url: group ? group.url : "https://datalab.naver.com/keyword/trendSearch.naver",
+          url: buildTrendSearchUrl("naver", group ? group.title : result.title),
           ratio,
         };
       })
@@ -1969,10 +2130,11 @@ async function fetchConfiguredTrendProvider({ key, label, url, message }) {
 function parseGoogleTrendsRss(xml) {
   return [...String(xml || "").matchAll(/<item>([\s\S]*?)<\/item>/gi)].map((match) => {
     const block = match[1];
+    const title = decodeXmlText(extractXmlTag(block, "title"));
     return {
-      title: decodeXmlText(extractXmlTag(block, "title")),
+      title,
       traffic: decodeXmlText(extractXmlTag(block, "ht:approx_traffic") || extractXmlTag(block, "approx_traffic")),
-      url: decodeXmlText(extractXmlTag(block, "link")),
+      url: buildTrendSearchUrl("google", title),
     };
   }).filter((item) => item.title);
 }
@@ -2532,18 +2694,21 @@ function seedCommunityPosts() {
     `INSERT INTO community_posts (
       id, slug, category, title, summary, body_json, tags_json, author_user_id, author_name,
       status, is_featured, is_notice, views, likes_count, bookmarks_count, comments_count, source, created_at, updated_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, NULL, ?, 'published', ?, ?, ?, 0, 0, 0, 'seed', ?, ?)`,
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, NULL, ?, 'published', ?, ?, ?, 0, 0, ?, 'seed', ?, ?)`,
   );
   const update = db.prepare(
     `UPDATE community_posts
      SET category = ?, title = ?, summary = ?, body_json = ?, tags_json = ?, author_name = ?,
-         is_featured = ?, is_notice = ?, source = 'seed', updated_at = ?
+         is_featured = ?, is_notice = ?, views = ?, comments_count = ?, source = 'seed', created_at = ?, updated_at = ?
      WHERE slug = ? AND source = 'seed'`,
   );
 
   SEED_COMMUNITY_POSTS.forEach((post, index) => {
     const existing = db.prepare("SELECT id FROM community_posts WHERE slug = ?").get(post.slug);
-    const createdAt = new Date(Date.now() - (SEED_COMMUNITY_POSTS.length - index) * 3600 * 1000).toISOString();
+    const createdAt = post.createdAt || new Date(Date.now() - (SEED_COMMUNITY_POSTS.length - index) * 3600 * 1000).toISOString();
+    const updatedAt = post.updatedAt || createdAt;
+    const views = Number.isFinite(Number(post.views)) ? Number(post.views) : Math.max(12, 120 - index * 4);
+    const commentsCount = Number.isFinite(Number(post.commentsCount)) ? Number(post.commentsCount) : 0;
     const values = [
       post.category,
       post.title,
@@ -2553,7 +2718,10 @@ function seedCommunityPosts() {
       post.authorName || "브랜드코어",
       post.isFeatured ? 1 : 0,
       post.isNotice ? 1 : 0,
-      now,
+      views,
+      commentsCount,
+      createdAt,
+      updatedAt,
     ];
 
     if (existing) {
@@ -2572,9 +2740,10 @@ function seedCommunityPosts() {
       post.authorName || "브랜드코어",
       post.isFeatured ? 1 : 0,
       post.isNotice ? 1 : 0,
-      Math.max(12, 120 - index * 4),
+      views,
+      commentsCount,
       createdAt,
-      now,
+      updatedAt,
     );
   });
 }
@@ -2624,10 +2793,18 @@ function getSeedPostFaq(slug) {
   return Array.isArray(seedPost?.faq) ? seedPost.faq : [];
 }
 
-function getCommunityPosts(options = {}) {
+const COMMUNITY_SORTS = {
+  hot: "(likes_count * 4 + comments_count * 3 + views / 10.0) DESC, created_at DESC",
+  new: "created_at DESC",
+  top: "likes_count DESC, created_at DESC",
+  comments: "comments_count DESC, created_at DESC",
+  views: "views DESC, created_at DESC",
+};
+
+function buildCommunityWhere(options = {}) {
   const category = normalizeCommunityCategory(options.category);
-  const featured = Boolean(options.featured);
-  const limit = Math.max(1, Math.min(Number(options.limit || 20), 100));
+  const search = String(options.search || "").trim();
+  const tag = String(options.tag || "").trim();
   const where = ["status = 'published'"];
   const params = [];
 
@@ -2635,21 +2812,45 @@ function getCommunityPosts(options = {}) {
     where.push("category = ?");
     params.push(category);
   }
-
-  if (featured) {
+  if (options.featured) {
     where.push("is_featured = 1");
   }
+  if (options.notice === true) {
+    where.push("is_notice = 1");
+  } else if (options.notice === false) {
+    where.push("is_notice = 0");
+  }
+  if (search) {
+    where.push("(title LIKE ? OR summary LIKE ?)");
+    params.push(`%${search}%`, `%${search}%`);
+  }
+  if (tag) {
+    where.push("tags_json LIKE ?");
+    params.push(`%"${tag}"%`);
+  }
+  return { clause: where.join(" AND "), params };
+}
 
-  params.push(limit);
+function getCommunityPosts(options = {}) {
+  const { clause, params } = buildCommunityWhere(options);
+  const limit = Math.max(1, Math.min(Number(options.limit || 20), 100));
+  const offset = Math.max(0, Number(options.offset || 0));
+  const orderBy = COMMUNITY_SORTS[options.sort] || "is_notice DESC, is_featured DESC, updated_at DESC";
   return db
     .prepare(
       `SELECT * FROM community_posts
-       WHERE ${where.join(" AND ")}
-       ORDER BY is_notice DESC, is_featured DESC, updated_at DESC
-       LIMIT ?`,
+       WHERE ${clause}
+       ORDER BY ${orderBy}
+       LIMIT ? OFFSET ?`,
     )
-    .all(...params)
+    .all(...params, limit, offset)
     .map(communityPostFromRow);
+}
+
+function countCommunityPosts(options = {}) {
+  const { clause, params } = buildCommunityWhere(options);
+  const row = db.prepare(`SELECT COUNT(*) AS n FROM community_posts WHERE ${clause}`).get(...params);
+  return Number(row?.n || 0);
 }
 
 function getCommunityCategoryCounts() {
