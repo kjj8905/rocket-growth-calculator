@@ -9948,9 +9948,149 @@ em {
   text-decoration: none;
 }
 
+.sellerdit-topbar nav button {
+  min-height: 36px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: #374151;
+  font-size: 13px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
 .sellerdit-topbar nav a.is-active {
   background: #eaf3ff;
   color: #2563eb;
+}
+
+.sellerdit-topbar nav button.is-active {
+  background: #eaf3ff;
+  color: #2563eb;
+}
+
+.sellerdit-topbar .community-brand {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.sellerdit-home-page {
+  background: #f6f7f8;
+}
+
+.sellerdit-home-shell {
+  width: min(1280px, calc(100% - 32px));
+  max-width: 1280px;
+  padding-top: 76px;
+}
+
+.sellerdit-home-intro {
+  display: block;
+  height: 1px;
+  margin: 0;
+  overflow: hidden;
+}
+
+.sellerdit-home-intro h1 {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  border: 0;
+  clip: rect(0, 0, 0, 0);
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.sellerdit-home-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sellerdit-home-brand span {
+  color: #2563eb;
+}
+
+.sellerdit-saved-count {
+  min-height: 30px;
+  padding: 0 10px;
+  background: #eaf3ff;
+  color: #2563eb;
+}
+
+.sellerdit-home-page .quick-home-calculator {
+  margin: 0 0 18px;
+}
+
+.sellerdit-home-page .quick-home-card {
+  padding: 28px 28px 24px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: none;
+}
+
+.sellerdit-home-page .quick-home-copy h2 {
+  max-width: 760px;
+  margin-bottom: 10px;
+  font-size: 30px;
+  line-height: 1.3;
+  letter-spacing: 0;
+  text-wrap: balance;
+}
+
+.sellerdit-home-page .quick-home-copy > p {
+  max-width: 760px;
+  margin-bottom: 22px;
+  color: #526071;
+  font-size: 15px;
+}
+
+.sellerdit-home-page .home-accuracy-points {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.sellerdit-home-page .home-accuracy-points article {
+  min-height: 126px;
+  padding: 18px;
+  border-color: #dfe4ea;
+  border-radius: 12px;
+  background: #fafbfc;
+}
+
+.sellerdit-home-page .home-accuracy-points span {
+  background: #eaf3ff;
+  color: #2563eb;
+}
+
+.sellerdit-home-page .home-accuracy-points strong {
+  font-size: 17px;
+}
+
+.sellerdit-home-page .home-accuracy-points p {
+  color: #526071;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.sellerdit-home-page .quick-home-detail-button {
+  min-width: 240px;
+  border-radius: 10px;
+  box-shadow: none;
+}
+
+.sellerdit-home-page .banner-grid {
+  margin-top: 18px;
+}
+
+.sellerdit-home-page .home-expand-panel {
+  border-radius: 12px;
+  box-shadow: none;
 }
 
 .sellerdit-kakao {
@@ -10235,6 +10375,97 @@ em {
   text-decoration: none;
   -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
+}
+
+.sellerdit-post-media {
+  position: relative;
+  display: grid;
+  min-height: 210px;
+  margin: 10px 0 12px;
+  padding: 18px;
+  overflow: hidden;
+  border: 1px solid #dbe3ed;
+  border-radius: 14px;
+  background:
+    radial-gradient(circle at 78% 20%, rgba(37, 99, 235, 0.2), transparent 34%),
+    linear-gradient(135deg, #eef6ff 0%, #ffffff 52%, #e8f3ff 100%);
+  color: #111827;
+  text-decoration: none;
+}
+
+.sellerdit-post-media span,
+.sellerdit-post-media strong {
+  position: relative;
+  z-index: 1;
+  width: fit-content;
+}
+
+.sellerdit-post-media span {
+  align-self: start;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #2563eb;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.sellerdit-post-media strong {
+  align-self: end;
+  max-width: 360px;
+  font-size: 26px;
+  line-height: 1.2;
+}
+
+.sellerdit-post-media i {
+  position: absolute;
+  right: 26px;
+  bottom: 22px;
+  width: 160px;
+  height: 92px;
+  border-radius: 18px;
+  background:
+    linear-gradient(#ffffff, #ffffff) padding-box,
+    linear-gradient(135deg, rgba(37, 99, 235, 0.4), rgba(16, 185, 129, 0.26)) border-box;
+  border: 1px solid transparent;
+  box-shadow: 0 10px 24px rgba(17, 24, 39, 0.08);
+}
+
+.sellerdit-post-media i::before,
+.sellerdit-post-media i::after {
+  content: "";
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  height: 10px;
+  border-radius: 999px;
+  background: #dbeafe;
+}
+
+.sellerdit-post-media i::before {
+  top: 25px;
+}
+
+.sellerdit-post-media i::after {
+  top: 50px;
+  right: 44px;
+  background: #cbd5e1;
+}
+
+.sellerdit-post-media.is-china-korea-logistics {
+  background:
+    radial-gradient(circle at 72% 20%, rgba(14, 165, 233, 0.22), transparent 34%),
+    linear-gradient(135deg, #f0f9ff 0%, #ffffff 52%, #e0f2fe 100%);
+}
+
+.sellerdit-post-media.is-final-margin {
+  background:
+    radial-gradient(circle at 72% 20%, rgba(49, 130, 246, 0.18), transparent 34%),
+    linear-gradient(135deg, #f8fbff 0%, #ffffff 50%, #eaf3ff 100%);
+}
+
+.sellerdit-post-meta .sellerdit-more {
+  margin-left: 0;
 }
 
 .sellerdit-actions {
@@ -10807,5 +11038,93 @@ em {
 @media (prefers-reduced-motion: reduce) {
   .sellerdit-ai-orbit span {
     animation: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .sellerdit-topbar {
+    display: flex;
+    align-items: center;
+    min-height: 58px;
+    margin: 0;
+    padding: 0;
+    border-width: 0 0 1px;
+    border-radius: 0;
+  }
+
+  .sellerdit-topbar-inner {
+    width: calc(100% - 24px);
+    min-height: 58px;
+    flex-wrap: nowrap;
+    gap: 8px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .sellerdit-topbar-inner::-webkit-scrollbar {
+    display: none;
+  }
+
+  .sellerdit-topbar .community-global-search {
+    display: none;
+  }
+
+  .sellerdit-topbar nav {
+    flex: 1 0 auto;
+    gap: 2px;
+    overflow: visible;
+    white-space: nowrap;
+    flex-wrap: nowrap;
+  }
+
+  .sellerdit-topbar nav a,
+  .sellerdit-topbar nav button {
+    min-height: 34px;
+    padding: 0 10px;
+    font-size: 12px;
+  }
+
+  .sellerdit-topbar .community-brand {
+    font-size: 15px;
+  }
+
+  .sellerdit-home-shell {
+    width: calc(100% - 20px);
+    padding-top: 16px;
+  }
+
+  .sellerdit-home-page .quick-home-card {
+    padding: 22px;
+  }
+
+  .sellerdit-home-page .quick-home-copy h2 {
+    font-size: 25px;
+    line-height: 1.32;
+  }
+
+  .sellerdit-home-page .home-accuracy-points {
+    grid-template-columns: 1fr;
+  }
+
+  .sellerdit-home-page .home-accuracy-points article {
+    min-height: 0;
+  }
+
+  .sellerdit-home-page .quick-home-detail-button {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .sellerdit-post-media {
+    min-height: 164px;
+  }
+
+  .sellerdit-post-media strong {
+    max-width: 100%;
+    font-size: 24px;
+  }
+
+  .sellerdit-post-media i {
+    display: none;
   }
 }

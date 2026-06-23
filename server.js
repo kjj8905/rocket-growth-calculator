@@ -587,7 +587,7 @@ function renderCommunitySortBar(basePath, activeSort, search, tag) {
   </div>`;
 }
 
-function renderCommunityVoteCard(post) {
+function renderCommunityVoteCard(post, index = 0) {
   const dateLabel = formatDate(post.createdAt);
   const authorName = post.authorName || "셀러";
   return `<article class="community-vote-card sellerdit-feed-post${post.isNotice ? " is-notice" : ""}">
@@ -598,9 +598,11 @@ function renderCommunityVoteCard(post) {
       ${dateLabel ? `<time datetime="${escapeHtml(post.createdAt)}">${escapeHtml(dateLabel)}</time>` : ""}
       ${post.isNotice ? `<span class="community-pin-badge">공지</span>` : ""}
       <button class="sellerdit-follow" type="button">팔로우</button>
+      <span class="sellerdit-more">⋯</span>
     </div>
     <a class="community-vote-title" href="/community/${escapeHtml(post.slug)}">${escapeHtml(post.title)}</a>
     <a class="sellerdit-post-excerpt" href="/community/${escapeHtml(post.slug)}">${escapeHtml(post.summary || "")}</a>
+    ${renderCommunityFeedMedia(post, index)}
     <div class="community-vote-actions sellerdit-actions" aria-label="게시글 작업">
       <button type="button" class="sellerdit-action" data-community-reaction="like" data-post-slug="${escapeHtml(post.slug)}">👍 ${formatInteger(post.likesCount || 0)}</button>
       <a class="sellerdit-action" href="/community/${escapeHtml(post.slug)}#comments">💬 댓글 ${formatInteger(post.commentsCount)}</a>
@@ -608,6 +610,24 @@ function renderCommunityVoteCard(post) {
       <button type="button" class="sellerdit-action" data-community-reaction="bookmark" data-post-slug="${escapeHtml(post.slug)}">🔖 저장</button>
     </div>
   </article>`;
+}
+
+function renderCommunityFeedMedia(post, index = 0) {
+  if (post.isNotice || post.category === "qna" || index % 4 !== 0) {
+    return "";
+  }
+  const media = {
+    "china-sourcing": ["사입 원가", "환율·수량·대행비"],
+    "china-korea-logistics": ["LCL 물류", "CBM·통관·운임"],
+    "korea-coupang-inbound": ["쿠팡 입고", "파레트·작업비"],
+    "coupang-selling-cost": ["판매 비용", "수수료·광고비"],
+    "final-margin": ["최종 마진", "원가·판매가·ROAS"],
+  }[post.category] || ["셀러 노트", "계산 기준"];
+  return `<a class="sellerdit-post-media is-${escapeHtml(post.category)}" href="/community/${escapeHtml(post.slug)}" aria-label="${escapeHtml(post.title)} 미리보기">
+    <span>${escapeHtml(media[0])}</span>
+    <strong>${escapeHtml(media[1])}</strong>
+    <i></i>
+  </a>`;
 }
 
 function renderCommunityPostThumb(post, mode = "small") {
@@ -636,7 +656,7 @@ function renderCommunityFeed(posts, emptyText = "아직 등록된 글이 없습�
     return `<div class="community-feed-empty">${escapeHtml(emptyText)}</div>`;
   }
   const items = posts
-    .map((post, index) => `${index === 3 ? renderCommunityPromotedPost() : ""}${renderCommunityVoteCard(post)}`)
+    .map((post, index) => `${index === 3 ? renderCommunityPromotedPost() : ""}${renderCommunityVoteCard(post, index)}`)
     .join("");
   return `<div class="community-vote-list sellerdit-feedpanel">${items}</div>`;
 }
@@ -775,6 +795,7 @@ function renderSellerditRightRail(mode = "list", relatedPosts = []) {
   if (mode === "detail") {
     return `<aside class="community-right-rail sellerdit-right-rail">
       ${renderCommunityRelatedPanel(relatedPosts)}
+      ${renderKillerContentPanel()}
       ${renderPopularCommunitiesPanel()}
       ${renderSellerditFooterLinks()}
     </aside>`;
