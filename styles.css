@@ -13073,3 +13073,26 @@ body:has(.sellerdit-topbar) {
 .sellerdit-profile-card a {
   color: #2563eb !important;
 }
+
+/* Sellerdit requested rail cleanup */
+.community-shell .community-reddit-layout.sellerdit-no-left-rail {
+  grid-template-columns: minmax(0, 720px) 320px !important;
+  justify-content: center !important;
+}
+
+.community-shell .community-reddit-layout.sellerdit-no-side-rail {
+  grid-template-columns: minmax(0, 820px) !important;
+  justify-content: center !important;
+}
+
+.community-shell .community-reddit-layout.sellerdit-no-side-rail .community-feed-panel,
+.community-shell .community-reddit-layout.sellerdit-no-left-rail .community-feed-panel {
+  width: 100%;
+}
+
+@media (max-width: 1120px) {
+  .community-shell .community-reddit-layout.sellerdit-no-left-rail,
+  .community-shell .community-reddit-layout.sellerdit-no-side-rail {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+}

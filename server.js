@@ -993,8 +993,7 @@ function renderCommunityIndexPage(query = {}) {
     canonicalUrl,
     body: `<main class="community-shell">
       ${renderCommunityHeader("community")}
-      <section class="community-workspace community-reddit-layout">
-        ${renderCommunityLeftRail("community")}
+      <section class="community-workspace community-reddit-layout sellerdit-no-left-rail">
         <section class="community-feed-panel" aria-labelledby="community-title">
           <div class="community-feed-head">
             <div>
@@ -1033,8 +1032,7 @@ function renderCommunityAiAnswerPage(query = {}) {
     canonicalUrl,
     body: `<main class="community-shell">
       ${renderCommunityHeader("qna")}
-      <section class="community-workspace community-reddit-layout sellerdit-ai-layout">
-        ${renderCommunityLeftRail("qna")}
+      <section class="community-workspace community-reddit-layout sellerdit-ai-layout sellerdit-no-side-rail">
         <section class="community-feed-panel sellerdit-ai-main" aria-labelledby="sellerdit-ai-title">
           <div class="sellerdit-ai-hero">
             <div class="sellerdit-ai-orbit" aria-hidden="true">
@@ -1071,7 +1069,6 @@ function renderCommunityAiAnswerPage(query = {}) {
             ${qnaPosts.map(renderCommunityVoteCard).join("")}
           </section>
         </section>
-        ${renderSellerditRightRail("list")}
       </section>
     </main>`,
     jsonLd: buildCommunityCategoryJsonLd(COMMUNITY_CATEGORIES.qna, canonicalUrl, qnaPosts),
