@@ -26,11 +26,12 @@ This project applies the Toss/TDS-inspired parts that fit a seller cost calculat
 
 ## Typography
 
-- Use the Toss-style Korean-first stack from `styles.css`.
-- Use 700 for headings and financial amounts.
-- Use 600 for labels and selected controls.
-- Use 400 for body copy.
-- Use `font-variant-numeric: tabular-nums` for all amounts and numeric inputs.
+- Community pages follow the `WINGCO_1` Reddit-style reference typography: root `html` 16px, `body` 14px / line-height 1.5.
+- Community font stack: `-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif`.
+- Use only 400 for body copy, 600 for emphasis/selected controls, and 700 for headings and financial amounts.
+- Do not use font weights above 700; normalize former 800 usage to 700 to avoid synthetic bold blur.
+- Use `font-variant-numeric: tabular-nums` for all amounts, counts, karma, likes, member counts, stats, and numeric inputs.
+- Enable `-webkit-font-smoothing: antialiased`, `-moz-osx-font-smoothing: grayscale`, and `text-rendering: optimizeLegibility` on `html, body`.
 
 ## Components
 

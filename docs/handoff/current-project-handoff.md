@@ -27,15 +27,12 @@ Current public-facing pillars:
 - Resource/library pages
 - Calculation guide pages for SEO, AEO, and GEO
 - Google/Naver/Daum search trend page
-- MVP UI/UX comparison pages under `/mvp`
 
 ## Important Current Decision
 
-The calculator logic should remain single-source for now.
+The calculator logic should remain single-source. The site ships one canonical UI; the internal `/mvp` comparison variants were removed on 2026-06-21 (see "MVP Variants (removed)" below).
 
-MVP1 to MVP5 are not separate apps. MVP2 to MVP5 reuse the same `index.html`, `app.js`, calculation logic, save flow, community links, and search trend links. Their differences are injected through server-rendered body classes and CSS layout rules.
-
-Do not copy the calculator logic into five separate JS files unless the user explicitly approves a larger refactor. Duplicating the calculation logic will make future fixes much harder.
+Do not copy the calculator logic into separate per-variant JS files unless the user explicitly approves a larger refactor. Duplicating the calculation logic will make future fixes much harder.
 
 ## Key Files
 
@@ -53,11 +50,6 @@ Do not copy the calculator logic into five separate JS files unless the user exp
 ## Main Routes
 
 - `/`: canonical calculator home.
-- `/mvp`: MVP variant index.
-- `/mvp/2`: MVP2 structural variant.
-- `/mvp/3`: MVP3 structural variant.
-- `/mvp/4`: MVP4 structural variant.
-- `/mvp/5`: MVP5 structural variant.
 - `/community`: seller community home.
 - `/community/qna`: Q&A.
 - `/community/resources`: resources.
@@ -69,34 +61,16 @@ Do not copy the calculator logic into five separate JS files unless the user exp
 - `/llms.txt`: AI-readable site summary.
 - `/healthz`: health check endpoint.
 
-## Current MVP Implementation
+## MVP Variants (removed)
 
-The MVP routes are defined in `server.js`:
+The internal MVP UI/UX comparison variants were removed on 2026-06-21. This includes:
 
-- `renderMvpIndexPage()`
-- `renderMvpVariantPage(version)`
-- `renderMvpCalculatorHtml(html, variant)`
-- `renderMvpVariantNotice(activeVariant)`
-- `MVP_VARIANTS`
+- the `/mvp` and `/mvp/2`–`/mvp/5` routes and their render functions in `server.js`,
+- every `mvp-*` rule in `styles.css` (themes, legacy `.mvp-v*` / `.mvp-board*` / `.mvp-phone*` prototype CSS, `body.mvp-theme-*` blocks),
+- the `docs/mvp-variants/` folder,
+- the `Disallow: /mvp/` lines in `robots.txt`.
 
-MVP2 to MVP5 use body classes:
-
-- `mvp-variant-active`
-- `mvp-theme-2`
-- `mvp-theme-3`
-- `mvp-theme-4`
-- `mvp-theme-5`
-
-The active CSS is in `styles.css` near the MVP sections:
-
-- `mvp-variant-active` base block
-- `body.mvp-theme-2`
-- `body.mvp-theme-3`
-- `body.mvp-theme-4`
-- `body.mvp-theme-5`
-- `MVP structural layouts` block
-
-There may be older unused CSS classes like `.mvp-v2`, `.mvp-v3`, `.mvp-v4`, `.mvp-v5` from a previous standalone prototype attempt. The current active pages use `body.mvp-theme-*`, not those legacy `.mvp-v*` shells.
+The site now ships a single canonical UI. Do not reintroduce parallel MVP codepaths without an explicit decision.
 
 ## Calculator Stages
 

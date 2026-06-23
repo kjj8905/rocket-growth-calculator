@@ -40,7 +40,7 @@ Kakao Developers settings:
 
 Without Kakao keys, the calculator still works, but product saving is blocked with a login/setup message.
 
-## Handoff / MVP Variants
+## Handoff
 
 Current project handoff documentation is in:
 
@@ -48,13 +48,7 @@ Current project handoff documentation is in:
 docs/handoff/current-project-handoff.md
 ```
 
-MVP1 to MVP5 are documented separately in:
-
-```text
-docs/mvp-variants/
-```
-
-MVP2 to MVP5 reuse the same calculator logic as MVP1 and only change the route-level body class and CSS structure. Do not duplicate calculator formulas into separate MVP files unless a larger refactor is explicitly approved.
+Note: the internal MVP UI/UX comparison variants (`/mvp`, `/mvp/2`–`/mvp/5`) were removed on 2026-06-21. The site now ships a single canonical UI.
 
 ## SEO / AEO / GEO
 

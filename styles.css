@@ -32,16 +32,15 @@
   --motion-standard: 250ms;
   --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
   --font-sans:
+    "Pretendard Variable",
+    Pretendard,
     "Toss Product Sans",
-    "Tossface",
-    "SF Pro KR",
-    "SF Pro Display",
     -apple-system,
     BlinkMacSystemFont,
+    "SF Pro KR",
     "Apple SD Gothic Neo",
-    "Noto Sans KR",
-    "Malgun Gothic",
     Roboto,
+    "Noto Sans KR",
     sans-serif;
   --ui-bg: #f7f8fa;
   --ui-surface: #ffffff;
@@ -81,7 +80,9 @@ body {
   min-width: 320px;
   background: var(--grey-50);
   color: var(--grey-900);
-  font-family: var(--font-sans);
+  font-family: "Pretendard Variable", Pretendard, "Toss Product Sans", -apple-system, BlinkMacSystemFont, "SF Pro KR", "Apple SD Gothic Neo", Roboto, "Noto Sans KR", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   letter-spacing: 0;
   word-break: keep-all;
 }
@@ -195,14 +196,14 @@ h1 {
 .site-nav-copy span {
   color: var(--blue-600);
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 700;
   line-height: 18px;
 }
 
 .site-nav-copy strong {
   color: var(--grey-900);
   font-size: 15px;
-  font-weight: 900;
+  font-weight: 700;
   line-height: 22px;
 }
 
@@ -532,7 +533,7 @@ body.wc-save-lock {
 .wc-result-hero-head span {
   color: var(--grey-700);
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 20px;
 }
 
@@ -543,7 +544,7 @@ body.wc-save-lock {
   background: var(--white);
   color: var(--blue-600);
   font-size: 13px;
-  font-weight: 900;
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
   line-height: 20px;
   text-align: center;
@@ -572,7 +573,7 @@ body.wc-save-lock {
   min-width: 0;
   color: var(--grey-900);
   font-size: clamp(30px, 5vw, 42px);
-  font-weight: 900;
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
   line-height: 1.18;
   overflow-wrap: anywhere;
@@ -634,7 +635,7 @@ body.wc-save-lock {
   background: var(--white);
   color: var(--blue-600);
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 700;
   line-height: 18px;
 }
 
@@ -651,7 +652,7 @@ body.wc-save-lock {
   background: var(--white);
   color: var(--grey-700);
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 20px;
   box-shadow: none;
 }
@@ -794,7 +795,7 @@ body.wc-save-lock {
 .save-toast strong {
   color: var(--grey-900);
   font-size: 17px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 24px;
 }
 
@@ -945,7 +946,7 @@ body.wc-save-lock {
 .saved-list-toggle strong {
   color: var(--grey-900);
   font-size: 15px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 22px;
 }
 
@@ -968,7 +969,7 @@ body.wc-save-lock {
   background: var(--white);
   color: var(--blue-600);
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 30px;
 }
 
@@ -1042,7 +1043,7 @@ body.wc-save-lock {
   margin: 0;
   color: var(--grey-900);
   font-size: 16px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 24px;
   overflow-wrap: anywhere;
 }
@@ -1062,7 +1063,7 @@ body.wc-save-lock {
   background: var(--blue-500);
   color: var(--white);
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 24px;
 }
 
@@ -1081,7 +1082,7 @@ body.wc-save-lock {
   background: #fff1f3;
   color: #d92d3f;
   font-size: 11px;
-  font-weight: 900;
+  font-weight: 700;
   line-height: 24px;
 }
 
@@ -1099,13 +1100,13 @@ body.wc-save-lock {
   gap: var(--space-2);
   color: var(--grey-600);
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 18px;
 }
 
 .saved-product-metrics strong {
   color: var(--grey-900);
-  font-weight: 900;
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
 
@@ -1134,7 +1135,7 @@ body.wc-save-lock {
   background: var(--blue-50);
   color: var(--blue-600);
   font-size: 11px;
-  font-weight: 900;
+  font-weight: 700;
   line-height: 24px;
 }
 
@@ -1151,7 +1152,7 @@ body.wc-save-lock {
   border: 0;
   border-radius: var(--radius-10);
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 18px;
   white-space: nowrap;
 }
@@ -1217,7 +1218,7 @@ body.wc-save-lock {
   gap: var(--space-2);
   color: var(--grey-600);
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 18px;
 }
 
@@ -1235,7 +1236,7 @@ body.wc-save-lock {
   background: var(--white);
   color: var(--grey-700);
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .wc-save-list-head {
@@ -1249,7 +1250,7 @@ body.wc-save-lock {
   margin: var(--space-1) 0 0;
   color: var(--grey-900);
   font-size: 24px;
-  font-weight: 900;
+  font-weight: 700;
   line-height: 34px;
 }
 
@@ -1278,7 +1279,7 @@ body.wc-save-lock {
 .wc-save-list-toolbar > span {
   color: var(--grey-700);
   font-size: 13px;
-  font-weight: 900;
+  font-weight: 700;
   line-height: 20px;
 }
 
@@ -1293,13 +1294,13 @@ body.wc-save-lock {
 .wc-save-list-toolbar label span {
   color: var(--grey-600);
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .wc-save-list-toolbar select {
   height: 38px;
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .wc-save-list-grid {
@@ -1378,7 +1379,7 @@ body.wc-save-lock {
 .wc-save-empty strong {
   color: var(--grey-800);
   font-size: 18px;
-  font-weight: 900;
+  font-weight: 700;
   line-height: 27px;
 }
 
@@ -1391,7 +1392,7 @@ body.wc-save-lock {
   background: var(--blue-500);
   color: var(--white);
   font-size: 14px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 22px;
 }
 
@@ -1503,7 +1504,7 @@ body.wc-save-lock {
   margin: 0;
   color: var(--grey-900);
   font-size: 24px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 32px;
 }
 
@@ -1511,7 +1512,7 @@ body.wc-save-lock {
   margin: calc(var(--space-3) * -1) 0 0;
   color: var(--grey-600);
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
   line-height: 23px;
 }
 
@@ -1552,7 +1553,7 @@ body.wc-save-lock {
   padding-right: var(--space-8);
   color: var(--grey-900);
   font-size: 24px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 32px;
 }
 
@@ -1563,7 +1564,7 @@ body.wc-save-lock {
 #field-help-body {
   color: var(--grey-700);
   font-size: 15px;
-  font-weight: 500;
+  font-weight: 600;
   line-height: 25px;
 }
 
@@ -1614,7 +1615,7 @@ body.wc-save-lock {
 .help-modal-list strong {
   color: var(--blue-600);
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 18px;
 }
 
@@ -1686,14 +1687,14 @@ body.wc-save-lock {
 .wc-save-preview span {
   color: var(--grey-600);
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 18px;
 }
 
 .wc-save-preview strong {
   color: var(--grey-900);
   font-size: 18px;
-  font-weight: 900;
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
   line-height: 27px;
   overflow-wrap: anywhere;
@@ -1714,7 +1715,7 @@ body.wc-save-lock {
   border: 0;
   border-radius: var(--radius-12);
   font-size: 15px;
-  font-weight: 900;
+  font-weight: 700;
   line-height: 22px;
 }
 
@@ -1734,7 +1735,7 @@ body.wc-save-lock {
   background: #191919;
   color: #fee500;
   font-size: 13px;
-  font-weight: 900;
+  font-weight: 700;
   line-height: 22px;
   text-align: center;
 }
@@ -1762,7 +1763,7 @@ body.wc-save-lock {
   align-items: center;
   color: var(--grey-500);
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .wc-save-divider::before,
@@ -1789,7 +1790,7 @@ body.wc-save-lock {
 .wc-save-field label {
   color: var(--grey-700);
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 20px;
 }
 
@@ -1825,7 +1826,7 @@ body.wc-save-lock {
   margin: 0;
   color: #d92d3f;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 18px;
 }
 
@@ -1843,7 +1844,7 @@ body.wc-save-lock {
   background: var(--white);
   color: var(--grey-700);
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 700;
   line-height: 18px;
 }
 
@@ -1915,7 +1916,7 @@ body.wc-save-lock {
 .wc-save-saved-summary strong {
   color: var(--grey-900);
   font-size: 16px;
-  font-weight: 900;
+  font-weight: 700;
   line-height: 24px;
 }
 
@@ -1940,7 +1941,7 @@ body.wc-save-lock {
   background: var(--blue-50);
   color: var(--blue-600);
   font-size: 11px;
-  font-weight: 900;
+  font-weight: 700;
   line-height: 24px;
 }
 
@@ -2047,7 +2048,7 @@ body.wc-save-lock {
   background: var(--white);
   color: var(--blue-600);
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 20px;
   text-decoration: none;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
@@ -2153,14 +2154,14 @@ body.wc-save-lock {
   background: var(--blue-50);
   color: var(--blue-600);
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 18px;
 }
 
 .home-accuracy-points strong {
   color: var(--grey-900);
   font-size: 16px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 24px;
 }
 
@@ -2197,7 +2198,7 @@ body.wc-save-lock {
   margin: 0;
   color: var(--grey-900);
   font-size: 22px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 32px;
 }
 
@@ -2218,7 +2219,7 @@ body.wc-save-lock {
   background: var(--white);
   color: var(--grey-800);
   font-size: 14px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 20px;
 }
 
@@ -2242,7 +2243,7 @@ body.wc-save-lock {
   background: var(--blue-50);
   color: var(--blue-600);
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 18px;
 }
 
@@ -2277,7 +2278,7 @@ body.wc-save-lock {
   min-width: 0;
   color: var(--grey-900);
   font-size: 22px;
-  font-weight: 800;
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
   line-height: 30px;
   overflow-wrap: anywhere;
@@ -2292,7 +2293,7 @@ body.wc-save-lock {
   background: var(--blue-500);
   color: var(--white);
   font-size: 15px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 22px;
   box-shadow: 0 8px 18px rgba(49, 130, 246, 0.18);
   transition:
@@ -2354,7 +2355,7 @@ body.wc-save-lock {
 .home-expand-panel > summary strong {
   color: var(--grey-900);
   font-size: 17px;
-  font-weight: 900;
+  font-weight: 700;
   line-height: 24px;
 }
 
@@ -2376,7 +2377,7 @@ body.wc-save-lock {
   background: var(--blue-50);
   color: var(--blue-600);
   font-size: 13px;
-  font-weight: 900;
+  font-weight: 700;
   line-height: 20px;
 }
 
@@ -2436,7 +2437,7 @@ body.wc-save-lock {
   background: var(--blue-50);
   color: var(--blue-600);
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 20px;
   text-decoration: none;
 }
@@ -2459,7 +2460,7 @@ body.wc-save-lock {
 .home-faq-card summary {
   color: var(--grey-900);
   font-size: 15px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 24px;
   cursor: pointer;
 }
@@ -2497,7 +2498,7 @@ body.wc-save-lock {
   margin-bottom: var(--space-2);
   color: var(--grey-900);
   font-size: 24px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 34px;
 }
 
@@ -2519,7 +2520,7 @@ body.wc-save-lock {
   background: var(--blue-500);
   color: var(--white);
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 20px;
   text-decoration: none;
 }
@@ -2563,14 +2564,14 @@ body.wc-save-lock {
 .home-community-grid span {
   color: var(--blue-600);
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 18px;
 }
 
 .home-community-grid strong {
   color: var(--grey-900);
   font-size: 16px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 24px;
 }
 
@@ -2633,7 +2634,7 @@ body.wc-save-lock {
   background: rgba(255, 255, 255, 0.94);
   color: var(--blue-600);
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 16px;
   box-shadow: 0 6px 18px rgba(0, 60, 160, 0.18);
 }
@@ -2995,7 +2996,7 @@ body.wc-save-lock {
   margin-bottom: var(--space-6);
   color: var(--grey-700);
   font-size: 18px;
-  font-weight: 500;
+  font-weight: 600;
   line-height: 31px;
 }
 
@@ -3086,7 +3087,7 @@ body.wc-save-lock {
 .community-post-article .guide-section-list h2 {
   margin-bottom: var(--space-2);
   font-size: 21px;
-  font-weight: 900;
+  font-weight: 700;
   line-height: 30px;
 }
 
@@ -3224,7 +3225,7 @@ body.wc-save-lock {
   padding: 0 var(--space-3);
   color: var(--grey-900);
   font-size: 16px;
-  font-weight: 900;
+  font-weight: 700;
   line-height: 40px;
   text-decoration: none;
 }
@@ -3251,7 +3252,7 @@ body.wc-save-lock {
   border-radius: var(--radius-12);
   color: var(--grey-700);
   font-size: 14px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 22px;
   text-decoration: none;
 }
@@ -3292,7 +3293,7 @@ body.wc-save-lock {
   max-width: 760px;
   margin-bottom: var(--space-4);
   font-size: 34px;
-  font-weight: 900;
+  font-weight: 700;
   line-height: 46px;
 }
 
@@ -3325,14 +3326,14 @@ body.wc-save-lock {
 .community-hero aside span {
   color: var(--blue-600);
   font-size: 13px;
-  font-weight: 900;
+  font-weight: 700;
   line-height: 20px;
 }
 
 .community-hero aside strong {
   color: var(--grey-900);
   font-size: 24px;
-  font-weight: 900;
+  font-weight: 700;
   line-height: 34px;
 }
 
@@ -3365,7 +3366,7 @@ body.wc-save-lock {
   margin-bottom: var(--space-3);
   color: var(--blue-600);
   font-size: 13px;
-  font-weight: 900;
+  font-weight: 700;
   line-height: 20px;
 }
 
@@ -3382,7 +3383,7 @@ body.wc-save-lock {
   margin-bottom: var(--space-4);
   color: var(--grey-900);
   font-size: 36px;
-  font-weight: 900;
+  font-weight: 700;
   line-height: 48px;
   text-wrap: balance;
 }
@@ -3413,7 +3414,7 @@ body.wc-save-lock {
   background: var(--white);
   color: var(--blue-600);
   font-size: 14px;
-  font-weight: 900;
+  font-weight: 700;
   line-height: 22px;
   text-decoration: none;
 }
@@ -3452,7 +3453,7 @@ body.wc-save-lock {
 .community-stat-list dt {
   color: var(--grey-600);
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 18px;
 }
 
@@ -3460,7 +3461,7 @@ body.wc-save-lock {
   margin: 2px 0 0;
   color: var(--grey-900);
   font-size: 22px;
-  font-weight: 900;
+  font-weight: 700;
   line-height: 31px;
 }
 
@@ -3493,7 +3494,7 @@ body.wc-save-lock {
 .community-category-nav-head span {
   color: var(--blue-600);
   font-size: 13px;
-  font-weight: 900;
+  font-weight: 700;
   line-height: 20px;
 }
 
@@ -3501,7 +3502,7 @@ body.wc-save-lock {
   margin: 0;
   color: var(--grey-900);
   font-size: 22px;
-  font-weight: 900;
+  font-weight: 700;
   line-height: 31px;
 }
 
@@ -3557,14 +3558,14 @@ body.wc-save-lock {
   background: var(--white);
   color: var(--blue-600);
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 700;
   line-height: 18px;
 }
 
 .community-category-chip strong {
   color: var(--grey-900);
   font-size: 16px;
-  font-weight: 900;
+  font-weight: 700;
   line-height: 23px;
 }
 
@@ -3580,7 +3581,7 @@ body.wc-save-lock {
   color: var(--blue-600);
   font-size: 12px;
   font-style: normal;
-  font-weight: 900;
+  font-weight: 700;
   line-height: 18px;
 }
 
@@ -3603,7 +3604,7 @@ body.wc-save-lock {
 .community-board-nav > div:first-child span {
   color: var(--blue-600);
   font-size: 13px;
-  font-weight: 900;
+  font-weight: 700;
   line-height: 20px;
 }
 
@@ -3611,7 +3612,7 @@ body.wc-save-lock {
   margin: 0;
   color: var(--grey-900);
   font-size: 20px;
-  font-weight: 900;
+  font-weight: 700;
   line-height: 29px;
 }
 
@@ -3645,7 +3646,7 @@ body.wc-save-lock {
 .community-board-links strong {
   color: var(--grey-900);
   font-size: 15px;
-  font-weight: 900;
+  font-weight: 700;
   line-height: 22px;
 }
 
@@ -3660,7 +3661,7 @@ body.wc-save-lock {
   color: var(--blue-600);
   font-size: 12px;
   font-style: normal;
-  font-weight: 900;
+  font-weight: 700;
   line-height: 18px;
 }
 
@@ -3693,7 +3694,7 @@ body.wc-save-lock {
 .community-category-grid span {
   color: var(--blue-600);
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 700;
   line-height: 18px;
   text-decoration: none;
 }
@@ -3701,7 +3702,7 @@ body.wc-save-lock {
 .community-category-grid strong {
   color: var(--grey-900);
   font-size: 15px;
-  font-weight: 900;
+  font-weight: 700;
   line-height: 22px;
 }
 
@@ -3755,14 +3756,14 @@ body.wc-save-lock {
   margin-bottom: 0;
   color: var(--grey-900);
   font-size: 21px;
-  font-weight: 900;
+  font-weight: 700;
   line-height: 30px;
 }
 
 .community-section-head span {
   color: var(--grey-500);
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 20px;
 }
 
@@ -3793,14 +3794,14 @@ body.wc-save-lock {
 .community-post-card span {
   color: var(--blue-600);
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 700;
   line-height: 18px;
 }
 
 .community-post-card strong {
   color: var(--grey-900);
   font-size: 17px;
-  font-weight: 900;
+  font-weight: 700;
   line-height: 25px;
 }
 
@@ -3828,7 +3829,7 @@ body.wc-save-lock {
   margin-bottom: var(--space-2);
   color: var(--grey-900);
   font-size: 20px;
-  font-weight: 900;
+  font-weight: 700;
   line-height: 30px;
 }
 
@@ -3853,7 +3854,7 @@ body.wc-save-lock {
 .community-write-panel label span {
   color: var(--grey-700);
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 20px;
 }
 
@@ -3923,7 +3924,7 @@ body.wc-save-lock {
   background: var(--blue-50);
   color: var(--blue-600);
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 18px;
   text-decoration: none;
 }
@@ -3946,7 +3947,7 @@ body.wc-save-lock {
   max-width: 820px;
   margin-bottom: var(--space-5);
   font-size: 34px;
-  font-weight: 900;
+  font-weight: 700;
   line-height: 46px;
 }
 
@@ -3965,7 +3966,7 @@ body.wc-save-lock {
   min-height: 28px;
   color: var(--grey-600);
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 18px;
   text-decoration: none;
 }
@@ -3990,7 +3991,7 @@ body.wc-save-lock {
   background: var(--grey-100);
   color: var(--grey-700);
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 18px;
 }
 
@@ -4017,7 +4018,7 @@ body.wc-save-lock {
   background: var(--white);
   color: var(--grey-700);
   font-size: 14px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 22px;
   text-decoration: none;
 }
@@ -4065,7 +4066,7 @@ body.wc-save-lock {
 .community-comments-head strong {
   color: var(--grey-900);
   font-size: 18px;
-  font-weight: 900;
+  font-weight: 700;
   line-height: 28px;
 }
 
@@ -4074,7 +4075,7 @@ body.wc-save-lock {
   flex: 0 0 auto;
   color: var(--blue-600);
   font-size: 13px;
-  font-weight: 900;
+  font-weight: 700;
   line-height: 20px;
   text-decoration: none;
 }
@@ -4139,7 +4140,7 @@ body.wc-save-lock {
   padding: 0 var(--space-5);
   color: var(--grey-800);
   font-size: 15px;
-  font-weight: 900;
+  font-weight: 700;
   cursor: pointer;
   list-style: none;
 }
@@ -4192,14 +4193,14 @@ body.wc-save-lock {
   background: var(--white);
   color: var(--blue-600);
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 700;
   line-height: 18px;
 }
 
 .guide-library-card strong {
   color: var(--grey-900);
   font-size: 17px;
-  font-weight: 900;
+  font-weight: 700;
   line-height: 25px;
 }
 
@@ -4214,7 +4215,7 @@ body.wc-save-lock {
   color: var(--grey-500);
   font-size: 12px;
   font-style: normal;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 18px;
 }
 
@@ -4271,7 +4272,7 @@ body.wc-save-lock {
 .community-brand {
   color: var(--ui-text);
   font-size: var(--ui-fs-base);
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .community-topbar nav a {
@@ -4330,7 +4331,7 @@ body.wc-save-lock {
   margin-bottom: 6px;
   color: var(--ui-accent);
   font-size: var(--ui-fs-xs);
-  font-weight: 800;
+  font-weight: 700;
   line-height: 18px;
 }
 
@@ -4338,7 +4339,7 @@ body.wc-save-lock {
   margin-bottom: 6px;
   color: var(--ui-text);
   font-size: var(--ui-fs-2xl);
-  font-weight: 800;
+  font-weight: 700;
   line-height: var(--ui-lh-tight);
   letter-spacing: 0;
 }
@@ -4362,7 +4363,7 @@ body.wc-save-lock {
   background: var(--ui-accent);
   color: var(--white);
   font-size: var(--ui-fs-md);
-  font-weight: 800;
+  font-weight: 700;
   line-height: 20px;
   text-decoration: none;
 }
@@ -4391,7 +4392,7 @@ body.wc-save-lock {
   border-radius: var(--ui-radius);
   color: var(--ui-text-muted);
   font-size: var(--ui-fs-sm);
-  font-weight: 800;
+  font-weight: 700;
   text-decoration: none;
 }
 
@@ -4435,7 +4436,7 @@ body.wc-save-lock {
 .community-board-nav > div:first-child span {
   color: var(--ui-text-faint);
   font-size: var(--ui-fs-xs);
-  font-weight: 800;
+  font-weight: 700;
   line-height: 18px;
 }
 
@@ -4443,7 +4444,7 @@ body.wc-save-lock {
 .community-board-nav h2 {
   color: var(--ui-text);
   font-size: var(--ui-fs-base);
-  font-weight: 800;
+  font-weight: 700;
   line-height: 22px;
 }
 
@@ -4484,7 +4485,7 @@ body.wc-save-lock {
   background: transparent;
   color: var(--ui-accent);
   font-size: var(--ui-fs-xs);
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .community-category-nav.is-rail .community-category-chip strong,
@@ -4493,7 +4494,7 @@ body.wc-save-lock {
   grid-row: 1;
   color: var(--ui-text);
   font-size: var(--ui-fs-md);
-  font-weight: 800;
+  font-weight: 700;
   line-height: 20px;
 }
 
@@ -4505,7 +4506,7 @@ body.wc-save-lock {
   color: var(--ui-text-faint);
   font-size: var(--ui-fs-xs);
   font-style: normal;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .community-board-links span {
@@ -4520,7 +4521,7 @@ body.wc-save-lock {
 .community-stat-card > strong {
   color: var(--ui-text);
   font-size: var(--ui-fs-base);
-  font-weight: 800;
+  font-weight: 700;
   line-height: 22px;
 }
 
@@ -4552,7 +4553,7 @@ body.wc-save-lock {
 .community-stat-list dd {
   color: var(--ui-text);
   font-size: var(--ui-fs-lg);
-  font-weight: 800;
+  font-weight: 700;
   line-height: 24px;
 }
 
@@ -4571,7 +4572,7 @@ body.wc-save-lock {
 .community-section-head h2 {
   color: var(--ui-text);
   font-size: var(--ui-fs-base);
-  font-weight: 800;
+  font-weight: 700;
   line-height: 22px;
 }
 
@@ -4615,7 +4616,7 @@ body.wc-save-lock {
   background: var(--ui-accent-soft);
   color: var(--ui-accent);
   font-size: var(--ui-fs-xs);
-  font-weight: 800;
+  font-weight: 700;
   line-height: 18px;
   white-space: nowrap;
 }
@@ -4625,7 +4626,7 @@ body.wc-save-lock {
   overflow: hidden;
   color: var(--ui-text);
   font-size: var(--ui-fs-base);
-  font-weight: 800;
+  font-weight: 700;
   line-height: 22px;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -4703,13 +4704,13 @@ body.wc-save-lock {
 .community-collapsible-panel summary strong {
   color: var(--ui-text);
   font-size: var(--ui-fs-base);
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .community-collapsible-panel summary span {
   color: var(--ui-text-faint);
   font-size: var(--ui-fs-xs);
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .community-collapsible-panel[open] summary {
@@ -4729,13 +4730,13 @@ body.wc-save-lock {
 .community-write-panel summary span {
   color: var(--ui-accent);
   font-size: var(--ui-fs-xs);
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .community-write-panel summary strong {
   color: var(--ui-text);
   font-size: var(--ui-fs-lg);
-  font-weight: 800;
+  font-weight: 700;
   line-height: 24px;
 }
 
@@ -4746,7 +4747,7 @@ body.wc-save-lock {
 .community-write-panel label span {
   color: var(--ui-text-muted);
   font-size: var(--ui-fs-xs);
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .community-write-panel input,
@@ -4774,7 +4775,7 @@ body.wc-save-lock {
   background: var(--ui-surface-soft);
   color: var(--ui-text-muted);
   font-size: var(--ui-fs-xs);
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .community-forum-shell {
@@ -4822,7 +4823,7 @@ body.wc-save-lock {
   color: var(--ui-text-faint);
   font-size: var(--ui-fs-xs);
   font-style: normal;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .community-stage-tabs a.is-active em {
@@ -4870,14 +4871,14 @@ body.wc-save-lock {
 .community-post-metrics dt {
   color: var(--ui-text-faint);
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .community-post-metrics dd {
   margin: 0;
   color: var(--ui-text);
   font-size: var(--ui-fs-sm);
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .community-post-main {
@@ -4903,7 +4904,7 @@ body.wc-save-lock {
   background: var(--ui-surface-soft);
   color: var(--ui-text-muted);
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 16px;
 }
 
@@ -4924,7 +4925,7 @@ body.wc-save-lock {
   align-items: center;
   color: var(--ui-accent);
   font-size: var(--ui-fs-xs);
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .trend-base-time i {
@@ -4940,7 +4941,7 @@ body.wc-save-lock {
 .trend-note-panel strong {
   color: var(--ui-text);
   font-size: var(--ui-fs-base);
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .community-trend-mini p,
@@ -4962,7 +4963,7 @@ body.wc-save-lock {
   background: var(--ui-accent-soft);
   color: var(--ui-accent);
   font-size: var(--ui-fs-sm);
-  font-weight: 800;
+  font-weight: 700;
   text-decoration: none;
 }
 
@@ -4985,7 +4986,7 @@ body.wc-save-lock {
 .trend-page-head h1 {
   color: var(--ui-text);
   font-size: var(--ui-fs-2xl);
-  font-weight: 800;
+  font-weight: 700;
   line-height: var(--ui-lh-tight);
 }
 
@@ -4993,7 +4994,7 @@ body.wc-save-lock {
   margin: 0;
   color: var(--ui-text-muted);
   font-size: var(--ui-fs-sm);
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .trend-provider-grid {
@@ -5039,7 +5040,7 @@ body.wc-save-lock {
 .trend-provider-card h2 {
   color: var(--ui-text);
   font-size: var(--ui-fs-xl);
-  font-weight: 800;
+  font-weight: 700;
   line-height: 28px;
 }
 
@@ -5090,7 +5091,7 @@ body.wc-save-lock {
   border-radius: 999px;
   color: var(--ui-accent);
   font-size: var(--ui-fs-sm);
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .trend-keyword-list li.is-top-rank b {
@@ -5103,7 +5104,7 @@ body.wc-save-lock {
   overflow: hidden;
   color: var(--ui-text);
   font-size: var(--ui-fs-sm);
-  font-weight: 800;
+  font-weight: 700;
   text-decoration: none;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -5113,7 +5114,7 @@ body.wc-save-lock {
   color: var(--ui-text-faint);
   font-size: 11px;
   font-style: normal;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 @keyframes trend-live-pulse {
@@ -5161,7 +5162,7 @@ body.wc-save-lock {
   background: var(--ui-surface-soft);
   color: var(--ui-text-muted);
   font-size: var(--ui-fs-sm);
-  font-weight: 800;
+  font-weight: 700;
   line-height: 20px;
 }
 
@@ -5200,14 +5201,14 @@ body.wc-save-lock {
   background: var(--ui-accent-soft);
   color: var(--ui-accent);
   font-size: var(--ui-fs-xs);
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .guide-library-card strong {
   overflow: hidden;
   color: var(--ui-text);
   font-size: var(--ui-fs-base);
-  font-weight: 800;
+  font-weight: 700;
   line-height: 22px;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -5224,7 +5225,7 @@ body.wc-save-lock {
   color: var(--ui-text-faint);
   font-size: var(--ui-fs-xs);
   font-style: normal;
-  font-weight: 800;
+  font-weight: 700;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -5250,13 +5251,13 @@ body.wc-save-lock {
 
 .guide-more-panel summary strong {
   font-size: var(--ui-fs-base);
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .guide-more-panel summary span {
   color: var(--ui-text-faint);
   font-size: var(--ui-fs-xs);
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .guide-more-panel[open] summary {
@@ -5276,7 +5277,7 @@ body.wc-save-lock {
 .community-post-article h1 {
   color: var(--ui-text);
   font-size: var(--ui-fs-2xl);
-  font-weight: 800;
+  font-weight: 700;
   line-height: 36px;
 }
 
@@ -5905,7 +5906,7 @@ body.wc-save-lock {
   margin: var(--space-1) 0 0;
   color: var(--grey-900);
   font-size: 22px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 31px;
 }
 
@@ -5914,7 +5915,7 @@ body.wc-save-lock {
   margin: var(--space-3) 0 0;
   color: var(--grey-700);
   font-size: 15px;
-  font-weight: 500;
+  font-weight: 600;
   line-height: 26px;
 }
 
@@ -5935,7 +5936,7 @@ body.wc-save-lock {
   background: var(--blue-50);
   color: var(--blue-600);
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 18px;
 }
 
@@ -5967,7 +5968,7 @@ body.wc-save-lock {
 .stage-help-summary-item strong {
   color: var(--grey-900);
   font-size: 14px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 21px;
 }
 
@@ -6074,7 +6075,7 @@ label,
   background: var(--blue-50);
   color: var(--blue-600);
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1;
 }
 
@@ -6215,7 +6216,7 @@ em {
   margin-top: var(--space-1);
   color: var(--grey-900);
   font-size: 15px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 22px;
 }
 
@@ -6229,7 +6230,7 @@ em {
   background: var(--white);
   color: var(--grey-600);
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 18px;
 }
 
@@ -6281,7 +6282,7 @@ em {
 .computed-output-head strong {
   color: var(--grey-900);
   font-size: 15px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 22px;
 }
 
@@ -6330,7 +6331,7 @@ em {
   margin-top: var(--space-2);
   border-radius: var(--radius-12);
   font-size: 15px;
-  font-weight: 900;
+  font-weight: 700;
   box-shadow: 0 8px 18px rgba(49, 130, 246, 0.18);
 }
 
@@ -6340,21 +6341,21 @@ em {
   gap: 2px;
   color: var(--grey-700);
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 19px;
 }
 
 .computed-output-item em {
   color: var(--grey-500);
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 16px;
 }
 
 .computed-output-item strong {
   color: var(--grey-900);
   font-size: 16px;
-  font-weight: 800;
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
   line-height: 24px;
   text-align: right;
@@ -6527,7 +6528,7 @@ em {
 .final-selected-cost span {
   color: var(--blue-600);
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 18px;
 }
 
@@ -6535,7 +6536,7 @@ em {
 .final-selected-cost strong {
   color: var(--grey-900);
   font-size: 17px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 25px;
 }
 
@@ -6592,7 +6593,7 @@ em {
   gap: var(--space-2);
   color: var(--grey-700);
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 20px;
 }
 
@@ -6826,7 +6827,7 @@ em {
 .formula-card.help-card .help-meaning strong {
   color: var(--blue-600);
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 18px;
 }
 
@@ -6857,7 +6858,7 @@ em {
   background: #fff7ed;
   color: #9a3412;
   font-size: 15px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 24px;
 }
 
@@ -8024,7 +8025,7 @@ em {
   margin-top: 1px;
   color: var(--ui-text-faint);
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .community-shell .community-post-card .community-post-meta > span {
@@ -8088,7 +8089,7 @@ em {
 
 .community-shell .community-stat-card.is-compact p {
   color: var(--ui-text-muted);
-  font-weight: 500;
+  font-weight: 600;
 }
 
 /* Tag panel pills: lighter, fewer focal points */
@@ -8114,7 +8115,7 @@ em {
   margin-bottom: 14px;
   color: var(--ui-text-faint);
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .community-shell .community-post-kicker a {
@@ -8318,7 +8319,7 @@ em {
   flex: 0 0 auto;
   color: var(--ui-text-faint);
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .community-shell .community-pin-badge {
@@ -8460,7 +8461,7 @@ em {
 .community-shell .community-vote-stats strong {
   color: var(--ui-text);
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
 
@@ -8607,7 +8608,7 @@ em {
 .community-shell .community-post-card .community-post-cat {
   color: var(--ui-accent);
   font-size: 11.5px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 /* Empty state */
@@ -8784,7 +8785,7 @@ em {
   background: var(--ui-accent);
   color: #ffffff;
   font-size: 16px;
-  font-weight: 900;
+  font-weight: 700;
   letter-spacing: -0.02em;
 }
 
@@ -8792,7 +8793,7 @@ em {
   max-width: 9em;
   color: var(--ui-text);
   font-size: 22px;
-  font-weight: 850;
+  font-weight: 700;
   line-height: 1.18;
   letter-spacing: -0.02em;
 }
@@ -8822,7 +8823,7 @@ em {
   background: var(--ui-accent);
   color: #ffffff;
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 700;
   text-decoration: none;
 }
 
@@ -8846,7 +8847,7 @@ em {
   border-radius: 10px;
   color: var(--ui-text-muted);
   font-size: 13px;
-  font-weight: 750;
+  font-weight: 700;
   text-decoration: none;
 }
 
@@ -8873,7 +8874,7 @@ em {
 .community-shell .community-reddit-layout .community-feed-head h1 {
   margin: 0;
   font-size: 25px;
-  font-weight: 850;
+  font-weight: 700;
   line-height: 1.2;
 }
 
@@ -8881,7 +8882,7 @@ em {
   margin-bottom: 8px;
   color: var(--ui-text-muted);
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .community-shell .community-toolbar {
@@ -8938,7 +8939,7 @@ em {
   background: transparent;
   color: var(--ui-text-muted);
   font-size: 14px;
-  font-weight: 900;
+  font-weight: 700;
   cursor: pointer;
 }
 
@@ -8972,13 +8973,13 @@ em {
 
 .community-shell .community-vote-top > span:first-child:not(.community-pin-badge) {
   color: var(--ui-text);
-  font-weight: 850;
+  font-weight: 700;
 }
 
 .community-shell .community-vote-title {
   color: var(--ui-text);
   font-size: 17px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1.34;
   text-decoration: none;
   white-space: normal;
@@ -9010,7 +9011,7 @@ em {
   background: var(--ui-surface-soft);
   color: var(--ui-text-muted);
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
   text-decoration: none;
 }
 
@@ -9042,7 +9043,7 @@ em {
   margin: 0;
   color: var(--ui-text);
   font-size: 18px;
-  font-weight: 850;
+  font-weight: 700;
 }
 
 .community-shell .community-about-card p {
@@ -9068,14 +9069,14 @@ em {
 .community-shell .community-about-card dt {
   color: var(--ui-text-faint);
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .community-shell .community-about-card dd {
   margin: 2px 0 0;
   color: var(--ui-text);
   font-size: 17px;
-  font-weight: 850;
+  font-weight: 700;
 }
 
 @media (max-width: 1120px) {
@@ -9194,7 +9195,7 @@ em {
   background: var(--ui-accent);
   color: #ffffff;
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .community-global-search {
@@ -9211,7 +9212,7 @@ em {
   background: var(--ui-surface-soft);
   color: var(--ui-text);
   font-size: 13px;
-  font-weight: 650;
+  font-weight: 600;
   text-align: center;
 }
 
@@ -9312,7 +9313,7 @@ em {
 .community-shell .community-reddit-layout .community-feed-head h1 {
   margin: 0;
   font-size: 20px;
-  font-weight: 850;
+  font-weight: 700;
   line-height: 1.25;
   letter-spacing: 0;
 }
@@ -9322,7 +9323,7 @@ em {
   margin: 0 0 3px;
   color: var(--ui-accent);
   font-size: 11px;
-  font-weight: 850;
+  font-weight: 700;
 }
 
 .community-shell .community-head-actions {
@@ -9429,7 +9430,7 @@ em {
 
 .community-shell .community-vote-title {
   font-size: 15.5px;
-  font-weight: 820;
+  font-weight: 700;
   line-height: 1.35;
 }
 
@@ -9444,7 +9445,7 @@ em {
   min-height: 24px;
   padding: 0 8px;
   font-size: 11px;
-  font-weight: 750;
+  font-weight: 700;
 }
 
 .community-shell .community-vote-date {
@@ -9473,14 +9474,14 @@ em {
 .community-shell .community-post-thumb span {
   color: rgba(17, 24, 39, 0.72);
   font-size: 10px;
-  font-weight: 850;
+  font-weight: 700;
   line-height: 1.15;
 }
 
 .community-shell .community-post-thumb strong {
   color: var(--ui-text);
   font-size: 17px;
-  font-weight: 900;
+  font-weight: 700;
   line-height: 1;
 }
 
@@ -9555,7 +9556,7 @@ em {
 .community-shell .community-post-bridge strong {
   margin: 0;
   font-size: 15px;
-  font-weight: 850;
+  font-weight: 700;
   line-height: 1.35;
 }
 
@@ -9599,7 +9600,7 @@ em {
   border: 1px solid var(--ui-border);
   background: var(--ui-surface-soft);
   color: var(--ui-text);
-  font-weight: 800;
+  font-weight: 700;
   text-decoration: none;
 }
 
@@ -9628,13 +9629,13 @@ em {
 
 .community-shell .community-related-feed-head strong {
   font-size: 13px;
-  font-weight: 850;
+  font-weight: 700;
 }
 
 .community-shell .community-related-feed-head span {
   color: var(--ui-text-faint);
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .community-shell .community-related-item {
@@ -9675,7 +9676,7 @@ em {
   overflow: hidden;
   color: var(--ui-text);
   font-size: 12.5px;
-  font-weight: 780;
+  font-weight: 700;
   line-height: 1.35;
   display: -webkit-box;
   -webkit-box-orient: vertical;
@@ -9726,7 +9727,7 @@ em {
 .community-shell .community-post-article > h1 {
   margin-bottom: 10px;
   font-size: 28px;
-  font-weight: 850;
+  font-weight: 700;
   line-height: 1.32;
 }
 
@@ -9750,7 +9751,7 @@ em {
 
 .community-shell .community-post-article .guide-section-list h2 {
   font-size: 16px;
-  font-weight: 820;
+  font-weight: 700;
 }
 
 .community-shell .community-post-article .guide-section-list p {
@@ -9904,7 +9905,7 @@ em {
   flex: 0 0 auto;
   color: #111827;
   font-size: 16px;
-  font-weight: 900;
+  font-weight: 700;
   text-decoration: none;
 }
 
@@ -9944,7 +9945,7 @@ em {
   border-radius: 999px;
   color: #374151;
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 700;
   text-decoration: none;
 }
 
@@ -9956,7 +9957,7 @@ em {
   background: transparent;
   color: #374151;
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 700;
   text-decoration: none;
 }
 
@@ -10103,13 +10104,13 @@ em {
   background: #fee500;
   color: #181600;
   font-size: 13px;
-  font-weight: 900;
+  font-weight: 700;
   text-decoration: none;
 }
 
 .sellerdit-header-dots {
   color: #4b5563;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .community-shell {
@@ -10174,7 +10175,7 @@ em {
   background: rgba(255, 255, 255, 0.78);
   color: #2563eb;
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .sellerdit-vertical-ad::after {
@@ -10183,14 +10184,14 @@ em {
   margin-top: auto;
   color: rgba(37, 99, 235, 0.22);
   font-size: 38px;
-  font-weight: 950;
+  font-weight: 700;
   line-height: 1.05;
 }
 
 .sellerdit-vertical-ad span {
   color: #2563eb;
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .sellerdit-vertical-ad strong {
@@ -10239,7 +10240,7 @@ em {
   background: #ffffff;
   color: #111827;
   font-size: 13px;
-  font-weight: 850;
+  font-weight: 700;
 }
 
 .sellerdit-sort-links {
@@ -10256,7 +10257,7 @@ em {
   border-radius: 999px;
   color: #667085;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
   text-decoration: none;
 }
 
@@ -10313,7 +10314,7 @@ em {
   min-width: 0;
   color: #667085;
   font-size: 12.5px;
-  font-weight: 750;
+  font-weight: 700;
 }
 
 .sellerdit-avatar {
@@ -10327,7 +10328,7 @@ em {
   background: #2563eb;
   color: #ffffff;
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .sellerdit-avatar.is-ad {
@@ -10336,7 +10337,7 @@ em {
 
 .sellerdit-author {
   color: #111827;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .sellerdit-dot {
@@ -10352,7 +10353,7 @@ em {
   background: #2563eb;
   color: #ffffff;
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .community-shell .community-vote-title {
@@ -10360,7 +10361,7 @@ em {
   margin: 8px 0 4px;
   color: #111827;
   font-size: 19px;
-  font-weight: 850;
+  font-weight: 700;
   line-height: 1.32;
   text-decoration: none;
 }
@@ -10407,7 +10408,7 @@ em {
   background: #ffffff;
   color: #2563eb;
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .sellerdit-post-media strong {
@@ -10486,7 +10487,7 @@ em {
   background: #eef2f5;
   color: #111827;
   font-size: 13px;
-  font-weight: 850;
+  font-weight: 700;
   text-decoration: none;
 }
 
@@ -10501,13 +10502,13 @@ em {
 .ad-tag {
   color: #f97316;
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .sellerdit-more {
   margin-left: auto;
   color: #667085;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .sellerdit-widget,
@@ -10528,7 +10529,7 @@ em {
   margin: 0 0 2px;
   color: #111827;
   font-size: 15px;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .sellerdit-communities a {
@@ -10562,7 +10563,7 @@ em {
   color: #ffffff;
   font-size: 11px;
   font-style: normal;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .sellerdit-communities strong,
@@ -10578,7 +10579,7 @@ em {
 
 .sellerdit-more-link {
   color: #2563eb !important;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .sellerdit-popular-content a,
@@ -10599,7 +10600,7 @@ em {
 .sellerdit-popular-content span,
 .sellerdit-killer-content a {
   font-size: 13px;
-  font-weight: 850;
+  font-weight: 700;
   line-height: 1.35;
 }
 
@@ -10624,7 +10625,7 @@ em {
 .sellerdit-ad-slot span {
   color: #2563eb;
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .sellerdit-ad-slot strong {
@@ -10762,7 +10763,7 @@ em {
   border: 0;
   background: transparent;
   color: #667085;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .sellerdit-comment-badge {
@@ -10770,7 +10771,7 @@ em {
   border-radius: 999px;
   background: #eef2f5;
   color: #475569;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .sellerdit-related-feed {
@@ -10916,7 +10917,7 @@ em {
   border-radius: 999px;
   background: #2563eb;
   color: #ffffff;
-  font-weight: 900;
+  font-weight: 700;
   text-decoration: none;
 }
 
@@ -11169,7 +11170,7 @@ body:has(.sellerdit-topbar) {
 
 .community-brand {
   color: #2563eb;
-  font-weight: 900;
+  font-weight: 700;
   white-space: nowrap;
 }
 
@@ -11198,7 +11199,7 @@ body:has(.sellerdit-topbar) {
   color: #111 !important;
   border-color: #FEE500 !important;
   border-radius: 999px;
-  font-weight: 900;
+  font-weight: 700;
   white-space: nowrap;
 }
 
@@ -11235,7 +11236,7 @@ body:has(.sellerdit-topbar) {
   color: #334155;
   text-decoration: none;
   font-size: 14px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .sellerdit-left-menu a:hover,
@@ -11262,14 +11263,14 @@ body:has(.sellerdit-topbar) {
   background: #2563eb;
   color: #fff;
   font-size: 13px;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .sellerdit-community-info strong {
   display: block;
   color: #111827;
   font-size: 16px;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .sellerdit-community-info p {
@@ -11295,14 +11296,14 @@ body:has(.sellerdit-topbar) {
 .sellerdit-community-info dt {
   color: #94a3b8;
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .sellerdit-community-info dd {
   margin: 2px 0 0;
   color: #111827;
   font-size: 15px;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .community-shell .community-reddit-layout .community-feed-panel {
@@ -11364,7 +11365,7 @@ body:has(.sellerdit-topbar) {
   border-radius: 999px;
   color: #fff;
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 700;
   flex: 0 0 auto;
 }
 
@@ -11377,7 +11378,7 @@ body:has(.sellerdit-topbar) {
 
 .sellerdit-more {
   color: #64748b;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .sellerdit-post-excerpt {
@@ -11456,7 +11457,7 @@ body:has(.sellerdit-topbar) {
   color: #111827;
   font-size: 17px;
   line-height: 1.45;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .sellerdit-detail-body p {
@@ -11535,7 +11536,7 @@ body:has(.sellerdit-topbar) {
   background: transparent;
   color: #64748b;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .sellerdit-comment footer button:hover {
@@ -11549,7 +11550,7 @@ body:has(.sellerdit-topbar) {
   background: #dbeafe;
   color: #2563eb;
   font-size: 11px;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 @media (max-width: 1120px) {
@@ -11581,7 +11582,7 @@ body:has(.sellerdit-topbar) {
 
 .sellerdit-author {
   color: #0f172a;
-  font-weight: 900;
+  font-weight: 700;
   text-decoration: none;
 }
 .sellerdit-author:hover { color: #2563eb; }
@@ -11604,7 +11605,7 @@ body:has(.sellerdit-topbar) {
   border-radius: 999px;
   color: #fff;
   font-size: 26px;
-  font-weight: 900;
+  font-weight: 700;
 }
 .sellerdit-profile-avatar.is-small { width: 48px; height: 48px; font-size: 16px; }
 .sellerdit-profile-header h1 { margin: 0; font-size: 28px; line-height: 1.25; }
@@ -11621,8 +11622,8 @@ body:has(.sellerdit-topbar) {
   border-radius: 10px;
   background: #f8fafc;
 }
-.sellerdit-profile-header dt { color: #64748b; font-size: 11px; font-weight: 800; }
-.sellerdit-profile-header dd { margin: 2px 0 0; color: #111827; font-size: 16px; font-weight: 900; }
+.sellerdit-profile-header dt { color: #64748b; font-size: 11px; font-weight: 700; }
+.sellerdit-profile-header dd { margin: 2px 0 0; color: #111827; font-size: 16px; font-weight: 700; }
 .sellerdit-profile-tabs {
   display: flex;
   gap: 6px;
@@ -11637,7 +11638,7 @@ body:has(.sellerdit-topbar) {
   border-radius: 999px;
   color: #475569;
   font-size: 13px;
-  font-weight: 900;
+  font-weight: 700;
   text-decoration: none;
 }
 .sellerdit-profile-tabs a:hover,
@@ -11650,7 +11651,7 @@ body:has(.sellerdit-topbar) {
 }
 .sellerdit-profile-card strong { color: #111827; font-size: 17px; }
 .sellerdit-profile-card p { margin: 0; color: #64748b; font-size: 13px; line-height: 1.5; }
-.sellerdit-profile-card a { color: #2563eb; font-weight: 900; text-decoration: none; }
+.sellerdit-profile-card a { color: #2563eb; font-weight: 700; text-decoration: none; }
 .community-shell .sellerdit-avatar.is-ad,
 .community-shell .ad-tag {
   background: #2563eb !important;
@@ -11664,7 +11665,7 @@ body:has(.sellerdit-topbar) {
 
 /* Sellerdit sample sync refinement — match supplied screenshot */
 body:has(.sellerdit-topbar) {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans KR", "Apple SD Gothic Neo", Arial, sans-serif;
+  font-family: "Pretendard Variable", Pretendard, "Toss Product Sans", -apple-system, BlinkMacSystemFont, "SF Pro KR", "Apple SD Gothic Neo", Roboto, "Noto Sans KR", sans-serif;
   color: #111827;
   background: #f5f6f8;
 }
@@ -11684,14 +11685,14 @@ body:has(.sellerdit-topbar) {
   margin: 0;
   color: #111827;
   font-size: 18px;
-  font-weight: 900;
+  font-weight: 700;
   line-height: 1.35;
 }
 
 .community-shell .community-reddit-layout .community-page-label {
   color: #2563eb;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .community-shell .community-head-actions {
@@ -11733,7 +11734,7 @@ body:has(.sellerdit-topbar) {
   border-radius: 999px;
   color: #4b5563;
   font-size: 14px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: -0.01em;
 }
 
@@ -11773,13 +11774,13 @@ body:has(.sellerdit-topbar) {
   background: #2563eb !important;
   color: #fff !important;
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .community-pinned-row strong {
   color: #111827;
   font-size: 14px;
-  font-weight: 750;
+  font-weight: 700;
 }
 
 .community-pinned-meta {
@@ -11817,7 +11818,7 @@ body:has(.sellerdit-topbar) {
 .sellerdit-author {
   color: #111827;
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .sellerdit-follow {
@@ -11828,7 +11829,7 @@ body:has(.sellerdit-topbar) {
   border: 0;
   border-radius: 999px;
   font-size: 13px;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .community-shell .community-vote-title {
@@ -11836,7 +11837,7 @@ body:has(.sellerdit-topbar) {
   margin: 0 0 9px;
   color: #111827;
   font-size: 17px;
-  font-weight: 900;
+  font-weight: 700;
   line-height: 1.38;
   letter-spacing: -0.03em;
 }
@@ -11864,7 +11865,7 @@ body:has(.sellerdit-topbar) {
   top: 36px;
   color: #8da1bd;
   font-size: 22px;
-  font-weight: 500;
+  font-weight: 600;
   letter-spacing: 0.03em;
 }
 
@@ -11927,7 +11928,7 @@ body:has(.sellerdit-topbar) {
   background: #f1f3f5;
   color: #334155;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .sellerdit-right-rail .sellerdit-communities {
@@ -11948,13 +11949,13 @@ body:has(.sellerdit-topbar) {
   margin: 0;
   color: #111827;
   font-size: 16px;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .sellerdit-widget-title a {
   color: #2563eb;
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 700;
   text-decoration: none;
 }
 
@@ -11972,7 +11973,7 @@ body:has(.sellerdit-topbar) {
 .sellerdit-community-row > b {
   color: #94a3b8;
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .sellerdit-community-avatar {
@@ -11984,14 +11985,14 @@ body:has(.sellerdit-topbar) {
   align-items: center;
   justify-content: center;
   font-size: 11px;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .sellerdit-community-copy strong {
   display: block;
   color: #111827;
   font-size: 13px;
-  font-weight: 900;
+  font-weight: 700;
   line-height: 1.25;
 }
 
@@ -12013,7 +12014,7 @@ body:has(.sellerdit-topbar) {
   color: #fff;
   font-size: 12px;
   font-style: normal;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 @media (max-width: 1120px) {
@@ -12042,7 +12043,7 @@ body:has(.sellerdit-topbar) {
   background: transparent;
   color: #334155;
   font-size: 13px;
-  font-weight: 850;
+  font-weight: 700;
   letter-spacing: -0.01em;
 }
 
@@ -12075,7 +12076,7 @@ body:has(.sellerdit-topbar) {
   overflow: hidden;
   color: #475569;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
   line-height: 1.55;
   text-decoration: none;
 }
@@ -12118,7 +12119,7 @@ body:has(.sellerdit-topbar) {
   margin-top: 10px;
   margin-bottom: 12px;
   font-size: 30px;
-  font-weight: 900;
+  font-weight: 700;
   letter-spacing: -0.045em;
 }
 
@@ -12251,13 +12252,13 @@ body:has(.sellerdit-topbar) {
 .sellerdit-comments-toolbar strong {
   color: #111827;
   font-size: 17px;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .sellerdit-comments-toolbar > span {
   color: #475569;
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .sellerdit-comments-toolbar label {
@@ -12298,13 +12299,13 @@ body:has(.sellerdit-topbar) {
   grid-column: 1 / -1;
   color: #2563eb;
   font-size: 11px;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .sellerdit-comment-ad strong {
   color: #111827;
   font-size: 14px;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .sellerdit-comment-ad a {
@@ -12316,7 +12317,7 @@ body:has(.sellerdit-topbar) {
   background: #2563eb;
   color: #fff;
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 700;
   text-decoration: none;
 }
 
@@ -12404,7 +12405,7 @@ body:has(.sellerdit-topbar) {
   background: transparent;
   color: #64748b;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .sellerdit-comment-body footer button:hover,
@@ -12422,7 +12423,7 @@ body:has(.sellerdit-topbar) {
   background: #f1f5f9;
   color: #64748b;
   font-size: 11px;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .sellerdit-comment-badge.is-author {
@@ -12443,7 +12444,7 @@ body:has(.sellerdit-topbar) {
   background: transparent;
   color: #2563eb;
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .sellerdit-comment-ad.is-inline {
@@ -12488,7 +12489,7 @@ body:has(.sellerdit-topbar) {
 .sellerdit-comments-toolbar strong {
   color: #0f172a;
   font-size: 18px;
-  font-weight: 900;
+  font-weight: 700;
   letter-spacing: -0.02em;
 }
 
@@ -12506,7 +12507,7 @@ body:has(.sellerdit-topbar) {
   background: #fff;
   color: #334155;
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .sellerdit-comment-search {
@@ -12550,7 +12551,7 @@ body:has(.sellerdit-topbar) {
   padding: 10px 12px 0;
   color: #64748b;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .sellerdit-avatar.is-muted {
@@ -12564,7 +12565,7 @@ body:has(.sellerdit-topbar) {
   margin-left: auto;
   color: #2563eb;
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 700;
   text-decoration: none;
 }
 
@@ -12578,7 +12579,7 @@ body:has(.sellerdit-topbar) {
   background: #fff;
   color: #111827;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
   line-height: 1.55;
   resize: none;
   outline: 0;
@@ -12616,7 +12617,7 @@ body:has(.sellerdit-topbar) {
   min-width: 84px;
   border-radius: 999px;
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .sellerdit-comment-ad {
@@ -12640,13 +12641,13 @@ body:has(.sellerdit-topbar) {
 .sellerdit-comment-ad span {
   color: #2563eb;
   font-size: 11px;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .sellerdit-comment-ad strong {
   color: #0f172a;
   font-size: 14px;
-  font-weight: 900;
+  font-weight: 700;
   letter-spacing: -0.01em;
 }
 
@@ -12660,7 +12661,7 @@ body:has(.sellerdit-topbar) {
   background: #2563eb;
   color: #fff;
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 700;
   text-decoration: none;
 }
 
@@ -12719,7 +12720,7 @@ body:has(.sellerdit-topbar) {
   height: 30px;
   margin-top: 1px;
   font-size: 11px;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .sellerdit-comment-body {
@@ -12739,14 +12740,14 @@ body:has(.sellerdit-topbar) {
 .sellerdit-comment-body .sellerdit-author {
   color: #0f172a;
   font-size: 13px;
-  font-weight: 900;
+  font-weight: 700;
   text-decoration: none;
 }
 
 .sellerdit-comment-body time {
   color: #94a3b8;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .sellerdit-comment-badge {
@@ -12758,7 +12759,7 @@ body:has(.sellerdit-topbar) {
   background: #eef2ff;
   color: #4f46e5;
   font-size: 10.5px;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .sellerdit-comment-badge.is-author {
@@ -12770,7 +12771,7 @@ body:has(.sellerdit-topbar) {
   margin: 0;
   color: #334155;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
   line-height: 1.58;
 }
 
@@ -12789,7 +12790,7 @@ body:has(.sellerdit-topbar) {
   background: transparent;
   color: #64748b;
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .sellerdit-comment-action:hover,
@@ -12830,7 +12831,7 @@ body:has(.sellerdit-topbar) {
   background: transparent;
   color: #64748b;
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .sellerdit-reply-actions button[type="button"]:hover {
@@ -12988,7 +12989,7 @@ body:has(.sellerdit-topbar) {
 .sellerdit-profile-header h1 {
   color: #0f172a !important;
   font-size: 26px !important;
-  font-weight: 900 !important;
+  font-weight: 700 !important;
   letter-spacing: -0.035em !important;
 }
 
@@ -12996,7 +12997,7 @@ body:has(.sellerdit-topbar) {
   margin: 4px 0 10px !important;
   color: #64748b !important;
   font-size: 13px !important;
-  font-weight: 650 !important;
+  font-weight: 600 !important;
 }
 
 .sellerdit-profile-header dl {
@@ -13014,13 +13015,13 @@ body:has(.sellerdit-topbar) {
 .sellerdit-profile-header dt {
   color: #64748b !important;
   font-size: 11px !important;
-  font-weight: 800 !important;
+  font-weight: 700 !important;
 }
 
 .sellerdit-profile-header dd {
   color: #0f172a !important;
   font-size: 14px !important;
-  font-weight: 900 !important;
+  font-weight: 700 !important;
 }
 
 .sellerdit-profile-tabs {
@@ -13058,7 +13059,7 @@ body:has(.sellerdit-topbar) {
   content: "사용자 프로필";
   color: #64748b;
   font-size: 11px;
-  font-weight: 900;
+  font-weight: 700;
   letter-spacing: 0.02em;
 }
 
@@ -13095,4 +13096,1502 @@ body:has(.sellerdit-topbar) {
   .community-shell .community-reddit-layout.sellerdit-no-side-rail {
     grid-template-columns: minmax(0, 1fr) !important;
   }
+}
+
+/* Toss/TDS numeric alignment */
+.community-shell time,
+.community-shell dd,
+.community-shell em,
+.community-shell small,
+.community-shell .sellerdit-action-bar,
+.community-shell .sellerdit-post-actions,
+.community-shell .sellerdit-post-score,
+.community-shell .sellerdit-post-stats,
+.community-shell .sellerdit-community-row span,
+.community-shell .sellerdit-widget-title a,
+.community-shell .sellerdit-profile-card p,
+.community-shell .sellerdit-profile-header p,
+.community-shell .sellerdit-profile-header dd,
+.community-shell .sellerdit-profile-tabs,
+.community-shell .community-pager,
+.community-shell [aria-label="게시글 작업"],
+.wc-result-value,
+.wc-result-card,
+.wc-summary,
+.wc-field input,
+.wc-field select,
+.result-number,
+.stat-number,
+[data-community-post],
+[data-community-comment] {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Popular communities image-match refinement */
+.sellerdit-right-rail .sellerdit-communities {
+  padding: 18px 16px 16px !important;
+}
+
+.sellerdit-communities .sellerdit-widget-title {
+  margin-bottom: 14px !important;
+}
+
+.sellerdit-communities a.sellerdit-community-row {
+  grid-template-columns: 36px minmax(0, 1fr) !important;
+  gap: 10px !important;
+  min-height: 44px !important;
+  padding: 6px 0 !important;
+  border-bottom: 0 !important;
+}
+
+.sellerdit-community-row > b,
+.sellerdit-community-row i {
+  display: none !important;
+}
+
+.sellerdit-community-avatar {
+  width: 36px !important;
+  height: 36px !important;
+  font-size: 13px !important;
+  line-height: 1 !important;
+}
+
+.sellerdit-community-copy strong {
+  font-size: 13px !important;
+  line-height: 18px !important;
+}
+
+.sellerdit-community-copy em {
+  margin-top: 0 !important;
+  color: #6b7280 !important;
+  font-size: 12px !important;
+  line-height: 18px !important;
+  font-variant-numeric: tabular-nums;
+}
+
+.sellerdit-communities-more {
+  display: inline-flex !important;
+  margin-top: 12px !important;
+  color: #2563eb !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  line-height: 20px !important;
+  text-decoration: none !important;
+}
+
+/* Wingcoupang sample exact sync: header, left nav, post actions */
+.sellerdit-topbar {
+  height: 56px !important;
+  min-height: 56px !important;
+  background: #ffffff !important;
+  border-bottom: 1px solid #e5e7eb !important;
+  backdrop-filter: none !important;
+}
+
+.sellerdit-topbar-inner {
+  max-width: 1280px !important;
+  width: 100% !important;
+  min-height: 56px !important;
+  height: 56px !important;
+  padding: 0 16px !important;
+  gap: 20px !important;
+}
+
+.sellerdit-topbar .community-brand {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  padding: 0 !important;
+  color: #2563eb !important;
+  font-size: 18px !important;
+  font-weight: 700 !important;
+  white-space: nowrap !important;
+}
+
+.sellerdit-topbar .community-brand span {
+  width: 28px !important;
+  height: 28px !important;
+  display: grid !important;
+  place-items: center !important;
+  border-radius: 50% !important;
+  background: #2563eb !important;
+  color: #fff !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  line-height: 1 !important;
+}
+
+.sellerdit-topbar .community-global-search {
+  flex: 1 1 auto !important;
+  max-width: 560px !important;
+}
+
+.sellerdit-topbar .community-global-search input {
+  width: 100% !important;
+  height: 38px !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 999px !important;
+  background: #f1f3f5 !important;
+  padding: 0 16px !important;
+  color: #1a1a1b !important;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+  outline: none !important;
+}
+
+.sellerdit-topbar .community-global-search input:focus {
+  border-color: #2563eb !important;
+  background: #ffffff !important;
+  outline: none !important;
+}
+
+.sellerdit-topbar nav {
+  margin-left: auto !important;
+  gap: 14px !important;
+  color: #787c7e !important;
+  white-space: nowrap !important;
+}
+
+.sellerdit-topbar nav a,
+.sellerdit-topbar nav button {
+  min-height: auto !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: #787c7e !important;
+  font-size: 13px !important;
+  font-weight: 400 !important;
+  line-height: 56px !important;
+}
+
+.sellerdit-topbar nav a:hover,
+.sellerdit-topbar nav a.is-active,
+.sellerdit-topbar nav button:hover,
+.sellerdit-topbar nav button.is-active {
+  background: transparent !important;
+  color: #1a1a1b !important;
+}
+
+.sellerdit-kakao {
+  min-height: 36px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 16px !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  background: #fee500 !important;
+  color: #191600 !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  line-height: 36px !important;
+  white-space: nowrap !important;
+}
+
+.sellerdit-header-dots {
+  color: #787c7e !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  line-height: 1 !important;
+}
+
+.community-shell .community-reddit-layout.sellerdit-with-left-rail {
+  grid-template-columns: 240px minmax(0, 640px) 320px !important;
+  gap: 24px !important;
+  max-width: 1280px !important;
+  padding-top: 72px !important;
+}
+
+.community-shell .community-reddit-layout.sellerdit-ai-layout.sellerdit-with-left-rail,
+.community-shell .community-reddit-layout.sellerdit-no-right-rail.sellerdit-with-left-rail {
+  grid-template-columns: 240px minmax(0, 760px) !important;
+  gap: 24px !important;
+  max-width: 1048px !important;
+  padding-top: 72px !important;
+}
+
+.community-shell .community-reddit-layout.sellerdit-with-left-rail .community-left-rail {
+  display: block !important;
+  position: sticky !important;
+  top: 72px !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+}
+
+.sellerdit-lnav {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 1px !important;
+}
+
+.sellerdit-lnav-item {
+  min-height: 40px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  padding: 10px 12px !important;
+  border-radius: 8px !important;
+  color: #1a1a1b !important;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+  line-height: 20px !important;
+  text-decoration: none !important;
+}
+
+.sellerdit-lnav-item:hover {
+  background: #f3f4f6 !important;
+}
+
+.sellerdit-lnav-item.is-active {
+  background: #e9ebed !important;
+  color: #1a1a1b !important;
+}
+
+.sellerdit-lnav-ic {
+  width: 20px !important;
+  height: 20px !important;
+  display: grid !important;
+  place-items: center !important;
+  flex: none !important;
+  color: #222 !important;
+}
+
+.sellerdit-lnav-ic svg {
+  width: 20px !important;
+  height: 20px !important;
+}
+
+.sellerdit-lnav-sec {
+  margin-top: 8px !important;
+  padding: 16px 12px 6px !important;
+  border-top: 1px solid #edeff1 !important;
+  color: #787c7e !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  letter-spacing: .03em !important;
+  line-height: 16px !important;
+}
+
+.sellerdit-lnav-login-note {
+  margin: 16px 0 0 !important;
+  padding: 16px 12px 0 !important;
+  border-top: 1px solid #edeff1 !important;
+  color: #787c7e !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  line-height: 18px !important;
+}
+
+.community-shell .community-feed-panel,
+.community-shell .sellerdit-feedpanel {
+  background: #ffffff !important;
+}
+
+.community-shell .sellerdit-feed-post {
+  padding: 15px 12px 16px !important;
+  border-bottom: 1px solid #edeff1 !important;
+  border-radius: 12px !important;
+  background: transparent !important;
+}
+
+.community-shell .sellerdit-feed-post:hover {
+  background: #f7f8f9 !important;
+}
+
+.community-shell .sellerdit-post-meta {
+  gap: 8px !important;
+  margin-bottom: 8px !important;
+  color: #787c7e !important;
+  font-size: 12px !important;
+  line-height: 18px !important;
+}
+
+.community-shell .sellerdit-avatar {
+  width: 24px !important;
+  height: 24px !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+}
+
+.community-shell .sellerdit-author,
+.community-shell .cat {
+  color: #1a1a1b !important;
+  font-weight: 700 !important;
+}
+
+.community-shell .sellerdit-actions,
+.community-shell .community-vote-actions {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  margin-top: 12px !important;
+}
+
+.community-shell .sellerdit-actions .sellerdit-action,
+.community-shell .community-vote-actions .sellerdit-action {
+  min-height: 28px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 6px 12px !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  background: #f1f3f5 !important;
+  color: #787c7e !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  line-height: 16px !important;
+  text-decoration: none !important;
+  box-shadow: none !important;
+}
+
+.community-shell .sellerdit-actions .sellerdit-action:hover,
+.community-shell .community-vote-actions .sellerdit-action:hover {
+  background: #e7ebef !important;
+  color: #1a1a1b !important;
+}
+
+@media (max-width: 1120px) {
+  .community-shell .community-reddit-layout.sellerdit-with-left-rail,
+  .community-shell .community-reddit-layout.sellerdit-ai-layout.sellerdit-with-left-rail,
+  .community-shell .community-reddit-layout.sellerdit-no-right-rail.sellerdit-with-left-rail {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+  .community-shell .community-reddit-layout.sellerdit-with-left-rail .community-left-rail {
+    display: none !important;
+  }
+}
+
+/* Wingcoupang sample verification pass: remove extra top offset and feed title block */
+.community-shell .community-reddit-layout.sellerdit-with-left-rail,
+.community-shell .community-reddit-layout.sellerdit-ai-layout.sellerdit-with-left-rail,
+.community-shell .community-reddit-layout.sellerdit-no-right-rail.sellerdit-with-left-rail {
+  padding-top: 0 !important;
+}
+
+.community-shell .community-reddit-layout.sellerdit-with-left-rail:not(.sellerdit-ai-layout) .community-feed-head {
+  display: none !important;
+}
+
+.community-shell .community-reddit-layout.sellerdit-with-left-rail:not(.sellerdit-ai-layout) .community-toolbar {
+  padding: 2px 4px 12px !important;
+  min-height: auto !important;
+  border: 0 !important;
+  background: transparent !important;
+}
+
+.community-shell .community-reddit-layout.sellerdit-with-left-rail:not(.sellerdit-ai-layout) .sellerdit-feedpanel {
+  border: 1px solid #e5e7eb !important;
+  border-radius: 12px !important;
+  padding: 0 6px !important;
+  overflow: hidden !important;
+}
+
+/* Wingcoupang sample verification pass 2: exact feed panel and sort bar */
+.community-shell .community-reddit-layout.sellerdit-with-left-rail:not(.sellerdit-ai-layout) .sellerdit-sort-links {
+  margin-left: auto !important;
+}
+
+.community-shell .community-reddit-layout.sellerdit-with-left-rail:not(.sellerdit-ai-layout) .sellerdit-sort-links a {
+  display: none !important;
+}
+
+.community-shell .community-reddit-layout.sellerdit-with-left-rail:not(.sellerdit-ai-layout) .sellerdit-sort-links::after {
+  content: "▤ ▾";
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 7px 10px;
+  border-radius: 999px;
+  color: #787c7e;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 16px;
+}
+
+.community-shell .community-reddit-layout.sellerdit-with-left-rail:not(.sellerdit-ai-layout) .sellerdit-sort-links:hover::after {
+  background: #f1f3f5;
+}
+
+.community-shell .community-reddit-layout.sellerdit-with-left-rail:not(.sellerdit-ai-layout) .community-vote-card,
+.community-shell .community-reddit-layout.sellerdit-with-left-rail:not(.sellerdit-ai-layout) .sellerdit-feed-post {
+  border: 0 !important;
+  border-bottom: 1px solid #edeff1 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+
+.community-shell .community-reddit-layout.sellerdit-with-left-rail:not(.sellerdit-ai-layout) .community-vote-card:last-of-type,
+.community-shell .community-reddit-layout.sellerdit-with-left-rail:not(.sellerdit-ai-layout) .sellerdit-feed-post:last-of-type {
+  border-bottom: 0 !important;
+}
+
+.community-shell .community-reddit-layout.sellerdit-with-left-rail:not(.sellerdit-ai-layout) .community-vote-card:hover,
+.community-shell .community-reddit-layout.sellerdit-with-left-rail:not(.sellerdit-ai-layout) .sellerdit-feed-post:hover {
+  background: #f7f8f9 !important;
+}
+
+/* Naver-inspired search keyword effects */
+.trend-page {
+  max-width: 1280px !important;
+  width: min(1280px, calc(100% - 32px)) !important;
+  margin: 0 auto !important;
+  padding-top: 72px !important;
+  gap: 18px !important;
+}
+
+.trend-provider-grid {
+  gap: 18px !important;
+  align-items: start !important;
+}
+
+.trend-provider-card {
+  min-height: 0 !important;
+  padding: 20px 16px 18px !important;
+  border: 1px solid #dfe5ec !important;
+  border-radius: 14px !important;
+  background: #ffffff !important;
+  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.02) !important;
+}
+
+.trend-provider-card::before {
+  display: none !important;
+}
+
+.trend-provider-card header {
+  margin-bottom: 16px !important;
+}
+
+.trend-base-time {
+  color: #2f80ed !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  line-height: 16px !important;
+}
+
+.trend-base-time i {
+  width: 8px !important;
+  height: 8px !important;
+  background: #22c55e !important;
+}
+
+.trend-provider-card h2 {
+  margin-top: 2px !important;
+  color: #05070a !important;
+  font-size: 22px !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.02em !important;
+  line-height: 28px !important;
+}
+
+.trend-keyword-list {
+  gap: 0 !important;
+}
+
+.trend-keyword-list li {
+  position: relative !important;
+  min-height: 34px !important;
+  grid-template-columns: 32px minmax(0, 1fr) auto !important;
+  gap: 8px !important;
+  padding: 0 2px !important;
+  border-bottom: 1px solid #dce3ec !important;
+  background: transparent !important;
+  transition: background 0.14s ease, border-color 0.14s ease, transform 0.14s ease !important;
+}
+
+.trend-keyword-list li:hover {
+  background: #f8fbff !important;
+}
+
+.trend-keyword-list li.is-top-rank {
+  min-height: 42px !important;
+  margin-bottom: 0 !important;
+  padding: 0 12px !important;
+  border: 1px solid #bed8ff !important;
+  border-radius: 12px !important;
+  background: linear-gradient(90deg, #e7f1ff 0%, #f4f9ff 58%, #ffffff 100%) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72) !important;
+}
+
+.trend-keyword-list li.is-top-rank + li.is-top-rank {
+  margin-top: 2px !important;
+}
+
+.trend-keyword-list li.is-top-rank:hover {
+  border-color: #8fbcff !important;
+  transform: translateY(-1px) !important;
+}
+
+.trend-keyword-list b {
+  width: 24px !important;
+  height: 24px !important;
+  color: #2f80ed !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  line-height: 1 !important;
+  font-variant-numeric: tabular-nums !important;
+}
+
+.trend-keyword-list li.is-top-rank b {
+  background: #2f80ed !important;
+  color: #ffffff !important;
+  box-shadow: 0 5px 12px rgba(47, 128, 237, 0.22) !important;
+}
+
+.trend-keyword-list a,
+.trend-keyword-list span {
+  color: #0b1220 !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.01em !important;
+}
+
+.trend-keyword-list em {
+  color: #718096 !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  font-variant-numeric: tabular-nums !important;
+}
+
+.trend-provider-card[data-trend-provider="naver"] .trend-provider-empty {
+  position: relative !important;
+  min-height: 50px !important;
+  display: flex !important;
+  align-items: center !important;
+  padding: 0 18px 0 48px !important;
+  border: 1px solid #e24bc8 !important;
+  border-radius: 12px !important;
+  background: #ffffff !important;
+  color: #111827 !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  line-height: 20px !important;
+  box-shadow: 0 8px 18px rgba(226, 75, 200, 0.09) !important;
+}
+
+.trend-provider-card[data-trend-provider="naver"] .trend-provider-empty::before {
+  content: "⌕";
+  position: absolute;
+  left: 18px;
+  top: 50%;
+  transform: translateY(-51%);
+  color: #c02ab1;
+  font-size: 27px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.trend-provider-card[data-trend-provider="naver"] h2 {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+}
+
+.trend-provider-card[data-trend-provider="naver"] h2::after {
+  content: "검색";
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: #fff1fb;
+  color: #c02ab1;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 16px;
+}
+
+@media (max-width: 1120px) {
+  .trend-provider-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Trend top-3 motion: Naver-style periodic movement */
+.trend-keyword-list li.is-top-rank {
+  overflow: hidden !important;
+  animation: trendTopRankMove 3s ease-in-out infinite !important;
+  will-change: transform, box-shadow, border-color !important;
+}
+
+.trend-keyword-list li.is-rank-1 {
+  animation-delay: 0s !important;
+}
+
+.trend-keyword-list li.is-rank-2 {
+  animation-delay: .12s !important;
+}
+
+.trend-keyword-list li.is-rank-3 {
+  animation-delay: .24s !important;
+}
+
+.trend-keyword-list li.is-top-rank::after {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 -42%;
+  width: 36%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, .68) 48%, transparent 100%);
+  transform: skewX(-18deg) translateX(0);
+  animation: trendTopRankSweep 3s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.trend-keyword-list li.is-rank-1::after {
+  animation-delay: 0s;
+}
+
+.trend-keyword-list li.is-rank-2::after {
+  animation-delay: .12s;
+}
+
+.trend-keyword-list li.is-rank-3::after {
+  animation-delay: .24s;
+}
+
+.trend-keyword-list li.is-top-rank b {
+  animation: trendTopBadgePulse 3s ease-in-out infinite !important;
+}
+
+.trend-keyword-list li.is-rank-1 b {
+  animation-delay: 0s !important;
+}
+
+.trend-keyword-list li.is-rank-2 b {
+  animation-delay: .12s !important;
+}
+
+.trend-keyword-list li.is-rank-3 b {
+  animation-delay: .24s !important;
+}
+
+@keyframes trendTopRankMove {
+  0%, 72%, 100% {
+    transform: translateY(0);
+    border-color: #bed8ff;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
+  }
+  14% {
+    transform: translateY(-2px);
+    border-color: #78acff;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 8px 20px rgba(47, 128, 237, 0.14);
+  }
+  28% {
+    transform: translateY(0);
+    border-color: #9bc4ff;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.76), 0 3px 10px rgba(47, 128, 237, 0.08);
+  }
+}
+
+@keyframes trendTopRankSweep {
+  0%, 62%, 100% {
+    transform: skewX(-18deg) translateX(0);
+    opacity: 0;
+  }
+  14% {
+    opacity: 1;
+  }
+  34% {
+    transform: skewX(-18deg) translateX(430%);
+    opacity: 0;
+  }
+}
+
+@keyframes trendTopBadgePulse {
+  0%, 72%, 100% {
+    transform: scale(1);
+    box-shadow: 0 5px 12px rgba(47, 128, 237, 0.22);
+  }
+  14% {
+    transform: scale(1.08);
+    box-shadow: 0 8px 16px rgba(47, 128, 237, 0.3);
+  }
+  28% {
+    transform: scale(1);
+    box-shadow: 0 5px 12px rgba(47, 128, 237, 0.22);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .trend-keyword-list li.is-top-rank,
+  .trend-keyword-list li.is-top-rank::after,
+  .trend-keyword-list li.is-top-rank b {
+    animation: none !important;
+  }
+}
+
+/* Detail page reddit-style comments, ads, and related posts */
+.community-shell .is-post-detail .community-detail-main {
+  gap: 12px !important;
+}
+
+.community-shell .is-post-detail .sellerdit-comments {
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+}
+
+.community-shell .is-post-detail .sellerdit-comments-titlebar {
+  padding: 0 0 8px !important;
+  border: 0 !important;
+  background: transparent !important;
+}
+
+.community-shell .is-post-detail .sellerdit-comments-titlebar strong {
+  color: #1a1a1b !important;
+  font-size: 16px !important;
+  font-weight: 700 !important;
+}
+
+.community-shell .is-post-detail .sellerdit-pill-composer {
+  display: grid !important;
+  gap: 8px !important;
+  padding: 0 !important;
+  margin: 0 0 8px !important;
+  border: 0 !important;
+  background: transparent !important;
+}
+
+.community-shell .is-post-detail .sellerdit-pill-composer textarea {
+  width: 100% !important;
+  min-height: 46px !important;
+  max-height: 46px !important;
+  padding: 11px 16px !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 999px !important;
+  background: #ffffff !important;
+  color: #1a1a1b !important;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+  line-height: 22px !important;
+  resize: none !important;
+  overflow: hidden !important;
+  outline: none !important;
+}
+
+.community-shell .is-post-detail .sellerdit-pill-composer textarea::placeholder {
+  color: #787c7e !important;
+}
+
+.community-shell .is-post-detail .sellerdit-pill-composer:focus-within textarea {
+  max-height: 104px !important;
+  min-height: 76px !important;
+  border-radius: 14px !important;
+  overflow: auto !important;
+  border-color: #2563eb !important;
+}
+
+.community-shell .is-post-detail .sellerdit-pill-composer .sellerdit-composer-actions {
+  display: none !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 8px !important;
+}
+
+.community-shell .is-post-detail .sellerdit-pill-composer:focus-within .sellerdit-composer-actions {
+  display: flex !important;
+}
+
+.community-shell .is-post-detail .sellerdit-comment-sortbar {
+  display: flex !important;
+  align-items: center !important;
+  gap: 14px !important;
+  margin: 6px 0 12px !important;
+  color: #787c7e !important;
+  font-size: 13px !important;
+  line-height: 20px !important;
+}
+
+.community-shell .is-post-detail .sellerdit-comment-sortbar b {
+  color: #1a1a1b !important;
+  font-weight: 700 !important;
+}
+
+.community-shell .is-post-detail .sellerdit-comment-sortbar .csearch {
+  margin-left: auto !important;
+  padding: 5px 12px !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 999px !important;
+  background: #ffffff !important;
+  color: #787c7e !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+}
+
+.community-shell .is-post-detail .sellerdit-comment-tree {
+  display: grid !important;
+  gap: 0 !important;
+  margin-top: 0 !important;
+}
+
+.community-shell .is-post-detail .sellerdit-comment,
+.community-shell .is-post-detail .c {
+  position: relative !important;
+  display: flex !important;
+  gap: 10px !important;
+  padding: 10px 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+}
+
+.community-shell .is-post-detail .sellerdit-comment .sellerdit-avatar,
+.community-shell .is-post-detail .sellerdit-comment .avatar {
+  width: 28px !important;
+  height: 28px !important;
+  flex: 0 0 28px !important;
+  display: grid !important;
+  place-items: center !important;
+  border-radius: 50% !important;
+  color: #ffffff !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+}
+
+.community-shell .is-post-detail .sellerdit-comment-body,
+.community-shell .is-post-detail .c .body {
+  min-width: 0 !important;
+  flex: 1 1 auto !important;
+}
+
+.community-shell .is-post-detail .sellerdit-comment header,
+.community-shell .is-post-detail .sellerdit-comment .chead {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  margin: 0 0 2px !important;
+  color: #787c7e !important;
+  font-size: 12px !important;
+  line-height: 18px !important;
+}
+
+.community-shell .is-post-detail .sellerdit-comment .cauthor,
+.community-shell .is-post-detail .sellerdit-comment .sellerdit-author {
+  color: #1a1a1b !important;
+  font-weight: 700 !important;
+  text-decoration: none !important;
+}
+
+.community-shell .is-post-detail .sellerdit-comment-badge,
+.community-shell .is-post-detail .cbadge {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 3px !important;
+  padding: 2px 7px !important;
+  border-radius: 6px !important;
+  background: #f1f3f5 !important;
+  color: #475569 !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  line-height: 16px !important;
+}
+
+.community-shell .is-post-detail .sellerdit-comment-badge.is-author,
+.community-shell .is-post-detail .cbadge.op {
+  background: #e7f0ff !important;
+  color: #2563eb !important;
+}
+
+.community-shell .is-post-detail .sellerdit-comment p,
+.community-shell .is-post-detail .sellerdit-comment .ctext {
+  margin: 2px 0 6px !important;
+  color: #1a1a1b !important;
+  font-size: 14px !important;
+  line-height: 1.55 !important;
+}
+
+.community-shell .is-post-detail .sellerdit-comment footer,
+.community-shell .is-post-detail .sellerdit-comment .cactions {
+  display: flex !important;
+  align-items: center !important;
+  flex-wrap: wrap !important;
+  gap: 4px !important;
+  color: #787c7e !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+}
+
+.community-shell .is-post-detail .sellerdit-comment-action,
+.community-shell .is-post-detail .cbtn,
+.community-shell .is-post-detail .cv {
+  min-height: 26px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  padding: 4px 9px !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  background: transparent !important;
+  color: #787c7e !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  line-height: 18px !important;
+  cursor: pointer !important;
+}
+
+.community-shell .is-post-detail .sellerdit-comment-action.cv,
+.community-shell .is-post-detail .cv:first-child {
+  background: #f1f3f5 !important;
+  color: #475569 !important;
+}
+
+.community-shell .is-post-detail .sellerdit-comment-action:hover,
+.community-shell .is-post-detail .cbtn:hover {
+  background: #f1f3f5 !important;
+  color: #1a1a1b !important;
+}
+
+.community-shell .is-post-detail .sellerdit-replies,
+.community-shell .is-post-detail .reply {
+  margin-left: 14px !important;
+  padding-left: 14px !important;
+  border-left: 2px solid #edeff1 !important;
+}
+
+.community-shell .is-post-detail .more-replies {
+  display: flex !important;
+  align-items: center !important;
+  gap: 7px !important;
+  padding: 6px 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  color: #2563eb !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+}
+
+.community-shell .is-post-detail .more-replies .plus {
+  width: 18px !important;
+  height: 18px !important;
+  display: grid !important;
+  place-items: center !important;
+  border: 1px solid #2563eb !important;
+  border-radius: 50% !important;
+  color: #2563eb !important;
+  font-size: 13px !important;
+  line-height: 1 !important;
+}
+
+.community-shell .sellerdit-promoted {
+  color: #1a1a1b !important;
+}
+
+.community-shell .sellerdit-promoted .ad-tag,
+.community-shell .ad-tag {
+  color: #787c7e !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+}
+
+.community-shell .sellerdit-promoted-cta,
+.community-shell .cta {
+  width: fit-content !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin-top: 10px !important;
+  padding: 6px 16px !important;
+  border: 1px solid #2563eb !important;
+  border-radius: 999px !important;
+  background: #ffffff !important;
+  color: #2563eb !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  text-decoration: none !important;
+}
+
+.community-shell .is-post-detail .sellerdit-detail-promo,
+.community-shell .is-post-detail .promo {
+  display: grid !important;
+  gap: 8px !important;
+  margin: 12px 0 16px !important;
+  padding: 14px 16px !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 12px !important;
+  background: #ffffff !important;
+  color: #1a1a1b !important;
+}
+
+.community-shell .is-post-detail .promo-head {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  color: #787c7e !important;
+  font-size: 12px !important;
+}
+
+.community-shell .is-post-detail .promo-head .dots,
+.community-shell .is-post-detail .promo-head .sellerdit-more {
+  margin-left: auto !important;
+}
+
+.community-shell .is-post-detail .promo-body {
+  color: #1a1a1b !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  line-height: 1.45 !important;
+}
+
+.community-shell .is-post-detail .promo-img {
+  width: 100% !important;
+  height: auto !important;
+  display: block !important;
+  border: 1px solid #edeff1 !important;
+  border-radius: 10px !important;
+  background: #f8fafc !important;
+}
+
+.community-shell .is-post-detail .promo-foot {
+  display: flex !important;
+  align-items: center !important;
+  margin-top: 4px !important;
+  color: #787c7e !important;
+  font-size: 12px !important;
+}
+
+.community-shell .is-post-detail .promo-foot .go {
+  margin-left: auto !important;
+  padding: 6px 14px !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 999px !important;
+  color: #1a1a1b !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  text-decoration: none !important;
+}
+
+.community-shell .is-post-detail .ad-banner {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  margin: 12px 0 !important;
+  padding: 12px 14px !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 10px !important;
+  background: #fafbfc !important;
+}
+
+.community-shell .is-post-detail .ad-banner .ico {
+  width: 40px !important;
+  height: 40px !important;
+  display: grid !important;
+  place-items: center !important;
+  flex: 0 0 40px !important;
+  border-radius: 8px !important;
+  background: #fff3ec !important;
+  font-size: 18px !important;
+}
+
+.community-shell .is-post-detail .ad-banner .t {
+  color: #1a1a1b !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+}
+
+.community-shell .is-post-detail .ad-banner .s {
+  margin-top: 2px !important;
+  color: #787c7e !important;
+  font-size: 12px !important;
+}
+
+.community-shell .is-post-detail .ad-banner .go {
+  margin-left: auto !important;
+  padding: 6px 14px !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 999px !important;
+  background: #ffffff !important;
+  color: #1a1a1b !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  white-space: nowrap !important;
+  text-decoration: none !important;
+}
+
+.community-shell .sellerdit-related-feed {
+  padding: 16px !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 12px !important;
+  background: #ffffff !important;
+}
+
+.community-shell .sellerdit-related-feed .community-related-feed-head {
+  margin: 0 0 10px !important;
+  padding: 0 !important;
+  border: 0 !important;
+}
+
+.community-shell .sellerdit-related-feed .community-related-feed-head strong {
+  color: #1a1a1b !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+}
+
+.community-shell .sellerdit-related-feed .relitem,
+.community-shell .sellerdit-related-feed .community-related-item {
+  display: block !important;
+  padding: 14px 0 !important;
+  border-top: 1px solid #d3d8dd !important;
+  color: inherit !important;
+  text-decoration: none !important;
+}
+
+.community-shell .sellerdit-related-feed .relitem:first-child,
+.community-shell .sellerdit-related-feed .community-related-item:first-child {
+  border-top: 0 !important;
+}
+
+.community-shell .sellerdit-related-feed .relhead {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  margin-bottom: 6px !important;
+  color: #787c7e !important;
+  font-size: 12px !important;
+}
+
+.community-shell .sellerdit-related-feed .ravatar {
+  width: 20px !important;
+  height: 20px !important;
+  display: grid !important;
+  place-items: center !important;
+  flex: 0 0 20px !important;
+  border-radius: 50% !important;
+  color: #ffffff !important;
+  font-size: 10px !important;
+  font-weight: 700 !important;
+}
+
+.community-shell .sellerdit-related-feed .rcomm {
+  color: #1a1a1b !important;
+  font-weight: 700 !important;
+}
+
+.community-shell .sellerdit-related-feed .rdots {
+  margin-left: auto !important;
+  padding: 0 2px !important;
+  cursor: pointer !important;
+}
+
+.community-shell .sellerdit-related-feed .relrow {
+  display: flex !important;
+  align-items: flex-start !important;
+  gap: 10px !important;
+}
+
+.community-shell .sellerdit-related-feed .relcopy {
+  min-width: 0 !important;
+  flex: 1 1 auto !important;
+}
+
+.community-shell .sellerdit-related-feed .rtitle {
+  margin-bottom: 6px !important;
+  color: #1a1a1b !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  line-height: 1.35 !important;
+}
+
+.community-shell .sellerdit-related-feed .rstats {
+  color: #787c7e !important;
+  font-size: 12px !important;
+  font-weight: 400 !important;
+}
+
+.community-shell .sellerdit-related-feed .rthumb {
+  width: 60px !important;
+  height: 60px !important;
+  flex: 0 0 60px !important;
+  overflow: hidden !important;
+  border-radius: 8px !important;
+  background: #e2e8f0 !important;
+}
+
+.community-shell .sellerdit-related-feed .rthumb svg {
+  width: 100% !important;
+  height: 100% !important;
+  display: block !important;
+}
+
+.community-shell .sellerdit-related-feed .reljoin {
+  align-self: center !important;
+  margin-left: auto !important;
+  padding: 6px 14px !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 999px !important;
+  background: #ffffff !important;
+  color: #1a1a1b !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  white-space: nowrap !important;
+}
+
+/* Wingco reference typography normalization */
+html {
+  font-size: 16px !important;
+  -webkit-font-smoothing: antialiased !important;
+  -moz-osx-font-smoothing: grayscale !important;
+  text-rendering: optimizeLegibility !important;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif !important;
+  font-size: 14px !important;
+  line-height: 1.5 !important;
+  -webkit-font-smoothing: antialiased !important;
+  -moz-osx-font-smoothing: grayscale !important;
+  text-rendering: optimizeLegibility !important;
+  letter-spacing: 0 !important;
+}
+
+.community-shell,
+.community-shell * {
+  letter-spacing: 0 !important;
+}
+
+.sellerdit-topbar nav a,
+.sellerdit-topbar nav button {
+  font-size: 13px !important;
+}
+
+.community-shell .community-vote-title,
+.community-shell .sellerdit-feed-post .community-vote-title,
+.community-shell .sellerdit-feed-post h3,
+.community-shell .post h3 {
+  font-size: 17px !important;
+  line-height: 1.35 !important;
+  font-weight: 700 !important;
+}
+
+.community-shell .sellerdit-detail-post h1,
+.community-shell .community-post-article h1,
+.detail h1 {
+  margin: 6px 0 12px !important;
+  font-size: 22px !important;
+  line-height: 1.35 !important;
+  font-weight: 700 !important;
+}
+
+.prof-header,
+.sellerdit-profile-header,
+.community-shell .sellerdit-profile-header {
+  align-items: center !important;
+}
+
+.prof-header h1,
+.sellerdit-profile-header h1,
+.community-shell .sellerdit-profile-header h1 {
+  margin: 0 !important;
+  font-size: 22px !important;
+  line-height: 1.35 !important;
+  font-weight: 700 !important;
+}
+
+.prof-avatar,
+.sellerdit-profile-avatar {
+  font-weight: 700 !important;
+}
+
+.community-shell .sellerdit-actions,
+.community-shell .community-vote-actions {
+  gap: 8px !important;
+}
+
+.community-shell .sellerdit-actions .sellerdit-action,
+.community-shell .community-vote-actions .sellerdit-action {
+  min-height: 30px !important;
+  padding: 6px 12px !important;
+  border-radius: 999px !important;
+  background: #f1f3f5 !important;
+  color: #787c7e !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  line-height: 18px !important;
+}
+
+.community-shell .sellerdit-actions .sellerdit-action:first-child,
+.community-shell .community-vote-actions .sellerdit-action:first-child {
+  color: #1a1a1b !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+}
+
+.community-shell .community-reddit-layout .community-left-rail,
+.community-shell .community-reddit-layout .community-right-rail,
+.community-shell .community-reddit-layout.sellerdit-with-left-rail .community-left-rail,
+.community-shell .community-reddit-layout.sellerdit-with-left-rail .community-right-rail {
+  position: sticky !important;
+  top: 72px !important;
+  align-self: start !important;
+}
+
+/* Wingco fixed side rails on desktop */
+@media (min-width: 1101px) {
+  .community-shell .community-reddit-layout .community-left-rail,
+  .community-shell .community-reddit-layout.sellerdit-with-left-rail .community-left-rail {
+    position: fixed !important;
+    top: 72px !important;
+    left: max(16px, calc((100vw - 1280px) / 2 + 16px)) !important;
+    width: 240px !important;
+    max-height: calc(100vh - 88px) !important;
+    overflow-y: auto !important;
+    z-index: 20 !important;
+  }
+
+  .community-shell .community-reddit-layout .community-right-rail,
+  .community-shell .community-reddit-layout.sellerdit-with-left-rail .community-right-rail {
+    position: fixed !important;
+    top: 72px !important;
+    right: max(16px, calc((100vw - 1280px) / 2 + 16px)) !important;
+    width: 320px !important;
+    max-height: calc(100vh - 88px) !important;
+    overflow-y: auto !important;
+    z-index: 20 !important;
+  }
+}
+
+/* Preserve 3-column placement while rails are fixed */
+@media (min-width: 1101px) {
+  .community-shell .community-reddit-layout.sellerdit-with-left-rail > .community-left-rail {
+    grid-column: 1 !important;
+  }
+
+  .community-shell .community-reddit-layout.sellerdit-with-left-rail > .community-feed-panel,
+  .community-shell .community-reddit-layout.sellerdit-with-left-rail > .community-detail-main,
+  .community-shell .community-reddit-layout.sellerdit-with-left-rail > .sellerdit-ai-main {
+    grid-column: 2 !important;
+  }
+
+  .community-shell .community-reddit-layout.sellerdit-with-left-rail > .community-right-rail {
+    grid-column: 3 !important;
+  }
+}
+
+/* Profile header reference alignment */
+.community-shell .sellerdit-profile-header {
+  display: flex !important;
+  align-items: center !important;
+  gap: 16px !important;
+}
+
+.community-shell .sellerdit-profile-header > div {
+  min-width: 0 !important;
+}
+
+.community-shell .sellerdit-profile-header h1 {
+  margin: 0 !important;
+  font-size: 22px !important;
+  line-height: 1.35 !important;
+  font-weight: 700 !important;
+}
+
+/* Community write modal: functional post creation without bottom summary text */
+.community-write-modal[hidden] {
+  display: none !important;
+}
+
+.community-write-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.community-write-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.34);
+}
+
+.community-write-modal .community-write-panel {
+  position: relative;
+  width: min(560px, calc(100vw - 32px));
+  max-height: calc(100vh - 56px);
+  overflow: auto;
+  background: #fff;
+  border: 1px solid var(--line, #edeff1);
+  border-radius: 14px;
+  padding: 0;
+  box-shadow: 0 20px 55px rgba(15, 23, 42, 0.18);
+}
+
+.community-write-modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--line, #edeff1);
+}
+
+.community-write-modal-head div {
+  display: grid;
+  gap: 2px;
+}
+
+.community-write-modal-head span {
+  color: var(--muted, #787c7e);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.community-write-modal-head strong {
+  color: #1a1a1b;
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.community-write-modal-head button,
+.community-write-submit-row button[type="button"] {
+  border: 1px solid var(--line, #edeff1);
+  background: #fff;
+  color: #475569;
+  border-radius: 999px;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.community-write-modal-head button {
+  width: 32px;
+  height: 32px;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.community-write-modal .community-write-panel form {
+  display: grid;
+  gap: 13px;
+  padding: 18px;
+}
+
+.community-write-submit-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.community-write-submit-row p {
+  margin: 0 auto 0 0;
+  color: var(--muted, #787c7e);
+  font-size: 13px;
+}
+
+.community-write-submit-row p[data-tone="warning"] {
+  color: #dc2626;
+}
+
+.community-write-submit-row button[type="button"] {
+  min-height: 34px;
+  padding: 0 14px;
+}
+
+body.community-write-open {
+  overflow: hidden;
 }

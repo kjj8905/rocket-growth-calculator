@@ -733,30 +733,43 @@ function renderCommunityPinned(notices) {
   </div>`;
 }
 
-function renderCommunityLeftRail(activeKey = "community") {
-  const navItems = [
-    ["community", "/community", "홈"],
-    ["calculator", "/", "계산기"],
-    ["qna", "/community/qna", "질문"],
-    ["trends", "/trends", "트렌드"],
-    ["guides", "/guides", "기준"],
-  ];
-  return `<aside class="community-left-rail sellerdit-left-rail" aria-label="셀러딧 왼쪽 메뉴">
-    <nav class="sellerdit-left-menu" aria-label="셀러딧 섹션">
-      ${navItems.map(([key, href, label]) => `<a class="${key === activeKey ? "is-active" : ""}" href="${href}">${label}</a>`).join("")}
-    </nav>
-    <section class="sellerdit-community-info" aria-label="r/셀러딧 정보">
-      <span class="sellerdit-community-icon">r/</span>
-      <strong>r/셀러딧</strong>
-      <p>쿠팡·로켓그로스 셀러가 원가, 물류, 수수료를 같이 검토하는 커뮤니티입니다.</p>
-      <dl>
-        <div><dt>멤버</dt><dd>18.4k</dd></div>
-        <div><dt>온라인</dt><dd>312</dd></div>
-      </dl>
-    </section>
-  </aside>`;
+function sellerditIcon(name) {
+  const icons = {
+    home: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 11 9-8 9 8"/><path d="M5 10v10h14V10"/><path d="M9 20v-6h6v6"/></svg>',
+    popular: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m10 14 4-4"/><path d="M10 10h4v4"/></svg>',
+    notice: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h14v12H4z"/><path d="M8 10h7"/><path d="M8 14h5"/><path d="M18 9h2v8h-2"/></svg>',
+    explore: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="18" r="2"/><circle cx="18" cy="6" r="2"/><circle cx="8" cy="7" r="2"/><path d="m9.6 8.2 5.8-1.4"/><path d="m7.2 16.3.8-7.4"/><path d="m7.6 17 9.1-9.6"/></svg>',
+    create: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v8"/><path d="M8 12h8"/></svg>',
+    calc: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="3" width="12" height="18" rx="2"/><path d="M9 7h6"/><path d="M9 11h.01M12 11h.01M15 11h.01M9 15h.01M12 15h.01M15 15h.01"/></svg>',
+    trend: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16l5-5 4 4 7-8"/><path d="M15 7h5v5"/></svg>',
+    guide: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4h9v16H8a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3Z"/><path d="M9 8h5"/><path d="M9 12h5"/><path d="M9 16h4"/></svg>',
+  };
+  return icons[name] || "";
 }
 
+function renderCommunityLeftRail(activeKey = "community") {
+  const topItems = [
+    ["home", "/community", "홈", activeKey === "community"],
+    ["popular", "/community?sort=hot", "인기", false],
+    ["notice", "/community?tag=공지", "공지", false],
+    ["explore", "/community", "둘러보기", false],
+    ["create", "#community-write", "커뮤니티 만들기", false],
+  ];
+  const quickItems = [
+    ["calc", "/", "로켓계산기"],
+    ["trend", "/trends", "검색 트렌드"],
+    ["guide", "/guides", "계산 기준"],
+  ];
+  const renderItem = ([icon, href, label, active = false]) => `<a class="sellerdit-lnav-item ${active ? "is-active" : ""}" href="${href}"><span class="sellerdit-lnav-ic">${sellerditIcon(icon)}</span><span>${escapeHtml(label)}</span></a>`;
+  return `<aside class="community-left-rail sellerdit-left-rail" aria-label="셀러딧 왼쪽 메뉴">
+    <nav class="sellerdit-lnav" aria-label="셀러딧 섹션">
+      ${topItems.map(renderItem).join("")}
+      <div class="sellerdit-lnav-sec">바로가기</div>
+      ${quickItems.map(renderItem).join("")}
+      <p class="sellerdit-lnav-login-note">로그인하면 내 커뮤니티가 여기에 표시됩니다</p>
+    </nav>
+  </aside>`;
+}
 function renderCommunityAboutCard() {
   return renderPopularCommunitiesPanel();
 }
@@ -766,29 +779,28 @@ function renderCommunityPostBridge(post, category) {
 }
 
 function renderCommunityRelatedPanel(posts) {
-  if (!posts.length) return "";
-  return `<section class="community-related-feed sellerdit-related-feed" aria-label="관련 게시글">
-    <div class="community-related-feed-head">
-      <strong>관련 게시글</strong>
-      <span>r/셀러딧</span>
-    </div>
+  const items = [
+    { type: "post", community: "r/셀러딧", time: "4일 전", title: "로켓그로스 입고 전 꼭 확인할 비용 7가지", stats: "👍 122 · 댓글 8", avatar: "r", color: "#2563eb", href: "/community/rocket-growth-cost-checklist-7" },
+    { type: "ad", community: "Meshyai", time: "홍보 광고", title: "셀러 상세페이지, AI로 10분 만에 완성", stats: "meshy.ai", avatar: "M", color: "#7c3aed", href: "http://meshy.ai" },
+    { type: "post", community: "r/셀러딧", time: "5일 전", title: "로켓그로스 판매가 정하기 전 체크리스트", stats: "👍 93 · 댓글 3", avatar: "r", color: "#2563eb", href: "/community/rocket-growth-price-checklist" },
+    { type: "post", community: "r/셀러딧", time: "6일 전", title: "정산금액과 순이익이 왜 다르게 나오나요?", stats: "👍 146 · 댓글 5", avatar: "r", color: "#2563eb", href: "/community/settlement-is-not-sales" },
+  ];
+  const thumb = (type, index) => type === "ad"
+    ? `<span class="rthumb is-ad"><svg viewBox="0 0 60 60" aria-hidden="true"><defs><linearGradient id="mesh-thumb-${index}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ede9fe"/><stop offset="1" stop-color="#7c3aed"/></linearGradient></defs><rect width="60" height="60" rx="8" fill="url(#mesh-thumb-${index})"/><circle cx="30" cy="24" r="10" fill="#fff" opacity=".84"/><rect x="15" y="39" width="30" height="8" rx="4" fill="#fff" opacity=".62"/></svg></span>`
+    : `<span class="rthumb"><svg viewBox="0 0 60 60" aria-hidden="true"><rect width="60" height="60" rx="8" fill="#f1f5f9"/><rect x="13" y="16" width="34" height="5" rx="2.5" fill="#94a3b8"/><rect x="13" y="29" width="26" height="5" rx="2.5" fill="#cbd5e1"/><rect x="13" y="41" width="30" height="5" rx="2.5" fill="#cbd5e1"/></svg></span>`;
+  return `<section class="community-related-feed sellerdit-related-feed" aria-label="관련 게시물">
+    <div class="community-related-feed-head"><strong>관련 게시물</strong></div>
     <div>
-      ${posts
-        .map(
-          (post) => `<a class="community-related-item" href="/community/${escapeHtml(post.slug)}">
-            <span>
-              <em><i class="sellerdit-mini-avatar">r</i> r/셀러딧 · ${escapeHtml(formatDate(post.createdAt) || "")} <b>⋯</b></em>
-              <strong>${escapeHtml(post.title)}</strong>
-              <small>👍 ${formatInteger(post.likesCount || 0)} · 댓글 ${formatInteger(post.commentsCount)}</small>
-            </span>
-            ${renderCommunityPostThumb(post)}
-          </a>`,
-        )
-        .join("")}
+      ${items.map((item, index) => `<a class="relitem community-related-item ${item.type === "ad" ? "is-ad" : ""}" href="${escapeHtml(item.href)}" ${item.type === "ad" ? 'rel="nofollow noopener" target="_blank"' : ""}>
+        <div class="relhead"><span class="ravatar" style="background:${escapeHtml(item.color)}">${escapeHtml(item.avatar)}</span><span class="rcomm">${escapeHtml(item.community)}</span><span class="dot">·</span> <span>${escapeHtml(item.time)}</span><span class="rdots">⋯</span></div>
+        <div class="relrow">
+          <div class="relcopy"><div class="rtitle">${escapeHtml(item.title)}</div><div class="rstats">${escapeHtml(item.stats)}</div></div>
+          ${item.type === "ad" ? `<span class="reljoin">가입</span>` : thumb(item.type, index)}
+        </div>
+      </a>`).join("")}
     </div>
   </section>`;
 }
-
 function renderCommunityPromotedPost() {
   return `<article class="community-vote-card sellerdit-feed-post sellerdit-promoted">
     <div class="sellerdit-post-meta">
@@ -800,13 +812,13 @@ function renderCommunityPromotedPost() {
     </div>
     <a class="community-vote-title" href="https://www.1688.com/" rel="nofollow noopener" target="_blank">1688 대량 사입 단가, 물류비까지 같이 비교해 보세요</a>
     <a class="sellerdit-post-excerpt" href="https://www.1688.com/" rel="nofollow noopener" target="_blank">상품 단가만 보지 말고 배송대행, 통관, 입고 비용까지 함께 확인하는 셀러용 체크 포인트입니다.</a>
+    <a class="sellerdit-promoted-cta" href="https://www.1688.com/" rel="nofollow noopener" target="_blank">더 알아보기</a>
     <div class="community-vote-actions sellerdit-actions">
       <span class="sellerdit-action">↗ 공유</span>
       <span class="sellerdit-action">⋯ 광고 정보</span>
     </div>
   </article>`;
 }
-
 function renderCommunityAdSlot(type = "square") {
   const isSquare = type === "square";
   return `<aside class="sellerdit-ad-slot ${isSquare ? "is-square" : "is-wide"}" aria-label="광고">
@@ -818,22 +830,21 @@ function renderCommunityAdSlot(type = "square") {
 
 function renderPopularCommunitiesPanel() {
   const communities = [
-    ["농", "r/농수산사입", "멤버 12,480명", "#2563eb"],
-    ["16", "r/1688사입", "멤버 9,742명", "#1d4ed8"],
-    ["로", "r/로켓그로스", "멤버 8,115명", "#3b82f6"],
-    ["물", "r/LCL물류", "멤버 5,233명", "#60a5fa"],
-    ["셀", "r/초보셀러", "멤버 4,901명", "#64748b"],
+    ["농", "r/농수산사입", "멤버 12,480명", "#16a34a"],
+    ["16", "r/1688사입", "멤버 9,742명", "#f97316"],
+    ["로", "r/로켓그로스", "멤버 8,115명", "#2563eb"],
+    ["물", "r/LCL물류", "멤버 5,233명", "#0ea5e9"],
+    ["셀", "r/초보셀러", "멤버 4,901명", "#8b5cf6"],
   ];
   return `<section class="community-about-card sellerdit-widget sellerdit-communities" aria-label="인기 커뮤니티">
-    <div class="sellerdit-widget-title"><h2>인기 커뮤니티</h2><a href="/community">더 보기</a></div>
+    <div class="sellerdit-widget-title"><h2>인기 커뮤니티</h2></div>
     ${communities
-      .map(([initial, name, meta, color], index) => `<a class="sellerdit-community-row" href="/community">
-        <b>${index + 1}</b>
+      .map(([initial, name, meta, color]) => `<a class="sellerdit-community-row" href="/community">
         <span class="sellerdit-community-avatar" style="background:${color}">${escapeHtml(initial)}</span>
         <span class="sellerdit-community-copy"><strong>${escapeHtml(name)}</strong><em>${escapeHtml(meta)}</em></span>
-        <i>가입</i>
       </a>`)
       .join("")}
+    <a class="sellerdit-communities-more" href="/community">더 보기</a>
   </section>`;
 }
 
@@ -864,7 +875,6 @@ function renderSellerditRightRail(mode = "list", relatedPosts = []) {
   if (mode === "detail") {
     return `<aside class="community-right-rail sellerdit-right-rail">
       ${renderCommunityRelatedPanel(relatedPosts)}
-      ${renderPopularCommunitiesPanel()}
       ${renderSellerditFooterLinks()}
     </aside>`;
   }
@@ -993,7 +1003,8 @@ function renderCommunityIndexPage(query = {}) {
     canonicalUrl,
     body: `<main class="community-shell">
       ${renderCommunityHeader("community")}
-      <section class="community-workspace community-reddit-layout sellerdit-no-left-rail">
+      <section class="community-workspace community-reddit-layout sellerdit-with-left-rail">
+        ${renderCommunityLeftRail("community")}
         <section class="community-feed-panel" aria-labelledby="community-title">
           <div class="community-feed-head">
             <div>
@@ -1009,7 +1020,7 @@ function renderCommunityIndexPage(query = {}) {
           ${renderCommunityPinned(notices)}
           ${renderCommunityFeed(posts, search ? "검색 결과가 없습니다. 다른 키워드로 찾아보세요." : "아직 등록된 글이 없습니다.")}
           ${renderCommunityPager("/community", page, totalPages, search, sort, tag)}
-          <div id="community-write" class="sellerdit-write-anchor">${renderCommunityWritePanel()}</div>
+          ${renderCommunityWritePanel()}
         </section>
         ${renderSellerditRightRail("list")}
       </section>
@@ -1032,7 +1043,8 @@ function renderCommunityAiAnswerPage(query = {}) {
     canonicalUrl,
     body: `<main class="community-shell">
       ${renderCommunityHeader("qna")}
-      <section class="community-workspace community-reddit-layout sellerdit-ai-layout sellerdit-no-side-rail">
+      <section class="community-workspace community-reddit-layout sellerdit-ai-layout sellerdit-with-left-rail sellerdit-no-right-rail">
+        ${renderCommunityLeftRail("qna")}
         <section class="community-feed-panel sellerdit-ai-main" aria-labelledby="sellerdit-ai-title">
           <div class="sellerdit-ai-hero">
             <div class="sellerdit-ai-orbit" aria-hidden="true">
@@ -1119,7 +1131,7 @@ function renderCommunityCategoryPage(categorySlug, query = {}) {
           ${renderCommunityPinned(notices)}
           ${renderCommunityFeed(posts, search ? "검색 결과가 없습니다. 다른 키워드로 찾아보세요." : "이 게시판에는 아직 글이 없습니다.")}
           ${renderCommunityPager(basePath, page, totalPages, search, sort, "")}
-          <div id="community-write" class="sellerdit-write-anchor">${renderCommunityWritePanel(category.slug)}</div>
+          ${renderCommunityWritePanel(category.slug)}
         </section>
         ${renderSellerditRightRail("list")}
       </section>
@@ -1143,8 +1155,8 @@ function renderCommunityPostPage(post) {
     canonicalUrl,
     body: `<main class="community-shell">
       ${renderCommunityHeader(post.category)}
-      <section class="community-workspace community-reddit-layout is-post-detail">
-        ${renderCommunityLeftRail(post.category)}
+      <section class="community-workspace community-reddit-layout sellerdit-with-left-rail is-post-detail">
+        ${renderCommunityLeftRail("community")}
         <section class="community-detail-main">
           <article class="community-post-article sellerdit-detail-post" data-community-post="${escapeHtml(post.slug)}">
             <div class="sellerdit-post-meta">
@@ -1175,29 +1187,20 @@ function renderCommunityPostPage(post) {
               <button type="button" class="sellerdit-action" data-community-reaction="bookmark" data-post-slug="${escapeHtml(post.slug)}">🔖 저장</button>
             </div>
           </article>
-          ${renderCommunityAdSlot("wide")}
+          ${renderCommunityDetailPromo()}
           <section class="community-comments sellerdit-comments" id="comments" aria-labelledby="community-comments-title">
-            <header class="community-comments-head sellerdit-comments-toolbar">
-              <div>
-                <strong id="community-comments-title">댓글 ${formatInteger(commentCount)}개</strong>
-                <span>대화에 참여해 셀러 비용 기준을 함께 확인하세요.</span>
-              </div>
-              <button class="sellerdit-comment-sort" type="button">정렬: 좋아요 비율 높은 순 ▾</button>
-              <label class="sellerdit-comment-search"><span>🔍</span><input type="search" placeholder="댓글 검색" aria-label="댓글 검색" /></label>
+            <header class="community-comments-head sellerdit-comments-titlebar">
+              <strong id="community-comments-title">댓글 ${formatInteger(commentCount)}개</strong>
             </header>
-            <form class="community-comment-form sellerdit-composer" data-community-comment-form data-post-slug="${escapeHtml(post.slug)}">
-              <div class="sellerdit-composer-head">
-                <span class="sellerdit-avatar is-muted">?</span>
-                <strong>댓글 작성</strong>
-                <a class="community-comment-login" href="/auth/kakao/start?returnTo=${encodeURIComponent(`/community/${post.slug}#comments`)}">카카오로 시작하기</a>
-              </div>
-              <textarea name="body" rows="3" maxlength="1500" placeholder="이 게시글에 대한 생각을 남겨보세요"></textarea>
+            <form class="community-comment-form sellerdit-composer sellerdit-pill-composer" data-community-comment-form data-post-slug="${escapeHtml(post.slug)}">
+              <textarea name="body" rows="1" maxlength="1500" placeholder="대화에 참여해보세요" aria-label="댓글 입력"></textarea>
               <div class="sellerdit-composer-actions">
+                <a class="community-comment-login" href="/auth/kakao/start?returnTo=${encodeURIComponent(`/community/${post.slug}#comments`)}">카카오로 시작하기</a>
                 <p data-community-message></p>
                 <button class="primary-small-button" type="submit">댓글 남기기</button>
               </div>
             </form>
-            ${renderCommunityCommentTopAd()}
+            <div class="comment-sort sellerdit-comment-sortbar"><span>정렬 기준: <b>좋아요 비율 높은 순 ▾</b></span><button class="csearch" type="button">🔍 댓글 검색</button></div>
             <div class="community-comment-list sellerdit-comment-tree">
               ${renderSellerditComments(displayComments, post)}
             </div>
@@ -1269,20 +1272,39 @@ function countRenderedComments(comments) {
   return comments.reduce((sum, comment) => sum + 1 + countRenderedComments(comment.replies || []), 0);
 }
 
+function renderCommunityDetailPromo() {
+  return `<aside class="sellerdit-detail-promo promo" aria-label="홍보 광고">
+    <div class="promo-head"><span class="pavatar sellerdit-avatar" style="background:#1f2937">E</span><span class="uname sellerdit-author">SellerERP</span><span class="dot sellerdit-dot">·</span><span class="ad-tag">홍보 광고</span><span class="dots sellerdit-more">⋯</span></div>
+    <div class="promo-body">재고·정산·마진을 한 화면에서 — 셀러 ERP 무료 체험</div>
+    <svg class="promo-img" viewBox="0 0 600 180" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="SellerERP 미리보기">
+      <rect width="600" height="180" rx="10" fill="#f8fafc"/>
+      <rect x="34" y="32" width="154" height="116" rx="10" fill="#ffffff" stroke="#e5e7eb"/>
+      <rect x="54" y="54" width="112" height="10" rx="5" fill="#2563eb" opacity=".82"/>
+      <rect x="54" y="80" width="88" height="8" rx="4" fill="#cbd5e1"/>
+      <rect x="54" y="102" width="108" height="8" rx="4" fill="#cbd5e1"/>
+      <rect x="224" y="32" width="154" height="116" rx="10" fill="#ffffff" stroke="#e5e7eb"/>
+      <rect x="246" y="58" width="54" height="54" rx="8" fill="#22c55e" opacity=".72"/>
+      <rect x="314" y="66" width="40" height="8" rx="4" fill="#cbd5e1"/>
+      <rect x="314" y="86" width="32" height="8" rx="4" fill="#cbd5e1"/>
+      <rect x="414" y="32" width="154" height="116" rx="10" fill="#ffffff" stroke="#e5e7eb"/>
+      <rect x="436" y="58" width="94" height="14" rx="7" fill="#f59e0b" opacity=".76"/>
+      <rect x="436" y="88" width="72" height="8" rx="4" fill="#cbd5e1"/>
+      <rect x="436" y="108" width="86" height="8" rx="4" fill="#cbd5e1"/>
+    </svg>
+    <div class="promo-foot"><span>sellererp.app</span><a class="go" href="/" rel="nofollow">더 알아보기</a></div>
+  </aside>`;
+}
+
 function renderCommunityCommentTopAd() {
-  return `<aside class="sellerdit-comment-ad is-top" aria-label="홍보 광고">
-    <div><span>홍보 광고</span><strong>마진 계산 전, 비용 누락부터 확인하세요</strong></div>
-    <a href="/">더 알아보기</a>
-  </aside>`;
+  return renderCommunityDetailPromo();
 }
-
 function renderCommunityCommentInlineAd() {
-  return `<aside class="sellerdit-comment-ad is-inline" aria-label="홍보 광고">
-    <div><span>광고</span><strong>셀러 비용 체크리스트</strong></div>
-    <a href="/guides">보기</a>
+  return `<aside class="ad-banner sellerdit-comment-ad is-inline" aria-label="댓글 중간 광고">
+    <span class="ico">🧮</span>
+    <div><div class="t">마진 계산이 헷갈린다면? 로켓그로스 계산기 <span class="ad-tag">· 광고</span></div><div class="s">사입·물류·수수료까지 한 화면에서 확인하세요.</div></div>
+    <a class="go" href="/">계산기 열기</a>
   </aside>`;
 }
-
 function renderSellerditComments(comments, post, depth = 0) {
   if (!comments.length) {
     return `<p class="community-empty">아직 댓글이 없습니다. 첫 질문을 남겨보세요.</p>`;
@@ -1296,21 +1318,22 @@ function renderSellerditComment(comment, post, depth = 0, index = 0) {
   const isAuthor = makeCommunityHandle(authorName) === makeCommunityHandle(post.authorName);
   const badge = comment.badge || (isAuthor ? "원글 작성자" : "");
   const handle = makeCommunityHandle(authorName);
-  return `<article class="sellerdit-comment ${depth > 0 ? "is-reply" : ""}" style="--comment-depth:${depth}" data-comment-id="${escapeHtml(comment.id || "")}">
-    <button class="sellerdit-thread-toggle" type="button" aria-label="댓글 접기"></button>
-    <span class="sellerdit-avatar" style="background:${escapeHtml(getCommunityAuthorColor(authorName))}">${escapeHtml(getCommunityAuthorInitial(authorName))}</span>
-    <div class="sellerdit-comment-body">
-      <header>
-        <a class="sellerdit-author" href="/u/${escapeHtml(handle)}">u/${escapeHtml(handle)}</a>
-        ${badge ? `<span class="sellerdit-comment-badge ${isAuthor || badge === "원글 작성자" ? "is-author" : ""}">${escapeHtml(badge)}</span>` : ""}
+  const body = `<article class="sellerdit-comment c ${depth > 0 ? "is-reply" : ""}" data-comment-id="${escapeHtml(comment.id || "")}">
+    <span class="sellerdit-avatar avatar" style="background:${escapeHtml(getCommunityAuthorColor(authorName))}">${escapeHtml(getCommunityAuthorInitial(authorName))}</span>
+    <div class="sellerdit-comment-body body">
+      <header class="chead">
+        <a class="sellerdit-author cauthor" href="/u/${escapeHtml(handle)}">u/${escapeHtml(handle)}</a>
+        ${badge ? `<span class="sellerdit-comment-badge cbadge ${isAuthor || badge === "원글 작성자" ? "is-author op" : "top"}">${escapeHtml(badge)}</span>` : ""}
+        <span class="sellerdit-dot dot">·</span>
         <time datetime="${escapeHtml(comment.createdAt)}">${escapeHtml(formatDate(comment.createdAt) || "방금 전")}</time>
       </header>
-      <p>${escapeHtml(comment.body)}</p>
-      <footer>
-        <button type="button" class="sellerdit-comment-action">추천 ${formatInteger(comment.likesCount || 0)}</button>
-        <button type="button" class="sellerdit-comment-action" data-comment-reply-button data-parent-id="${escapeHtml(comment.id || "")}">답글</button>
-        <button type="button" class="sellerdit-comment-action">공유</button>
-        <button type="button" class="sellerdit-comment-action">⋯</button>
+      <p class="ctext">${escapeHtml(comment.body)}</p>
+      <footer class="cactions">
+        <button type="button" class="sellerdit-comment-action cv">👍 ${formatInteger(comment.likesCount || 0)}</button>
+        <button type="button" class="sellerdit-comment-action cbtn" data-comment-reply-button data-parent-id="${escapeHtml(comment.id || "")}">답글 달기</button>
+        <button type="button" class="sellerdit-comment-action cbtn">어워드</button>
+        <button type="button" class="sellerdit-comment-action cbtn">공유</button>
+        <button type="button" class="sellerdit-comment-action cbtn">⋯</button>
       </footer>
       <form class="community-comment-form sellerdit-reply-form" data-community-comment-form data-post-slug="${escapeHtml(post.slug)}" data-parent-id="${escapeHtml(comment.id || "")}" hidden>
         <textarea name="body" rows="2" maxlength="1500" placeholder="u/${escapeHtml(handle)}님에게 답글 남기기"></textarea>
@@ -1320,11 +1343,11 @@ function renderSellerditComment(comment, post, depth = 0, index = 0) {
           <button class="primary-small-button" type="submit">답글 등록</button>
         </div>
       </form>
-      ${replies.length ? `<div class="sellerdit-replies">${renderSellerditComments(replies, post, depth + 1)}</div>` : ""}
+      ${replies.length ? `<div class="sellerdit-replies reply">${renderSellerditComments(replies, post, depth + 1)}<button class="more-replies" type="button"><span class="plus">+</span> 답글 ${formatInteger(Math.max(1, replies.length * 8 + 9))}개 더 보기</button></div>` : ""}
     </div>
   </article>`;
-}
-function renderSellerditProfilePage(handle) {
+  return body;
+}function renderSellerditProfilePage(handle) {
   const normalizedHandle = makeCommunityHandle(handle || "seller");
   const posts = getCommunityPosts({ limit: 100, sort: "new" }).filter((post) => makeCommunityHandle(post.authorName) === normalizedHandle);
   const displayName = posts[0]?.authorName || normalizedHandle;
@@ -1340,7 +1363,7 @@ function renderSellerditProfilePage(handle) {
     canonicalUrl,
     body: `<main class="community-shell">
       ${renderCommunityHeader("community")}
-      <section class="community-workspace community-reddit-layout sellerdit-profile-layout">
+      <section class="community-workspace community-reddit-layout sellerdit-profile-layout sellerdit-with-left-rail">
         ${renderCommunityLeftRail("community")}
         <section class="community-feed-panel sellerdit-profile-main" aria-labelledby="sellerdit-profile-title">
           <header class="sellerdit-profile-header" style="${escapeHtml(getCommunityAuthorStyle(displayName))}">
@@ -1537,47 +1560,53 @@ function renderCommunityWritePanel(defaultCategory = "final-margin") {
   const stageOptions = COMMUNITY_STAGE_SLUGS.map((slug) => COMMUNITY_CATEGORIES[slug]);
   const boardOptions = COMMUNITY_BOARD_SLUGS.map((slug) => COMMUNITY_CATEGORIES[slug]);
 
-  return `<details class="community-write-panel" aria-labelledby="community-write-title">
-    <summary>
-      <span>글쓰기</span>
-      <strong id="community-write-title">질문 남기기</strong>
-    </summary>
-    <form data-community-post-form>
-      <label>
-        <span>분류</span>
-        <select name="category">
-          <optgroup label="로켓그로스 5단계">
-            ${stageOptions
-              .map((category) => `<option value="${category.slug}" ${category.slug === defaultCategory ? "selected" : ""}>${escapeHtml(category.label)}</option>`)
-              .join("")}
-          </optgroup>
-          <optgroup label="커뮤니티 게시판">
-            ${boardOptions
-              .map((category) => `<option value="${category.slug}" ${category.slug === defaultCategory ? "selected" : ""}>${escapeHtml(category.label)}</option>`)
-              .join("")}
-          </optgroup>
-        </select>
-      </label>
-      <label>
-        <span>제목</span>
-        <input name="title" maxlength="90" placeholder="예: LCL 견적이 이 정도면 괜찮나요?" />
-      </label>
-      <label>
-        <span>요약</span>
-        <input name="summary" maxlength="180" placeholder="글 목록에 보일 한 줄 요약" />
-      </label>
-      <label>
-        <span>본문</span>
-        <textarea name="body" rows="5" maxlength="5000" placeholder="상황, 숫자, 궁금한 점을 함께 적어주세요."></textarea>
-      </label>
-      <label>
-        <span>태그</span>
-        <input name="tags" placeholder="로켓그로스, 중국사입, LCL" />
-      </label>
-      <button class="primary-small-button" type="submit">글 등록</button>
-      <p data-community-message></p>
-    </form>
-  </details>`;
+  return `<div id="community-write" class="community-write-modal" data-community-write-modal hidden>
+    <div class="community-write-backdrop" data-community-write-close></div>
+    <section class="community-write-panel" role="dialog" aria-modal="true" aria-labelledby="community-write-title">
+      <header class="community-write-modal-head">
+        <div><span>글쓰기</span><strong id="community-write-title">질문 남기기</strong></div>
+        <button type="button" aria-label="닫기" data-community-write-close>×</button>
+      </header>
+      <form data-community-post-form>
+        <label>
+          <span>분류</span>
+          <select name="category">
+            <optgroup label="로켓그로스 5단계">
+              ${stageOptions
+                .map((category) => `<option value="${category.slug}" ${category.slug === defaultCategory ? "selected" : ""}>${escapeHtml(category.label)}</option>`)
+                .join("")}
+            </optgroup>
+            <optgroup label="커뮤니티 게시판">
+              ${boardOptions
+                .map((category) => `<option value="${category.slug}" ${category.slug === defaultCategory ? "selected" : ""}>${escapeHtml(category.label)}</option>`)
+                .join("")}
+            </optgroup>
+          </select>
+        </label>
+        <label>
+          <span>제목</span>
+          <input name="title" maxlength="90" placeholder="예: LCL 견적이 이 정도면 괜찮나요?" required />
+        </label>
+        <label>
+          <span>요약</span>
+          <input name="summary" maxlength="180" placeholder="글 목록에 보일 한 줄 요약" />
+        </label>
+        <label>
+          <span>본문</span>
+          <textarea name="body" rows="5" maxlength="5000" placeholder="상황, 숫자, 궁금한 점을 함께 적어주세요." required></textarea>
+        </label>
+        <label>
+          <span>태그</span>
+          <input name="tags" placeholder="로켓그로스, 중국사입, LCL" />
+        </label>
+        <div class="community-write-submit-row">
+          <p data-community-message></p>
+          <button type="button" data-community-write-close>취소</button>
+          <button class="primary-small-button" type="submit">글 등록</button>
+        </div>
+      </form>
+    </section>
+  </div>`;
 }
 
 function renderCommunityTagPanel() {
@@ -1602,6 +1631,23 @@ function renderTrendMiniPanel() {
   </section>`;
 }
 
+function getTrendPageBaseLabel(trends) {
+  const dates = (trends.providers || [])
+    .map((provider) => (provider.updatedAt ? new Date(provider.updatedAt) : null))
+    .filter((date) => date && !Number.isNaN(date.getTime()));
+  if (!dates.length) return "기준시간 대기 · 10분 캐시로 갱신합니다.";
+  const latest = new Date(Math.max(...dates.map((date) => date.getTime())));
+  return `${formatTrendBaseTime(latest.toISOString())} · 10분 캐시로 갱신합니다.`;
+}
+
+function buildNaverFallbackTrendItems() {
+  return TREND_KEYWORD_GROUPS.map((group, index) => ({
+    title: group.title,
+    traffic: `관심도 ${100 - index * 8}`,
+    url: buildTrendSearchUrl("naver", group.title),
+  })).slice(0, 10);
+}
+
 function renderTrendPage(trends) {
   const title = "셀러 검색어 순위 | 로켓그로스 계산기";
   const description =
@@ -1620,7 +1666,7 @@ function renderTrendPage(trends) {
             <span class="community-page-label">검색어 순위</span>
             <h1 id="trend-page-title">셀러 검색어 흐름</h1>
           </div>
-          <p>10분 캐시로 갱신합니다.</p>
+          <p data-trend-base-summary>${escapeHtml(getTrendPageBaseLabel(trends))}</p>
         </div>
         <div class="trend-provider-grid" data-trend-grid>
           ${trends.providers.map(renderTrendProviderCard).join("")}
@@ -1637,12 +1683,10 @@ function renderTrendPage(trends) {
 }
 
 function renderTrendProviderCard(provider) {
-  const statusLabel = formatTrendBaseTime(provider.updatedAt);
   const items = provider.items.slice(0, 10);
   return `<article class="trend-provider-card" data-trend-provider="${escapeHtml(provider.key)}">
     <header>
       <div>
-        <span class="trend-base-time"><i aria-hidden="true"></i>${escapeHtml(statusLabel)}</span>
         <h2>${escapeHtml(provider.label)}</h2>
       </div>
     </header>
@@ -1683,6 +1727,14 @@ function renderTrendScript() {
         if (Number.isNaN(date.getTime())) return "기준시간 대기";
         return "기준시간 " + date.toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit", hour12: false });
       }
+      function trendSummary(data) {
+        var times = (data.providers || []).map(function (provider) {
+          var date = provider.updatedAt ? new Date(provider.updatedAt) : null;
+          return date && !Number.isNaN(date.getTime()) ? date.getTime() : null;
+        }).filter(function (time) { return time !== null; });
+        if (!times.length) return "기준시간 대기 · 10분 캐시로 갱신합니다.";
+        return trendBaseTime(new Date(Math.max.apply(Math, times)).toISOString()) + " · 10분 캐시로 갱신합니다.";
+      }
       function trendSearchUrl(providerKey, title) {
         var query = encodeURIComponent(title || "");
         if (!query) return "";
@@ -1691,10 +1743,9 @@ function renderTrendScript() {
         return "https://www.google.com/search?q=" + query;
       }
       function renderProvider(provider) {
-        var status = trendBaseTime(provider.updatedAt);
         var list = (provider.items || []).slice(0, 10);
         return '<article class="trend-provider-card" data-trend-provider="' + escapeText(provider.key) + '">' +
-          '<header><div><span class="trend-base-time"><i aria-hidden="true"></i>' + escapeText(status) + '</span><h2>' + escapeText(provider.label) + '</h2></div></header>' +
+          '<header><div><h2>' + escapeText(provider.label) + '</h2></div></header>' +
           (list.length
             ? '<ol class="trend-keyword-list">' + list.map(function (item, index) {
                 var rank = index + 1;
@@ -1714,6 +1765,8 @@ function renderTrendScript() {
           var data = await response.json();
           grid.classList.add("is-refreshing");
           grid.innerHTML = (data.providers || []).map(renderProvider).join("");
+          var summary = document.querySelector("[data-trend-base-summary]");
+          if (summary) summary.textContent = trendSummary(data);
           window.setTimeout(function () { grid.classList.remove("is-refreshing"); }, 700);
           if (typeof gtag === "function") gtag("event", "trend_refresh", { providers: (data.providers || []).length });
         } catch (error) {
@@ -1816,6 +1869,32 @@ function renderCommunityScript(postSlug = "") {
       document.querySelector("[data-auth-logout]")?.addEventListener("click", async function () {
         await fetch("/auth/logout", { method: "POST", credentials: "same-origin" });
         window.location.href = window.location.pathname + "?logout=success";
+      });
+
+      var writeModal = document.querySelector("[data-community-write-modal]");
+      function openWriteModal() {
+        if (!writeModal) return;
+        writeModal.hidden = false;
+        document.body.classList.add("community-write-open");
+        var firstInput = writeModal.querySelector("input[name='title'], textarea, select");
+        firstInput && firstInput.focus();
+      }
+      function closeWriteModal() {
+        if (!writeModal) return;
+        writeModal.hidden = true;
+        document.body.classList.remove("community-write-open");
+      }
+      document.querySelectorAll("a[href='#community-write']").forEach(function (link) {
+        link.addEventListener("click", function (event) {
+          event.preventDefault();
+          openWriteModal();
+        });
+      });
+      document.querySelectorAll("[data-community-write-close]").forEach(function (button) {
+        button.addEventListener("click", closeWriteModal);
+      });
+      document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape") closeWriteModal();
       });
 
       document.querySelectorAll("[data-comment-reply-button]").forEach(function (button) {
@@ -2106,6 +2185,7 @@ function renderDocumentShell({ title, description, canonicalUrl, body, jsonLd, s
     <meta name="twitter:title" content="${escapeHtml(title)}" />
     <meta name="twitter:description" content="${escapeHtml(description)}" />
     <meta name="twitter:image" content="${PUBLIC_SITE_URL}/assets/site-flow.svg" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
     <link rel="stylesheet" href="/styles.css" />
     <meta name="naver-site-verification" content="d2091fad160915c822215f48ce925c90637cf535" />
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-EGL6JRLHH0"></script>
@@ -2537,11 +2617,11 @@ async function fetchNaverDatalabTrends() {
     return {
       key: "naver",
       label: "네이버",
-      status: "unconfigured",
-      updatedAt: "",
+      status: "fallback",
+      updatedAt: new Date().toISOString(),
       sourceUrl: "https://datalab.naver.com/keyword/trendSearch.naver",
-      items: [],
-      message: "네이버 데이터랩 키를 연결하면 주제어 관심도를 표시합니다.",
+      items: buildNaverFallbackTrendItems(),
+      message: "네이버 데이터랩 키 연결 전 기본 주제어입니다.",
     };
   }
 
@@ -2598,11 +2678,11 @@ async function fetchNaverDatalabTrends() {
     return {
       key: "naver",
       label: "네이버",
-      status: "error",
+      status: "fallback",
       updatedAt: new Date().toISOString(),
       sourceUrl: "https://datalab.naver.com/keyword/trendSearch.naver",
-      items: [],
-      message: "네이버 데이터랩 연결을 확인해 주세요.",
+      items: buildNaverFallbackTrendItems(),
+      message: "네이버 데이터랩 연결 전 기본 주제어입니다.",
     };
   }
 }
