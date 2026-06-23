@@ -1200,7 +1200,7 @@ function renderCommunityPostPage(post) {
                 <button class="primary-small-button" type="submit">댓글 남기기</button>
               </div>
             </form>
-            <div class="comment-sort sellerdit-comment-sortbar"><span>정렬 기준: <b>좋아요 비율 높은 순 ▾</b></span><button class="csearch" type="button">🔍 댓글 검색</button></div>
+            <div class="comment-sort sellerdit-comment-sortbar"><span>정렬 기준: <b>좋아요 비율 높은 순 ▾</b></span></div>
             <div class="community-comment-list sellerdit-comment-tree">
               ${renderSellerditComments(displayComments, post)}
             </div>
@@ -1331,8 +1331,6 @@ function renderSellerditComment(comment, post, depth = 0, index = 0) {
       <footer class="cactions">
         <button type="button" class="sellerdit-comment-action cv">👍 ${formatInteger(comment.likesCount || 0)}</button>
         <button type="button" class="sellerdit-comment-action cbtn" data-comment-reply-button data-parent-id="${escapeHtml(comment.id || "")}">답글 달기</button>
-        <button type="button" class="sellerdit-comment-action cbtn">어워드</button>
-        <button type="button" class="sellerdit-comment-action cbtn">공유</button>
         <button type="button" class="sellerdit-comment-action cbtn">⋯</button>
       </footer>
       <form class="community-comment-form sellerdit-reply-form" data-community-comment-form data-post-slug="${escapeHtml(post.slug)}" data-parent-id="${escapeHtml(comment.id || "")}" hidden>
@@ -1343,7 +1341,7 @@ function renderSellerditComment(comment, post, depth = 0, index = 0) {
           <button class="primary-small-button" type="submit">답글 등록</button>
         </div>
       </form>
-      ${replies.length ? `<div class="sellerdit-replies reply">${renderSellerditComments(replies, post, depth + 1)}<button class="more-replies" type="button"><span class="plus">+</span> 답글 ${formatInteger(Math.max(1, replies.length * 8 + 9))}개 더 보기</button></div>` : ""}
+      ${replies.length ? `<div class="sellerdit-replies reply">${renderSellerditComments(replies, post, depth + 1)}<button class="more-replies" type="button" aria-label="답글 더 보기"><span class="plus" aria-hidden="true"></span><span>답글 ${formatInteger(Math.max(1, replies.length * 8 + 9))}개 더 보기</span></button></div>` : ""}
     </div>
   </article>`;
   return body;
