@@ -1336,25 +1336,21 @@ function renderTrendPage(trends) {
     canonicalUrl,
     body: `<main class="community-shell">
       ${renderCommunityHeader("trends")}
-      <section class="community-workspace community-reddit-layout sellerdit-trend-layout" aria-labelledby="trend-page-title">
-        ${renderCommunityLeftRail()}
-        <section class="community-feed-panel trend-page sellerdit-trend-page">
-          <div class="trend-page-head">
-            <div>
-              <span class="community-page-label">검색 트렌드</span>
-              <h1 id="trend-page-title">셀러가 지금 확인하는 검색어</h1>
-            </div>
-            <p>Google · Naver · Daum 흐름을 셀러 주제로 묶어 봅니다.</p>
+      <section class="trend-page" aria-labelledby="trend-page-title">
+        <div class="trend-page-head">
+          <div>
+            <span class="community-page-label">검색어 순위</span>
+            <h1 id="trend-page-title">셀러 검색어 흐름</h1>
           </div>
-          <div class="sellerdit-trend-board" data-trend-grid>
-            ${trends.providers.map(renderTrendProviderCard).join("")}
-          </div>
-          <section class="trend-note-panel">
-            <strong>검색어 확인 기준</strong>
-            <p>플랫폼별 공개 데이터를 기준으로 표시합니다. 실시간 공식 순위와 다를 수 있으므로 상품 기획과 콘텐츠 아이디어 검토용으로 사용하세요.</p>
-          </section>
+          <p>10분 캐시로 갱신합니다.</p>
+        </div>
+        <div class="trend-provider-grid" data-trend-grid>
+          ${trends.providers.map(renderTrendProviderCard).join("")}
+        </div>
+        <section class="trend-note-panel">
+          <strong>운영 기준</strong>
+          <p>구글은 트렌딩 RSS, 네이버는 데이터랩 관심도, Daum은 검색 결과량 기준으로 표시합니다. 플랫폼 정책에 따라 표시 방식은 달라질 수 있습니다.</p>
         </section>
-        ${renderSellerditRightRail("list")}
       </section>
     </main>`,
     jsonLd: buildTrendPageJsonLd(title, description, canonicalUrl, trends),

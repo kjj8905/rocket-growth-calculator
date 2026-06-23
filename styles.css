@@ -10610,7 +10610,7 @@ em {
 }
 
 .sellerdit-ai-hero,
-.trend-page-head {
+.sellerdit-trend-page .trend-page-head {
   display: flex;
   align-items: center;
   gap: 18px;
@@ -10646,14 +10646,14 @@ em {
 }
 
 .sellerdit-ai-hero h1,
-.trend-page-head h1 {
+.sellerdit-trend-page .trend-page-head h1 {
   margin: 0;
   font-size: 24px;
   letter-spacing: 0;
 }
 
 .sellerdit-ai-hero p,
-.trend-page-head p {
+.sellerdit-trend-page .trend-page-head p {
   margin: 6px 0 0;
   color: #526071;
   font-size: 14px;
@@ -10734,7 +10734,7 @@ em {
   min-height: 42px;
 }
 
-.trend-note-panel {
+.sellerdit-trend-page .trend-note-panel {
   border: 1px solid #dbeafe;
   border-radius: 12px;
   background: #f8fbff;
