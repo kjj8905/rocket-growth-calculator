@@ -9877,3 +9877,935 @@ em {
     font-size: 36px;
   }
 }
+
+/* Sellerdit package pass: Reddit-like community shell */
+.sellerdit-topbar {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 40;
+  min-height: 56px;
+  padding: 0;
+  border-bottom: 1px solid #e5e7eb;
+  border-radius: 0;
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(10px);
+}
+
+.sellerdit-topbar-inner {
+  width: min(1280px, calc(100% - 32px));
+  min-height: 56px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.sellerdit-topbar .community-brand {
+  flex: 0 0 auto;
+  color: #111827;
+  font-size: 16px;
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.sellerdit-topbar .community-brand span {
+  width: auto;
+  height: auto;
+  background: transparent;
+  color: #2563eb;
+  font-size: 16px;
+}
+
+.sellerdit-topbar .community-global-search {
+  flex: 1 1 420px;
+  max-width: 560px;
+}
+
+.sellerdit-topbar .community-global-search input {
+  height: 36px;
+  border: 1px solid #e5e7eb;
+  background: #f3f6f9;
+  color: #111827;
+  text-align: left;
+  padding: 0 18px;
+  font-size: 14px;
+}
+
+.sellerdit-topbar nav {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex: 0 0 auto;
+}
+
+.sellerdit-topbar nav a {
+  min-height: 36px;
+  padding: 0 10px;
+  border-radius: 999px;
+  color: #374151;
+  font-size: 13px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.sellerdit-topbar nav a.is-active {
+  background: #eaf3ff;
+  color: #2563eb;
+}
+
+.sellerdit-kakao {
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 14px;
+  border-radius: 999px;
+  background: #fee500;
+  color: #181600;
+  font-size: 13px;
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.sellerdit-header-dots {
+  color: #4b5563;
+  font-weight: 900;
+}
+
+.community-shell {
+  width: min(1280px, calc(100% - 32px));
+  padding-top: 72px;
+}
+
+.community-shell .community-reddit-layout {
+  grid-template-columns: 240px minmax(0, 1fr) 320px;
+  gap: 18px;
+}
+
+.community-shell .community-feed-panel,
+.community-shell .community-detail-main {
+  gap: 10px;
+}
+
+.community-shell .community-reddit-layout .community-feed-head {
+  padding: 14px 16px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+}
+
+.community-shell .community-reddit-layout .community-feed-head h1 {
+  font-size: 22px;
+  line-height: 1.25;
+}
+
+.community-page-label {
+  color: #2563eb;
+}
+
+.sellerdit-left-rail,
+.sellerdit-right-rail {
+  position: sticky;
+  top: 72px;
+  align-self: start;
+}
+
+.sellerdit-vertical-ad {
+  min-height: calc(100vh - 96px);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 18px;
+  border: 1px solid #dbeafe;
+  border-radius: 14px;
+  background:
+    radial-gradient(circle at 50% 12%, rgba(37, 99, 235, 0.12), transparent 32%),
+    linear-gradient(180deg, #f8fbff, #eef6ff);
+  color: #111827;
+  text-decoration: none;
+}
+
+.sellerdit-vertical-ad::before {
+  content: "셀러 입고 체크";
+  align-self: flex-start;
+  padding: 7px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.78);
+  color: #2563eb;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.sellerdit-vertical-ad::after {
+  content: "원가 \A 물류 \A 수수료";
+  white-space: pre;
+  margin-top: auto;
+  color: rgba(37, 99, 235, 0.22);
+  font-size: 38px;
+  font-weight: 950;
+  line-height: 1.05;
+}
+
+.sellerdit-vertical-ad span {
+  color: #2563eb;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.sellerdit-vertical-ad strong {
+  font-size: 20px;
+  line-height: 1.3;
+}
+
+.sellerdit-vertical-ad em {
+  color: #526071;
+  font-size: 13px;
+  font-style: normal;
+  line-height: 1.5;
+}
+
+.sellerdit-vertical-ad b {
+  width: fit-content;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: #2563eb;
+  color: #ffffff;
+  font-size: 12px;
+}
+
+.sellerdit-sortbar {
+  padding: 8px 10px;
+  border: 0;
+  border-bottom: 1px solid #edf0f4;
+  border-radius: 0;
+  background: #ffffff;
+}
+
+.sellerdit-sortbar .community-sort {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.sellerdit-sort-chip {
+  min-height: 32px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 12px;
+  border: 1px solid #d9dee7;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #111827;
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.sellerdit-sort-links {
+  margin-left: auto;
+  display: flex;
+  gap: 4px;
+}
+
+.sellerdit-sort-links a {
+  min-height: 30px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 9px;
+  border-radius: 999px;
+  color: #667085;
+  font-size: 12px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.sellerdit-sort-links a.is-active {
+  background: #eaf3ff;
+  color: #2563eb;
+}
+
+.sellerdit-feedpanel {
+  gap: 0;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.sellerdit-notice {
+  margin: 0 0 8px;
+  padding: 8px;
+  border: 1px solid #dbeafe;
+  background: #f7fbff;
+}
+
+.sellerdit-feed-post {
+  border: 0;
+  border-radius: 0;
+  background: #ffffff;
+  box-shadow: none;
+  padding: 14px 16px 12px;
+  border-bottom: 1px solid #edf0f4;
+}
+
+.community-shell .sellerdit-feedpanel .sellerdit-feed-post,
+.community-shell .sellerdit-qna-list .sellerdit-feed-post {
+  border: 0;
+  border-bottom: 1px solid #edf0f4;
+  border-radius: 0;
+  background: #ffffff;
+  box-shadow: none;
+}
+
+.community-shell .sellerdit-qna-list .sellerdit-feed-post:first-of-type {
+  border-top: 1px solid #edf0f4;
+}
+
+.sellerdit-feed-post:hover {
+  background: #f8fafc;
+}
+
+.sellerdit-post-meta {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  color: #667085;
+  font-size: 12.5px;
+  font-weight: 750;
+}
+
+.sellerdit-avatar {
+  width: 28px;
+  height: 28px;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #2563eb;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.sellerdit-avatar.is-ad {
+  background: #f97316;
+}
+
+.sellerdit-author {
+  color: #111827;
+  font-weight: 900;
+}
+
+.sellerdit-dot {
+  color: #9aa3b2;
+}
+
+.sellerdit-follow {
+  margin-left: auto;
+  min-height: 28px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 999px;
+  background: #2563eb;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.community-shell .community-vote-title {
+  display: block;
+  margin: 8px 0 4px;
+  color: #111827;
+  font-size: 19px;
+  font-weight: 850;
+  line-height: 1.32;
+  text-decoration: none;
+}
+
+.sellerdit-post-excerpt {
+  display: -webkit-box;
+  overflow: hidden;
+  margin-bottom: 10px;
+  color: #4b5563;
+  font-size: 14px;
+  line-height: 1.55;
+  text-decoration: none;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+}
+
+.sellerdit-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 8px;
+}
+
+.sellerdit-action {
+  min-height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 999px;
+  background: #eef2f5;
+  color: #111827;
+  font-size: 13px;
+  font-weight: 850;
+  text-decoration: none;
+}
+
+.sellerdit-action:hover {
+  background: #e2e8f0;
+}
+
+.sellerdit-promoted {
+  background: #fbfdff;
+}
+
+.ad-tag {
+  color: #f97316;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.sellerdit-more {
+  margin-left: auto;
+  color: #667085;
+  font-weight: 900;
+}
+
+.sellerdit-widget,
+.community-shell .community-about-card,
+.sellerdit-ad-slot {
+  display: grid;
+  gap: 10px;
+  padding: 4px 0 14px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.sellerdit-widget h2,
+.community-shell .community-about-card h2 {
+  margin: 0 0 2px;
+  color: #111827;
+  font-size: 15px;
+  font-weight: 900;
+}
+
+.sellerdit-communities a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #111827;
+  text-decoration: none;
+}
+
+.community-shell .sellerdit-communities > a {
+  min-height: 44px;
+  border: 0;
+  background: transparent;
+  color: #111827;
+}
+
+.sellerdit-community-avatar,
+.sellerdit-mini-avatar {
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: #ffffff;
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 900;
+}
+
+.sellerdit-communities strong,
+.sellerdit-communities em {
+  display: block;
+}
+
+.sellerdit-communities em {
+  color: #667085;
+  font-size: 12px;
+  font-style: normal;
+}
+
+.sellerdit-more-link {
+  color: #2563eb !important;
+  font-weight: 900;
+}
+
+.sellerdit-popular-content a,
+.sellerdit-killer-content a {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  gap: 8px;
+  padding: 8px 0;
+  border-top: 1px solid #edf0f4;
+  color: #111827;
+  text-decoration: none;
+}
+
+.sellerdit-popular-content b {
+  color: #2563eb;
+}
+
+.sellerdit-popular-content span,
+.sellerdit-killer-content a {
+  font-size: 13px;
+  font-weight: 850;
+  line-height: 1.35;
+}
+
+.sellerdit-popular-content em {
+  grid-column: 2;
+  color: #667085;
+  font-size: 12px;
+  font-style: normal;
+}
+
+.sellerdit-killer-content a {
+  display: block;
+}
+
+.sellerdit-ad-slot {
+  padding: 14px;
+  border: 1px dashed #bfdbfe;
+  border-radius: 12px;
+  background: #f8fbff;
+}
+
+.sellerdit-ad-slot span {
+  color: #2563eb;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.sellerdit-ad-slot strong {
+  color: #111827;
+  font-size: 15px;
+}
+
+.sellerdit-ad-slot p {
+  margin: 0;
+  color: #667085;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.sellerdit-footer-links {
+  color: #667085;
+  font-size: 12px;
+  line-height: 1.8;
+}
+
+.sellerdit-footer-links a {
+  color: #667085;
+  text-decoration: none;
+}
+
+.sellerdit-detail-post {
+  padding: 18px 0 16px;
+  border: 0;
+  border-bottom: 1px solid #e5e7eb;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.sellerdit-detail-post > h1 {
+  margin: 10px 0 12px;
+  color: #111827;
+  font-size: 29px;
+  line-height: 1.25;
+  letter-spacing: 0;
+}
+
+.community-shell .community-post-summary {
+  max-width: 74ch;
+  color: #374151;
+  font-size: 15px;
+}
+
+.sellerdit-detail-post .guide-section-list {
+  gap: 14px;
+}
+
+.sellerdit-detail-post .guide-section-list section {
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.sellerdit-detail-post .guide-section-list h2 {
+  margin: 0 0 6px;
+  color: #111827;
+  font-size: 16px;
+}
+
+.sellerdit-detail-post .guide-section-list p {
+  color: #374151;
+  font-size: 15px;
+  line-height: 1.72;
+}
+
+.sellerdit-comments {
+  padding: 0 0 20px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.sellerdit-comments .community-comments-head {
+  padding: 12px 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.sellerdit-comments .community-comment-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 8px;
+  align-items: center;
+  padding: 12px 0;
+}
+
+.sellerdit-comments textarea {
+  min-height: 42px;
+  resize: vertical;
+  border-radius: 999px;
+  padding: 11px 16px;
+}
+
+.sellerdit-comments .community-comment-list {
+  display: grid;
+  gap: 0;
+  padding: 0;
+}
+
+.sellerdit-comment {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr);
+  gap: 10px;
+  padding: 14px 0;
+  border-bottom: 1px solid #edf0f4;
+}
+
+.sellerdit-comment header,
+.sellerdit-comment footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  color: #667085;
+  font-size: 12px;
+}
+
+.sellerdit-comment header strong {
+  color: #111827;
+}
+
+.sellerdit-comment p {
+  margin: 7px 0 8px;
+  color: #374151;
+  font-size: 14.5px;
+  line-height: 1.65;
+}
+
+.sellerdit-comment footer button {
+  border: 0;
+  background: transparent;
+  color: #667085;
+  font-weight: 800;
+}
+
+.sellerdit-comment-badge {
+  padding: 3px 7px;
+  border-radius: 999px;
+  background: #eef2f5;
+  color: #475569;
+  font-weight: 900;
+}
+
+.sellerdit-related-feed {
+  border: 0;
+  border-bottom: 1px solid #e5e7eb;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.community-shell .sellerdit-related-feed {
+  padding: 0 0 12px;
+  border: 0;
+  border-bottom: 1px solid #e5e7eb;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.sellerdit-related-feed .community-related-item {
+  grid-template-columns: minmax(0, 1fr) 64px;
+  padding: 10px 0;
+}
+
+.sellerdit-related-feed strong {
+  color: #111827;
+  font-size: 13px;
+}
+
+.sellerdit-related-feed small {
+  color: #667085;
+  font-size: 12px;
+}
+
+.sellerdit-related-feed .community-post-thumb {
+  width: 64px;
+  height: 54px;
+  margin: 0;
+  border-radius: 8px;
+}
+
+.sellerdit-related-feed .community-post-thumb span {
+  display: none;
+}
+
+.sellerdit-related-feed .community-post-thumb strong {
+  display: none;
+}
+
+.sellerdit-ai-main,
+.sellerdit-trend-page {
+  padding: 0;
+}
+
+.sellerdit-write-anchor {
+  margin-top: 10px;
+}
+
+.sellerdit-write-anchor .community-write-panel {
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: none;
+}
+
+.sellerdit-write-anchor .community-write-panel > summary {
+  min-height: 46px;
+}
+
+.sellerdit-ai-hero,
+.trend-page-head {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 18px 0 16px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.sellerdit-ai-orbit {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  flex: 0 0 auto;
+  border-radius: 24px;
+  background: #eaf3ff;
+}
+
+.sellerdit-ai-orbit span {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #2563eb;
+  animation: sellerditPulse 1.8s ease-out infinite;
+}
+
+.sellerdit-ai-orbit span:nth-child(1) { left: 14px; top: 16px; }
+.sellerdit-ai-orbit span:nth-child(2) { right: 14px; top: 24px; animation-delay: .2s; }
+.sellerdit-ai-orbit span:nth-child(3) { left: 26px; bottom: 14px; animation-delay: .4s; }
+
+@keyframes sellerditPulse {
+  0%, 100% { transform: scale(1); opacity: .9; }
+  50% { transform: scale(1.18); opacity: .58; }
+}
+
+.sellerdit-ai-hero h1,
+.trend-page-head h1 {
+  margin: 0;
+  font-size: 24px;
+  letter-spacing: 0;
+}
+
+.sellerdit-ai-hero p,
+.trend-page-head p {
+  margin: 6px 0 0;
+  color: #526071;
+  font-size: 14px;
+}
+
+.sellerdit-ai-search {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  padding: 14px 0;
+}
+
+.sellerdit-ai-search input {
+  min-height: 44px;
+  border: 1px solid #d9dee7;
+  border-radius: 999px;
+  padding: 0 18px;
+  font-size: 14px;
+}
+
+.sellerdit-ai-search button,
+.sellerdit-inline-cta {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 999px;
+  background: #2563eb;
+  color: #ffffff;
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.sellerdit-ai-answer {
+  padding: 18px;
+  border: 1px solid #dbeafe;
+  border-radius: 14px;
+  background: #f8fbff;
+}
+
+.sellerdit-ai-answer h2 {
+  margin: 10px 0 8px;
+  font-size: 20px;
+}
+
+.sellerdit-ai-answer p,
+.sellerdit-ai-answer li {
+  color: #374151;
+  line-height: 1.65;
+}
+
+.sellerdit-qna-list {
+  margin-top: 16px;
+}
+
+.sellerdit-qna-list h2 {
+  margin: 0 0 8px;
+  font-size: 17px;
+}
+
+.sellerdit-trend-board {
+  display: grid;
+  gap: 10px;
+  padding: 14px 0;
+}
+
+.sellerdit-trend-board .trend-provider-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: none;
+}
+
+.sellerdit-trend-board .trend-keyword-list li {
+  grid-template-columns: 30px minmax(0, 1fr) auto;
+  min-height: 42px;
+}
+
+.trend-note-panel {
+  border: 1px solid #dbeafe;
+  border-radius: 12px;
+  background: #f8fbff;
+}
+
+@media (max-width: 1120px) {
+  .sellerdit-topbar nav a:nth-child(2),
+  .sellerdit-topbar nav a:nth-child(4) {
+    display: none;
+  }
+
+  .community-shell .community-reddit-layout {
+    grid-template-columns: minmax(0, 1fr) 300px;
+  }
+
+  .sellerdit-left-rail {
+    display: none;
+  }
+}
+
+@media (max-width: 860px) {
+  .sellerdit-topbar-inner {
+    width: calc(100% - 20px);
+    flex-wrap: wrap;
+    padding: 8px 0;
+  }
+
+  .sellerdit-topbar {
+    position: sticky;
+  }
+
+  .sellerdit-topbar .community-global-search {
+    order: 3;
+    flex-basis: 100%;
+    max-width: none;
+  }
+
+  .sellerdit-kakao,
+  .sellerdit-header-dots {
+    display: none;
+  }
+
+  .community-shell {
+    width: calc(100% - 20px);
+    padding-top: 16px;
+  }
+
+  .community-shell .community-reddit-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sellerdit-right-rail {
+    position: static;
+  }
+
+  .sellerdit-comments .community-comment-form,
+  .sellerdit-ai-search {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .community-shell .community-vote-title {
+    font-size: 17px;
+  }
+
+  .sellerdit-detail-post > h1 {
+    font-size: 24px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sellerdit-ai-orbit span {
+    animation: none;
+  }
+}

@@ -556,65 +556,63 @@ function communityQueryString(params = {}) {
 }
 
 function renderCommunitySortBar(basePath, activeSort, search, tag) {
-  const sorts = [
+  const activeLabel = {
+    hot: "인기",
+    new: "최신",
+    top: "추천 많은 순",
+    comments: "댓글 많은 순",
+    views: "조회 많은 순",
+  }[activeSort] || "인기";
+  const links = [
     { key: "hot", label: "인기" },
     { key: "new", label: "최신" },
     { key: "top", label: "추천" },
     { key: "comments", label: "댓글" },
     { key: "views", label: "조회" },
   ];
-  return `<div class="community-toolbar">
+  return `<div class="community-toolbar sellerdit-sortbar">
     <nav class="community-sort" aria-label="정렬 기준">
-      ${sorts
-        .map((item) => {
-          const isActive = item.key === activeSort;
-          const href = `${basePath}${communityQueryString({ sort: item.key, q: search, tag })}`;
-          return `<a class="${isActive ? "is-active" : ""}" href="${escapeHtml(href)}" ${isActive ? 'aria-current="true"' : ""}>${item.label}</a>`;
-        })
-        .join("")}
+      <span class="sellerdit-sort-chip">${escapeHtml(activeLabel)} ▾</span>
+      <span class="sellerdit-sort-chip">전체 기간 ▾</span>
+      <span class="sellerdit-sort-chip">카드 보기 ▾</span>
+      <span class="sellerdit-sort-links">
+        ${links
+          .map((item) => {
+            const href = `${basePath}${communityQueryString({ sort: item.key, q: search, tag })}`;
+            return `<a class="${item.key === activeSort ? "is-active" : ""}" href="${escapeHtml(href)}">${escapeHtml(item.label)}</a>`;
+          })
+          .join("")}
+      </span>
     </nav>
-    <form class="community-search" method="get" action="${escapeHtml(basePath)}" role="search">
-      ${activeSort && activeSort !== "hot" ? `<input type="hidden" name="sort" value="${escapeHtml(activeSort)}" />` : ""}
-      ${tag ? `<input type="hidden" name="tag" value="${escapeHtml(tag)}" />` : ""}
-      <input type="search" name="q" value="${escapeHtml(search)}" placeholder="제목·내용 검색" aria-label="커뮤니티 검색" />
-      <button type="submit" aria-label="검색">검색</button>
-    </form>
   </div>`;
 }
 
 function renderCommunityVoteCard(post) {
   const dateLabel = formatDate(post.createdAt);
   const authorName = post.authorName || "셀러";
-  return `<article class="community-vote-card${post.isNotice ? " is-notice" : ""}">
-    <div class="community-vote-body">
-      <div class="community-vote-stats" aria-label="추천과 조회">
-        <button type="button" data-community-reaction="like" data-post-slug="${escapeHtml(post.slug)}" aria-label="추천">▲</button>
-        <strong>${formatInteger(post.likesCount || 0)}</strong>
-        <span>추천</span>
-      </div>
-      <div class="community-vote-content">
-        <div class="community-vote-top">
-          ${post.isNotice ? `<span class="community-pin-badge">공지</span>` : ""}
-          <span>${escapeHtml((COMMUNITY_CATEGORIES[post.category] || COMMUNITY_CATEGORIES["final-margin"]).label)}</span>
-          <span>${escapeHtml(authorName)}</span>
-          ${dateLabel ? `<time datetime="${escapeHtml(post.createdAt)}">${escapeHtml(dateLabel)}</time>` : ""}
-        </div>
-        <a class="community-vote-title" href="/community/${escapeHtml(post.slug)}">${escapeHtml(post.title)}</a>
-        <div class="community-vote-actions" aria-label="게시글 작업">
-          <a href="/community/${escapeHtml(post.slug)}#comments">댓글 ${formatInteger(post.commentsCount)}</a>
-          <span>조회 ${formatInteger(post.views)}</span>
-          <button type="button" data-community-reaction="bookmark" data-post-slug="${escapeHtml(post.slug)}">저장</button>
-        </div>
-      </div>
-      ${renderCommunityPostThumb(post)}
-      ${dateLabel ? `<time class="community-vote-date" datetime="${escapeHtml(post.createdAt)}">${escapeHtml(dateLabel)}</time>` : ""}
+  return `<article class="community-vote-card sellerdit-feed-post${post.isNotice ? " is-notice" : ""}">
+    <div class="sellerdit-post-meta">
+      <span class="sellerdit-avatar" style="background:${escapeHtml(getCommunityAuthorColor(authorName))}">${escapeHtml(getCommunityAuthorInitial(authorName))}</span>
+      <span class="sellerdit-author">u/${escapeHtml(makeCommunityHandle(authorName))}</span>
+      <span class="sellerdit-dot">·</span>
+      ${dateLabel ? `<time datetime="${escapeHtml(post.createdAt)}">${escapeHtml(dateLabel)}</time>` : ""}
+      ${post.isNotice ? `<span class="community-pin-badge">공지</span>` : ""}
+      <button class="sellerdit-follow" type="button">팔로우</button>
+    </div>
+    <a class="community-vote-title" href="/community/${escapeHtml(post.slug)}">${escapeHtml(post.title)}</a>
+    <a class="sellerdit-post-excerpt" href="/community/${escapeHtml(post.slug)}">${escapeHtml(post.summary || "")}</a>
+    <div class="community-vote-actions sellerdit-actions" aria-label="게시글 작업">
+      <button type="button" class="sellerdit-action" data-community-reaction="like" data-post-slug="${escapeHtml(post.slug)}">👍 ${formatInteger(post.likesCount || 0)}</button>
+      <a class="sellerdit-action" href="/community/${escapeHtml(post.slug)}#comments">💬 댓글 ${formatInteger(post.commentsCount)}</a>
+      <button type="button" class="sellerdit-action">↗ 공유</button>
+      <button type="button" class="sellerdit-action" data-community-reaction="bookmark" data-post-slug="${escapeHtml(post.slug)}">🔖 저장</button>
     </div>
   </article>`;
 }
 
 function renderCommunityPostThumb(post, mode = "small") {
   const category = COMMUNITY_CATEGORIES[post.category] || COMMUNITY_CATEGORIES["final-margin"];
-  const className = `community-post-thumb is-${escapeHtml(post.category)} ${mode === "large" ? "is-large" : ""}`;
+  const className = `community-post-thumb sellerdit-thumb is-${escapeHtml(post.category)} ${mode === "large" ? "is-large" : ""}`;
   return `<div class="${className}" aria-hidden="true">
     <span>${escapeHtml(category.label)}</span>
     <strong>${escapeHtml(getCommunityThumbTitle(post.category))}</strong>
@@ -637,14 +635,17 @@ function renderCommunityFeed(posts, emptyText = "아직 등록된 글이 없습�
   if (!posts.length) {
     return `<div class="community-feed-empty">${escapeHtml(emptyText)}</div>`;
   }
-  return `<div class="community-vote-list">${posts.map(renderCommunityVoteCard).join("")}</div>`;
+  const items = posts
+    .map((post, index) => `${index === 3 ? renderCommunityPromotedPost() : ""}${renderCommunityVoteCard(post)}`)
+    .join("");
+  return `<div class="community-vote-list sellerdit-feedpanel">${items}</div>`;
 }
 
 function renderCommunityPinned(notices) {
   if (!notices.length) {
     return "";
   }
-  return `<div class="community-pinned" aria-label="공지">
+  return `<div class="community-pinned sellerdit-notice" aria-label="공지">
     ${notices
       .map(
         (post) => `<a class="community-pinned-row" href="/community/${escapeHtml(post.slug)}">
@@ -658,70 +659,157 @@ function renderCommunityPinned(notices) {
 }
 
 function renderCommunityLeftRail() {
-  return `<aside class="community-left-rail" aria-label="커뮤니티 이동">
-    <a class="community-join-card" href="/community" aria-label="커뮤니티 홈">
-      <span class="community-join-mark">r/</span>
-      <strong>wingcoupang</strong>
+  return `<aside class="community-left-rail sellerdit-left-rail" aria-label="광고 영역">
+    <a class="sellerdit-vertical-ad" href="/" aria-label="로켓그로스 계산기">
+      <span>광고</span>
+      <strong>로켓그로스 비용 계산기</strong>
+      <em>사입부터 최종 마진까지</em>
+      <b>5단계 계산하기</b>
     </a>
-    <nav class="community-left-nav" aria-label="빠른 이동">
-      <a href="/community">홈</a>
-      <a href="/">계산기</a>
-      <a href="/community/qna">질문</a>
-      <a href="/trends">트렌드</a>
-      <a href="/guides">기준</a>
-    </nav>
   </aside>`;
 }
 
 function renderCommunityAboutCard() {
-  const counts = getCommunityCategoryCounts();
-  const total = Object.values(counts).reduce((sum, count) => sum + count, 0);
-  const qnaCount = counts.qna || 0;
-  return `<section class="community-about-card" aria-label="계산기 연결">
-    <div class="community-about-logo">r/</div>
-    <h2>로켓그로스 계산기</h2>
-    <p>글을 읽다가 필요한 숫자는 계산기로 바로 확인하세요.</p>
-    <dl>
-      <div><dt>게시글</dt><dd>${formatInteger(total)}</dd></div>
-      <div><dt>질문</dt><dd>${formatInteger(qnaCount)}</dd></div>
-    </dl>
-    <a href="/">계산기 열기</a>
-  </section>`;
+  return renderPopularCommunitiesPanel();
 }
 
 function renderCommunityPostBridge(post, category) {
-  const guideHref = getCommunityGuideHref(post.category);
-  return `<section class="community-post-bridge" aria-label="계산기 연결">
-    <strong>이 글을 계산기로 확인</strong>
-    <p>${escapeHtml(category.label)} 단계에서 같은 항목을 바로 입력해 볼 수 있습니다.</p>
-    <div>
-      <a class="is-primary" href="${escapeHtml(getCommunityCalculatorHref(post.category))}">계산기 열기</a>
-      <a href="${escapeHtml(guideHref)}">기준 보기</a>
-    </div>
-  </section>`;
+  return renderKillerContentPanel();
 }
 
 function renderCommunityRelatedPanel(posts) {
   if (!posts.length) return "";
-  return `<section class="community-related-feed" aria-label="관련 게시글">
+  return `<section class="community-related-feed sellerdit-related-feed" aria-label="관련 게시글">
     <div class="community-related-feed-head">
       <strong>관련 게시글</strong>
-      <span>${formatInteger(posts.length)}개</span>
+      <span>r/셀러딧</span>
     </div>
     <div>
       ${posts
         .map(
           (post) => `<a class="community-related-item" href="/community/${escapeHtml(post.slug)}">
-            ${renderCommunityPostThumb(post)}
             <span>
+              <em><i class="sellerdit-mini-avatar">r</i> r/셀러딧 · ${escapeHtml(formatDate(post.createdAt) || "")} <b>⋯</b></em>
               <strong>${escapeHtml(post.title)}</strong>
-              <em>댓글 ${formatInteger(post.commentsCount)} · 조회 ${formatInteger(post.views)}</em>
+              <small>👍 ${formatInteger(post.likesCount || 0)} · 댓글 ${formatInteger(post.commentsCount)}</small>
             </span>
+            ${renderCommunityPostThumb(post)}
           </a>`,
         )
         .join("")}
     </div>
   </section>`;
+}
+
+function renderCommunityPromotedPost() {
+  return `<article class="community-vote-card sellerdit-feed-post sellerdit-promoted">
+    <div class="sellerdit-post-meta">
+      <span class="sellerdit-avatar is-ad">A</span>
+      <span class="sellerdit-author">Alibaba_B2B</span>
+      <span class="sellerdit-dot">·</span>
+      <span class="ad-tag">홍보 광고</span>
+      <span class="sellerdit-more">⋯</span>
+    </div>
+    <a class="community-vote-title" href="https://www.1688.com/" rel="nofollow noopener" target="_blank">1688 대량 사입 단가, 물류비까지 같이 비교해 보세요</a>
+    <a class="sellerdit-post-excerpt" href="https://www.1688.com/" rel="nofollow noopener" target="_blank">상품 단가만 보지 말고 배송대행, 통관, 입고 비용까지 함께 확인하는 셀러용 체크 포인트입니다.</a>
+    <div class="community-vote-actions sellerdit-actions">
+      <span class="sellerdit-action">↗ 공유</span>
+      <span class="sellerdit-action">⋯ 광고 정보</span>
+    </div>
+  </article>`;
+}
+
+function renderCommunityAdSlot(type = "square") {
+  const isSquare = type === "square";
+  return `<aside class="sellerdit-ad-slot ${isSquare ? "is-square" : "is-wide"}" aria-label="광고">
+    <span>광고</span>
+    <strong>${isSquare ? "셀러 운영 도구" : "마진 계산이 헷갈린다면?"}</strong>
+    <p>${isSquare ? "정산·재고·마진을 한 화면에서 관리하세요." : "로켓그로스 계산기로 비용을 다시 확인하세요."}</p>
+  </aside>`;
+}
+
+function renderPopularCommunitiesPanel() {
+  const communities = [
+    ["농", "r/농수산사입", "멤버 12,480명", "#16a34a"],
+    ["16", "r/1688사입", "멤버 9,742명", "#f97316"],
+    ["로", "r/로켓그로스", "멤버 8,115명", "#2563eb"],
+    ["물", "r/LCL물류", "멤버 5,233명", "#0ea5e9"],
+    ["셀", "r/초보셀러", "멤버 4,901명", "#8b5cf6"],
+  ];
+  return `<section class="community-about-card sellerdit-widget sellerdit-communities" aria-label="인기 커뮤니티">
+    <h2>인기 커뮤니티</h2>
+    ${communities
+      .map(([initial, name, meta, color]) => `<a href="/community">
+        <span class="sellerdit-community-avatar" style="background:${color}">${escapeHtml(initial)}</span>
+        <span><strong>${escapeHtml(name)}</strong><em>${escapeHtml(meta)}</em></span>
+      </a>`)
+      .join("")}
+    <a class="sellerdit-more-link" href="/community">더 보기</a>
+  </section>`;
+}
+
+function renderCommunityPopularContentPanel() {
+  const posts = getCommunityPosts({ sort: "hot", limit: 5 });
+  return `<section class="sellerdit-widget sellerdit-popular-content" aria-label="실시간 인기 콘텐츠">
+    <h2>실시간 인기 콘텐츠 TOP 5</h2>
+    ${posts
+      .map((post, index) => `<a href="/community/${escapeHtml(post.slug)}">
+        <b>${index + 1}</b>
+        <span>${escapeHtml(post.title)}</span>
+        <em>댓글 ${formatInteger(post.commentsCount)}</em>
+      </a>`)
+      .join("")}
+  </section>`;
+}
+
+function renderKillerContentPanel() {
+  return `<section class="sellerdit-widget sellerdit-killer-content" aria-label="추천 콘텐츠">
+    <h2>셀러가 많이 보는 글</h2>
+    <a href="/community/rocket-growth-cost-checklist-7">로켓그로스 입고 전 꼭 확인할 비용 7가지</a>
+    <a href="/community/lcl-forwarder-questions">LCL 견적 받을 때 꼭 물어볼 질문</a>
+    <a href="/guides/rocket-growth-calculator">계산 기준 자세히 보기</a>
+  </section>`;
+}
+
+function renderSellerditRightRail(mode = "list", relatedPosts = []) {
+  if (mode === "detail") {
+    return `<aside class="community-right-rail sellerdit-right-rail">
+      ${renderCommunityRelatedPanel(relatedPosts)}
+      ${renderPopularCommunitiesPanel()}
+      ${renderSellerditFooterLinks()}
+    </aside>`;
+  }
+  return `<aside class="community-right-rail sellerdit-right-rail">
+    ${renderCommunityPopularContentPanel()}
+    ${renderCommunityAdSlot("square")}
+    ${renderKillerContentPanel()}
+    ${renderSellerditFooterLinks()}
+  </aside>`;
+}
+
+function renderSellerditFooterLinks() {
+  return `<nav class="sellerdit-footer-links" aria-label="사이트 링크">
+    <a href="/">홈</a> · <a href="/community">인기</a> · <a href="/guides">계산 기준</a><br>
+    <a href="/privacy">개인정보 처리방침</a> · <a href="/terms">이용약관</a><br>
+    © 2026 셀러딧
+  </nav>`;
+}
+
+function getCommunityAuthorInitial(name) {
+  return String(name || "셀").trim().slice(0, 1) || "셀";
+}
+
+function makeCommunityHandle(name) {
+  return String(name || "seller")
+    .replace(/\s+/g, "")
+    .replace(/[^\w가-힣]/g, "")
+    .slice(0, 18) || "seller";
+}
+
+function getCommunityAuthorColor(name) {
+  const colors = ["#2563eb", "#0ea5e9", "#10b981", "#f59e0b", "#8b5cf6", "#ec4899"];
+  const seed = Array.from(String(name || "seller")).reduce((sum, char) => sum + char.charCodeAt(0), 0);
+  return colors[seed % colors.length];
 }
 
 function getCommunityCalculatorHref(categorySlug) {
@@ -810,12 +898,9 @@ function renderCommunityIndexPage(query = {}) {
           ${renderCommunityPinned(notices)}
           ${renderCommunityFeed(posts, search ? "검색 결과가 없습니다. 다른 키워드로 찾아보세요." : "아직 등록된 글이 없습니다.")}
           ${renderCommunityPager("/community", page, totalPages, search, sort, tag)}
+          <div id="community-write" class="sellerdit-write-anchor">${renderCommunityWritePanel()}</div>
         </section>
-        <aside class="community-right-rail">
-          ${renderCommunityAboutCard()}
-          <div id="community-write">${renderCommunityWritePanel()}</div>
-          ${renderTrendMiniPanel()}
-        </aside>
+        ${renderSellerditRightRail("list")}
       </section>
     </main>`,
     jsonLd: buildCommunityIndexJsonLd(title, description, canonicalUrl, posts.length ? posts : popularPosts),
@@ -823,7 +908,69 @@ function renderCommunityIndexPage(query = {}) {
   });
 }
 
+function renderCommunityAiAnswerPage(query = {}) {
+  const search = String(query.q || "").trim().slice(0, 80);
+  const qnaPosts = getCommunityPosts({ category: "qna", notice: false, sort: "hot", limit: 8 });
+  const title = "셀러딧 AI 답변 | 로켓그로스 계산기";
+  const description = "쿠팡셀러와 개인셀러의 로켓그로스 비용, 사입, 물류, 수수료 질문을 AI 답변형으로 정리하는 셀러딧 질문답변 화면입니다.";
+  const canonicalUrl = `${PUBLIC_SITE_URL}/community/qna`;
+  const answerTitle = search || "터미널 운송료는 무슨 비용인가요?";
+  return renderDocumentShell({
+    title,
+    description,
+    canonicalUrl,
+    body: `<main class="community-shell">
+      ${renderCommunityHeader("qna")}
+      <section class="community-workspace community-reddit-layout sellerdit-ai-layout">
+        ${renderCommunityLeftRail()}
+        <section class="community-feed-panel sellerdit-ai-main" aria-labelledby="sellerdit-ai-title">
+          <div class="sellerdit-ai-hero">
+            <div class="sellerdit-ai-orbit" aria-hidden="true">
+              <span></span><span></span><span></span>
+            </div>
+            <div>
+              <span class="community-page-label">질문답변</span>
+              <h1 id="sellerdit-ai-title">셀러 질문을 계산 기준으로 바로 정리합니다.</h1>
+              <p>로켓그로스 비용, LCL, 쿠팡 수수료처럼 헷갈리는 항목을 짧게 물어보세요.</p>
+            </div>
+          </div>
+          <form class="sellerdit-ai-search" method="get" action="/community/qna" role="search">
+            <input type="search" name="q" value="${escapeHtml(search)}" placeholder="예: 원산지증명서가 있으면 관세가 0원인가요?" />
+            <button type="submit">답변 보기</button>
+          </form>
+          <article class="sellerdit-ai-answer">
+            <div class="sellerdit-post-meta">
+              <span class="sellerdit-avatar">AI</span>
+              <span class="sellerdit-author">셀러딧 AI</span>
+              <span class="sellerdit-dot">·</span>
+              <span>계산 기준 답변</span>
+            </div>
+            <h2>${escapeHtml(answerTitle)}</h2>
+            <p>비용 항목은 실제 청구서 기준으로 나눠 봐야 합니다. 운임, 통관, 국내 운송, 쿠팡 수수료를 한 번에 섞으면 어디에서 마진이 줄어드는지 확인하기 어렵습니다.</p>
+            <ul>
+              <li>사입 원가는 제품단가, 수량, 환율을 먼저 맞춥니다.</li>
+              <li>물류비는 CBM, 중량, 통관, 국내 입고비를 분리합니다.</li>
+              <li>최종 판매가는 쿠팡 수수료와 광고비까지 뺀 뒤 판단합니다.</li>
+            </ul>
+            <a class="sellerdit-inline-cta" href="/">로켓그로스 계산기로 확인</a>
+          </article>
+          <section class="sellerdit-qna-list">
+            <h2>최근 셀러 질문</h2>
+            ${qnaPosts.map(renderCommunityVoteCard).join("")}
+          </section>
+        </section>
+        ${renderSellerditRightRail("list")}
+      </section>
+    </main>`,
+    jsonLd: buildCommunityCategoryJsonLd(COMMUNITY_CATEGORIES.qna, canonicalUrl, qnaPosts),
+    script: renderCommunityScript(),
+  });
+}
+
 function renderCommunityCategoryPage(categorySlug, query = {}) {
+  if (categorySlug === "qna") {
+    return renderCommunityAiAnswerPage(query);
+  }
   const category = COMMUNITY_CATEGORIES[categorySlug] || COMMUNITY_CATEGORIES["final-margin"];
   const basePath = `/community/${category.slug}`;
   const sort = COMMUNITY_SORTS[query.sort] ? String(query.sort) : "hot";
@@ -863,12 +1010,9 @@ function renderCommunityCategoryPage(categorySlug, query = {}) {
           ${renderCommunityPinned(notices)}
           ${renderCommunityFeed(posts, search ? "검색 결과가 없습니다. 다른 키워드로 찾아보세요." : "이 게시판에는 아직 글이 없습니다.")}
           ${renderCommunityPager(basePath, page, totalPages, search, sort, "")}
+          <div id="community-write" class="sellerdit-write-anchor">${renderCommunityWritePanel(category.slug)}</div>
         </section>
-        <aside class="community-right-rail">
-          ${renderCommunityAboutCard()}
-          <div id="community-write">${renderCommunityWritePanel(category.slug)}</div>
-          ${renderTrendMiniPanel()}
-        </aside>
+        ${renderSellerditRightRail("list")}
       </section>
     </main>`,
     jsonLd: buildCommunityCategoryJsonLd(category, canonicalUrl, posts),
@@ -891,14 +1035,18 @@ function renderCommunityPostPage(post) {
       <section class="community-workspace community-reddit-layout is-post-detail">
         ${renderCommunityLeftRail()}
         <section class="community-detail-main">
-          <article class="community-post-article" data-community-post="${escapeHtml(post.slug)}">
-            <div class="community-post-kicker">
-              <a href="/community/${escapeHtml(category.slug)}">${escapeHtml(category.label)}</a>
+          <article class="community-post-article sellerdit-detail-post" data-community-post="${escapeHtml(post.slug)}">
+            <div class="sellerdit-post-meta">
+              <span class="sellerdit-avatar" style="background:${escapeHtml(getCommunityAuthorColor(post.authorName))}">${escapeHtml(getCommunityAuthorInitial(post.authorName))}</span>
+              <span class="sellerdit-author">u/${escapeHtml(makeCommunityHandle(post.authorName))}</span>
+              <span class="sellerdit-dot">·</span>
+              <time datetime="${escapeHtml(post.createdAt)}">${escapeHtml(formatDate(post.createdAt) || "")}</time>
+              <span class="sellerdit-dot">·</span>
               <span>조회 ${formatInteger(post.views)}</span>
-              <span>댓글 ${formatInteger(comments.length)}</span>
+              <button class="sellerdit-follow" type="button">팔로우</button>
+              <span class="sellerdit-more">⋯</span>
             </div>
             <h1>${escapeHtml(post.title)}</h1>
-            ${renderCommunityPostThumb(post, "large")}
             <p class="community-post-summary">${escapeHtml(post.summary)}</p>
             <div class="guide-section-list">
               ${post.sections
@@ -910,34 +1058,44 @@ function renderCommunityPostPage(post) {
                 )
                 .join("")}
             </div>
+            <div class="community-vote-actions sellerdit-actions sellerdit-detail-actions" aria-label="게시글 작업">
+              <button type="button" class="sellerdit-action" data-community-reaction="like" data-post-slug="${escapeHtml(post.slug)}">👍 ${formatInteger(post.likesCount || 0)}</button>
+              <a class="sellerdit-action" href="#comments">💬 댓글 ${formatInteger(comments.length)}</a>
+              <button type="button" class="sellerdit-action">↗ 공유</button>
+              <button type="button" class="sellerdit-action" data-community-reaction="bookmark" data-post-slug="${escapeHtml(post.slug)}">🔖 저장</button>
+            </div>
           </article>
-          <details class="community-comments" aria-labelledby="community-comments-title" open>
-            <summary class="community-comments-head">
+          ${renderCommunityAdSlot("wide")}
+          <section class="community-comments sellerdit-comments" id="comments" aria-labelledby="community-comments-title">
+            <header class="community-comments-head">
               <strong id="community-comments-title">댓글 ${formatInteger(comments.length)}개</strong>
-              <span>질문 남기기</span>
-            </summary>
+              <span>정렬 기준: 좋아요 높은 순 ▾</span>
+            </header>
             <form class="community-comment-form" data-community-comment-form data-post-slug="${escapeHtml(post.slug)}">
-              <textarea name="body" rows="4" maxlength="1500" placeholder="추가 질문, 실제 견적 차이, 본인 사례를 남겨주세요."></textarea>
-              <button class="primary-small-button" type="submit">댓글 남기기</button>
+              <textarea name="body" rows="1" maxlength="1500" placeholder="대화에 참여해보세요"></textarea>
+              <button class="primary-small-button" type="submit">등록</button>
               <a class="community-comment-login" href="/auth/kakao/start">카카오로 시작하기</a>
               <p data-community-message></p>
             </form>
             <div class="community-comment-list">
               ${comments.length
-                ? comments.map((comment) => `<article>
-                    <strong>${escapeHtml(comment.authorName)}</strong>
-                    <p>${escapeHtml(comment.body)}</p>
-                    <time datetime="${escapeHtml(comment.createdAt)}">${formatDate(comment.createdAt)}</time>
+                ? comments.map((comment, index) => `${index === 2 ? renderCommunityAdSlot("wide") : ""}<article class="sellerdit-comment">
+                    <span class="sellerdit-avatar" style="background:${escapeHtml(getCommunityAuthorColor(comment.authorName))}">${escapeHtml(getCommunityAuthorInitial(comment.authorName))}</span>
+                    <div>
+                      <header>
+                        <strong>u/${escapeHtml(makeCommunityHandle(comment.authorName))}</strong>
+                        ${index === 0 ? `<span class="sellerdit-comment-badge">상위 댓글</span>` : ""}
+                        <time datetime="${escapeHtml(comment.createdAt)}">${formatDate(comment.createdAt)}</time>
+                      </header>
+                      <p>${escapeHtml(comment.body)}</p>
+                      <footer><span>👍 0</span><button type="button">💬 답글 달기</button><button type="button">🏅 어워드</button><button type="button">↗ 공유</button><button type="button">⋯</button></footer>
+                    </div>
                   </article>`).join("")
                 : `<p class="community-empty">아직 댓글이 없습니다. 첫 질문을 남겨보세요.</p>`}
             </div>
-          </details>
+          </section>
         </section>
-        <aside class="community-right-rail">
-          ${renderCommunityPostBridge(post, category)}
-          ${renderCommunityRelatedPanel(relatedPosts)}
-          ${renderCommunityAboutCard()}
-        </aside>
+        ${renderSellerditRightRail("detail", relatedPosts)}
       </section>
     </main>`,
     jsonLd: buildCommunityPostJsonLd(post, canonicalUrl, comments),
@@ -954,8 +1112,9 @@ function renderCommunityHeader(activeKey) {
     { key: "guides", label: "계산 기준", href: "/guides" },
   ];
 
-  return `<header class="community-topbar">
-    <a class="community-brand" href="/community"><span>r/</span> wingcoupang</a>
+  return `<header class="community-topbar sellerdit-topbar">
+    <div class="sellerdit-topbar-inner">
+    <a class="community-brand" href="/community"><span>r/</span> 셀러딧</a>
     <form class="community-global-search" method="get" action="/community" role="search">
       <input type="search" name="q" placeholder="커뮤니티 검색" aria-label="커뮤니티 전체 검색" />
     </form>
@@ -968,6 +1127,9 @@ function renderCommunityHeader(activeKey) {
         })
         .join("")}
     </nav>
+    <a class="sellerdit-kakao" href="/auth/kakao/start">카카오 로그인</a>
+    <span class="sellerdit-header-dots">⋯</span>
+    </div>
   </header>`;
 }
 
@@ -1174,21 +1336,25 @@ function renderTrendPage(trends) {
     canonicalUrl,
     body: `<main class="community-shell">
       ${renderCommunityHeader("trends")}
-      <section class="trend-page" aria-labelledby="trend-page-title">
-        <div class="trend-page-head">
-          <div>
-            <span class="community-page-label">검색어 순위</span>
-            <h1 id="trend-page-title">셀러 검색어 흐름</h1>
+      <section class="community-workspace community-reddit-layout sellerdit-trend-layout" aria-labelledby="trend-page-title">
+        ${renderCommunityLeftRail()}
+        <section class="community-feed-panel trend-page sellerdit-trend-page">
+          <div class="trend-page-head">
+            <div>
+              <span class="community-page-label">검색 트렌드</span>
+              <h1 id="trend-page-title">셀러가 지금 확인하는 검색어</h1>
+            </div>
+            <p>Google · Naver · Daum 흐름을 셀러 주제로 묶어 봅니다.</p>
           </div>
-          <p>10분 캐시로 갱신합니다.</p>
-        </div>
-        <div class="trend-provider-grid" data-trend-grid>
-          ${trends.providers.map(renderTrendProviderCard).join("")}
-        </div>
-        <section class="trend-note-panel">
-          <strong>운영 기준</strong>
-          <p>구글은 트렌딩 RSS, 네이버는 데이터랩 관심도, Daum은 검색 결과량 기준으로 표시합니다. 플랫폼 정책에 따라 표시 방식은 달라질 수 있습니다.</p>
+          <div class="sellerdit-trend-board" data-trend-grid>
+            ${trends.providers.map(renderTrendProviderCard).join("")}
+          </div>
+          <section class="trend-note-panel">
+            <strong>검색어 확인 기준</strong>
+            <p>플랫폼별 공개 데이터를 기준으로 표시합니다. 실시간 공식 순위와 다를 수 있으므로 상품 기획과 콘텐츠 아이디어 검토용으로 사용하세요.</p>
+          </section>
         </section>
+        ${renderSellerditRightRail("list")}
       </section>
     </main>`,
     jsonLd: buildTrendPageJsonLd(title, description, canonicalUrl, trends),
