@@ -1832,7 +1832,6 @@ let selectedSaveTags = new Set();
 const saveButtonLabel = "저장하기";
 const saveActionButtons = [
   { button: saveProductButton, label: saveButtonLabel },
-  { button: footerSaveButton, label: "계산 저장" },
   { button: finalSaveButton, label: "계산 저장" },
 ].filter(({ button }) => button);
 let currentHelpKey = "customsExchangeRate";
@@ -3416,44 +3415,8 @@ function renderComputedOutputs(stage, calculatedValues = {}) {
     return;
   }
 
-  if (stage === "final" || categoryByStandaloneCalculator[stage]) {
-    computedOutputPanel.innerHTML = "";
-    computedOutputPanel.hidden = true;
-    return;
-  }
-
-  const outputFields = getStageOutputFields(stage);
-  computedOutputPanel.hidden = outputFields.length === 0;
-  if (outputFields.length === 0) {
-    computedOutputPanel.innerHTML = "";
-    return;
-  }
-
-  computedOutputPanel.innerHTML = `
-    <div class="computed-output-head">
-      <strong>자동 산출값</strong>
-      <span>왼쪽 입력값으로 계산됩니다.</span>
-    </div>
-    <div class="computed-output-list">
-      ${outputFields
-        .map((field) => {
-          const hasHelp = Boolean(getStageHelp(stage, field.key));
-          const value = formatOutputFieldValue(field, calculatedValues[field.key]);
-          return `
-            <button class="computed-output-item" type="button" ${
-              hasHelp ? `data-output-help="${escapeHtml(field.key)}"` : "disabled"
-            }>
-              <span>
-                <em>${escapeHtml(field.fieldset)}</em>
-                ${escapeHtml(field.label)}
-              </span>
-              <strong>${escapeHtml(value)}</strong>
-            </button>
-          `;
-        })
-        .join("")}
-    </div>
-  `;
+  computedOutputPanel.innerHTML = "";
+  computedOutputPanel.hidden = true;
 }
 
 function getStageSeoSummary(stage) {
@@ -4070,6 +4033,35 @@ function showComingSoon(category, options = {}) {
   }
 }
 
+const calculatorStepOrder = ["china", "china-korea", "korea-coupang", "coupang", "final"];
+
+function getNextCalculatorStep(id = currentCalculator) {
+  const currentIndex = calculatorStepOrder.indexOf(id);
+  if (currentIndex < 0) {
+    return "china-korea";
+  }
+  return calculatorStepOrder[Math.min(currentIndex + 1, calculatorStepOrder.length - 1)];
+}
+
+function updateFooterNextButtonLabel() {
+  if (!footerSaveButton) {
+    return;
+  }
+
+  const nextStep = getNextCalculatorStep(currentCalculator);
+  footerSaveButton.textContent = currentCalculator === "final" ? "최종 단계 보기" : "다음 단계로";
+  footerSaveButton.setAttribute(
+    "aria-label",
+    currentCalculator === "final" ? "최종 비용 단계 보기" : `${calculators[nextStep]?.title || "다음"} 단계로 이동`,
+  );
+}
+
+function goToNextCalculatorStep() {
+  const nextStep = getNextCalculatorStep(currentCalculator);
+  renderCalculator(nextStep);
+  window.history.replaceState(null, "", `?calc=${nextStep}`);
+}
+
 function renderCalculator(id, options = {}) {
   const calculator = calculators[id] || calculators.china;
   const shouldScroll = options.scroll !== false;
@@ -4120,6 +4112,7 @@ function renderCalculator(id, options = {}) {
   savedPageSection.hidden = true;
   workspace.hidden = false;
   updateCalculationUI();
+  updateFooterNextButtonLabel();
 
   if (shouldScroll) {
     workspace.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -5489,9 +5482,9 @@ saveProductButton?.addEventListener("click", async () => {
   await handleSaveButtonClick();
 });
 
-footerSaveButton?.addEventListener("click", async () => {
-  trackEvent("save_click", { source: "live_result", calculator_step: currentCalculator });
-  await handleSaveButtonClick();
+footerSaveButton?.addEventListener("click", () => {
+  trackEvent("calculator_next_step_click", { source: "live_result", calculator_step: currentCalculator });
+  goToNextCalculatorStep();
 });
 
 finalSaveButton?.addEventListener("click", async () => {

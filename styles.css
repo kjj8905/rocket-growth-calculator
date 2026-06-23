@@ -14691,3 +14691,28 @@ body.community-write-open {
 .more-replies .plus::after {
   transform: translate(-50%, -50%) rotate(90deg) !important;
 }
+
+
+/* Rocket calculator form cleanup: align paired fields and simplify right panel */
+.mock-form .field-grid.two {
+  align-items: start;
+}
+
+.mock-form .input-with-unit {
+  min-height: 46px;
+}
+
+.mock-form .input-with-unit input {
+  height: 46px;
+}
+
+.mock-form label[data-field-key="productUnitCny"] .input-with-unit,
+.mock-form label[data-field-key="quantity"] .input-with-unit,
+.mock-form label[data-field-key="totalWeightKg"] .input-with-unit,
+.mock-form label[data-field-key="totalVolumeCbm"] .input-with-unit {
+  height: 46px;
+}
+
+.computed-output-panel[hidden] {
+  display: none !important;
+}
