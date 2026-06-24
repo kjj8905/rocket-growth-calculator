@@ -1671,7 +1671,7 @@ function renderTrendPage(trends) {
         </div>
         <section class="trend-note-panel">
           <strong>운영 기준</strong>
-          <p>구글은 트렌딩 RSS, 네이버는 데이터랩 관심도, Daum은 검색 결과량 기준으로 표시합니다. 플랫폼 정책에 따라 표시 방식은 달라질 수 있습니다.</p>
+          <p>구글은 트렌딩 RSS, 네이버는 데이터랩 관심도, Daum은 구글 트렌딩 키워드의 Daum 검색 결과량 기준으로 표시합니다. 플랫폼 정책에 따라 표시 방식은 달라질 수 있습니다.</p>
         </section>
       </section>
     </main>`,
@@ -2547,11 +2547,12 @@ async function getSearchTrends() {
     return searchTrendCache.data;
   }
 
-  const providers = await Promise.all([
+  const [googleProvider, naverProvider] = await Promise.all([
     fetchGoogleSearchTrends(),
     fetchNaverDatalabTrends(),
-    fetchDaumSearchInterest(),
   ]);
+  const daumProvider = await fetchDaumSearchInterest(googleProvider.items);
+  const providers = [googleProvider, naverProvider, daumProvider];
   const data = {
     updatedAt: new Date().toISOString(),
     cacheTtlSeconds: Math.round(SEARCH_TREND_CACHE_TTL_MS / 1000),
@@ -2685,11 +2686,11 @@ async function fetchNaverDatalabTrends() {
   }
 }
 
-async function fetchDaumSearchInterest() {
+async function fetchDaumSearchInterest(seedItems = []) {
   if (DAUM_TREND_API_URL) {
     return fetchConfiguredTrendProvider({
       key: "daum",
-      label: "Daum",
+      label: "Daum 검색량",
       url: DAUM_TREND_API_URL,
       message: "Daum 검색어 제공 경로를 연결하면 표시됩니다.",
     });
@@ -2698,19 +2699,29 @@ async function fetchDaumSearchInterest() {
   if (!KAKAO_REST_API_KEY) {
     return {
       key: "daum",
-      label: "Daum",
+      label: "Daum 검색량",
       status: "unconfigured",
       updatedAt: "",
       sourceUrl: "https://developers.kakao.com/docs/latest/ko/daum-search/dev-guide",
       items: [],
-      message: "카카오 REST 키를 연결하면 Daum 검색 결과량 기준 관심도를 표시합니다.",
+      message: "카카오 REST 키를 연결하면 트렌딩 키워드의 Daum 검색 결과량을 표시합니다.",
     };
   }
 
   try {
+    const trendQueries = Array.from(
+      new Set(
+        (Array.isArray(seedItems) && seedItems.length
+          ? seedItems.map((item) => item.title)
+          : TREND_KEYWORD_GROUPS.map((group) => group.title))
+          .map((title) => normalizeText(title, 80))
+          .filter(Boolean),
+      ),
+    ).slice(0, 10);
+
     const responses = await Promise.all(
-      TREND_KEYWORD_GROUPS.slice(0, 5).map(async (group) => {
-        const url = `https://dapi.kakao.com/v2/search/web?query=${encodeURIComponent(group.title)}&size=1`;
+      trendQueries.map(async (title) => {
+        const url = `https://dapi.kakao.com/v2/search/web?query=${encodeURIComponent(title)}&size=1`;
         const response = await fetch(url, {
           headers: {
             Authorization: `KakaoAK ${KAKAO_REST_API_KEY}`,
@@ -2723,10 +2734,10 @@ async function fetchDaumSearchInterest() {
         }
         const payload = await response.json();
         return {
-          title: group.title,
-          traffic: `${formatInteger(payload.meta?.total_count || 0)}건`,
+          title,
+          traffic: `Daum ${formatInteger(payload.meta?.total_count || 0)}건`,
           totalCount: Number(payload.meta?.total_count || 0),
-          url: `https://search.daum.net/search?w=tot&q=${encodeURIComponent(group.title)}`,
+          url: `https://search.daum.net/search?w=tot&q=${encodeURIComponent(title)}`,
         };
       }),
     );
@@ -2738,7 +2749,7 @@ async function fetchDaumSearchInterest() {
 
     return {
       key: "daum",
-      label: "Daum",
+      label: "Daum 검색량",
       status: items.length ? "ok" : "empty",
       updatedAt: new Date().toISOString(),
       sourceUrl: "https://developers.kakao.com/docs/latest/ko/daum-search/dev-guide",
@@ -2748,7 +2759,7 @@ async function fetchDaumSearchInterest() {
   } catch (error) {
     return {
       key: "daum",
-      label: "Daum",
+      label: "Daum 검색량",
       status: "error",
       updatedAt: new Date().toISOString(),
       sourceUrl: "https://developers.kakao.com/docs/latest/ko/daum-search/dev-guide",
