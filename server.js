@@ -1094,6 +1094,18 @@ function renderCommunitySupplierTile(tile) {
 }
 
 function renderCommunitySupplierFilterRail() {
+  const topItems = [
+    ["home", "/community", "홈", false],
+    ["popular", "/community?sort=hot", "인기", false],
+    ["notice", "/community?tag=공지", "공지", false],
+    ["explore", "/community", "둘러보기", false],
+    ["create", "#community-write", "커뮤니티 만들기", false],
+  ];
+  const quickItems = [
+    ["calc", "/", "로켓계산기"],
+    ["trend", "/trends", "검색 트렌드"],
+    ["guide", "/guides", "계산 기준"],
+  ];
   const filters = [
     ["all", "전체 공급처", 8],
     ["agriculture", "농산물", 3],
@@ -1103,14 +1115,16 @@ function renderCommunitySupplierFilterRail() {
     ["wholesale", "국내 도매", 1],
     ["logistics", "물류·검수", 1],
   ];
-  const renderItem = ([value, label, count], index) => `<button class="sellerdit-lnav-item sellerdit-supplier-filter-item ${index === 0 ? "is-active" : ""}" type="button" data-supplier-filter="${escapeHtml(value)}">
-    <span>${escapeHtml(label)}</span>
-    <em class="sellerdit-lnav-count">${escapeHtml(String(count))}</em>
-  </button>`;
-  return `<aside class="community-left-rail sellerdit-left-rail sellerdit-supplier-filter-rail" aria-label="공급처 필터">
-    <nav class="sellerdit-lnav" aria-label="공급처 카테고리">
-      <div class="sellerdit-lnav-sec">공급처</div>
-      ${filters.map(renderItem).join("")}
+  const renderNavItem = ([icon, href, label, active = false]) => `<a class="sellerdit-lnav-item ${active ? "is-active" : ""}" href="${href}"><span class="sellerdit-lnav-ic">${sellerditIcon(icon)}</span><span>${escapeHtml(label)}</span></a>`;
+  const renderFilterItem = ([value, label, count], index) => `<button class="sellerdit-lnav-item sellerdit-supplier-filter-item ${index === 0 ? "is-active" : ""}" type="button" data-supplier-filter="${escapeHtml(value)}"><span>${escapeHtml(label)}</span><em class="sellerdit-lnav-count">${escapeHtml(String(count))}</em></button>`;
+  return `<aside class="community-left-rail sellerdit-left-rail sellerdit-supplier-filter-rail" aria-label="셀러딧 왼쪽 메뉴">
+    <nav class="sellerdit-lnav" aria-label="셀러딧 섹션">
+      ${topItems.map(renderNavItem).join("")}
+      <div class="sellerdit-lnav-sec">바로가기</div>
+      ${quickItems.map(renderNavItem).join("")}
+      <div class="sellerdit-lnav-sec sellerdit-supplier-lnav-sec">공급처 카테고리</div>
+      ${filters.map(renderFilterItem).join("")}
+      <p class="sellerdit-lnav-login-note">로그인하면 내 커뮤니티가 여기에 표시됩니다</p>
     </nav>
   </aside>`;
 }
