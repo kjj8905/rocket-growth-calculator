@@ -1107,12 +1107,12 @@ function renderCommunitySupplierFilterRail() {
     ["guide", "/guides", "계산 기준"],
   ];
   const filters = [
-    ["all", "전체 공급처", 8],
-    ["agriculture", "농산물", 3],
-    ["industrial", "공산품", 2],
-    ["direct", "농수산 직매입", 3],
-    ["china-market", "1688·타오바오", 1],
-    ["wholesale", "국내 도매", 1],
+    ["all", "전체 공급처", 24],
+    ["agriculture", "농산물", 8],
+    ["industrial", "공산품", 6],
+    ["direct", "농수산 직매입", 4],
+    ["china-market", "1688·타오바오", 3],
+    ["wholesale", "국내 도매", 2],
     ["logistics", "물류·검수", 1],
   ];
   const renderNavItem = ([icon, href, label, active = false]) => `<a class="sellerdit-lnav-item ${active ? "is-active" : ""}" href="${href}"><span class="sellerdit-lnav-ic">${sellerditIcon(icon)}</span><span>${escapeHtml(label)}</span></a>`;
@@ -1134,6 +1134,8 @@ function renderCommunitySupplierDirectoryPage(query = {}) {
   const description = "가입 운영 커뮤니티와 운영자가 등록한 공급처를 구분해 보는 셀러딧 공급처 카테고리입니다.";
   const canonicalUrl = `${PUBLIC_SITE_URL}/community/suppliers`;
   const tiles = getCommunitySupplierTiles();
+  const communityTiles = tiles.filter((tile) => tile.type === "community");
+  const supplierTiles = tiles.filter((tile) => tile.type === "supplier");
   return renderDocumentShell({
     title,
     description,
@@ -1143,7 +1145,14 @@ function renderCommunitySupplierDirectoryPage(query = {}) {
       <section class="community-reddit-layout sellerdit-with-left-rail sellerdit-supplier-layout">
         ${renderCommunitySupplierFilterRail()}
         <section class="community-feed-panel sellerdit-supplier-main" aria-label="공급처">
-          <div class="sellerdit-tile-grid">${tiles.map(renderCommunitySupplierTile).join("")}</div>
+          <section class="sellerdit-supplier-section" data-tile-section="community">
+            <h2>가입 커뮤니티</h2>
+            <div class="sellerdit-tile-grid">${communityTiles.map(renderCommunitySupplierTile).join("")}</div>
+          </section>
+          <section class="sellerdit-supplier-section" data-tile-section="supplier">
+            <h2>운영자 등록 공급처</h2>
+            <div class="sellerdit-tile-grid">${supplierTiles.map(renderCommunitySupplierTile).join("")}</div>
+          </section>
         </section>
         <aside class="community-right-rail sellerdit-right-rail">
           ${renderPopularCommunitiesPanel()}
@@ -2045,6 +2054,7 @@ function renderCommunityScript(postSlug = "") {
       function setupSupplierFilters() {
         var tiles = Array.prototype.slice.call(document.querySelectorAll(".sellerdit-supplier-main [data-tile-type]"));
         var buttons = Array.prototype.slice.call(document.querySelectorAll(".sellerdit-supplier-filter-rail [data-supplier-filter]"));
+        var sections = Array.prototype.slice.call(document.querySelectorAll(".sellerdit-supplier-main [data-tile-section]"));
         if (!tiles.length || !buttons.length) return;
         function applyFilter(value) {
           buttons.forEach(function (button) {
@@ -2056,6 +2066,12 @@ function renderCommunityScript(postSlug = "") {
             var tags = (tile.dataset.supplierFilter || "").split(/\\s+/);
             var visible = value === "all" || (value === "community" ? tileType === "community" : tags.indexOf(value) !== -1);
             tile.hidden = !visible;
+          });
+          sections.forEach(function (section) {
+            var visibleTiles = Array.prototype.slice.call(section.querySelectorAll("[data-tile-type]")).filter(function (tile) {
+              return !tile.hidden;
+            });
+            section.hidden = visibleTiles.length === 0;
           });
         }
         buttons.forEach(function (button) {
@@ -2337,7 +2353,7 @@ function renderDocumentShell({ title, description, canonicalUrl, body, jsonLd, s
     <meta name="twitter:description" content="${escapeHtml(description)}" />
     <meta name="twitter:image" content="${PUBLIC_SITE_URL}/assets/site-flow.svg" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
-    <link rel="stylesheet" href="/styles.css?v=20260624-card-audit" />
+    <link rel="stylesheet" href="/styles.css?v=20260624-panel-left" />
     <meta name="naver-site-verification" content="d2091fad160915c822215f48ce925c90637cf535" />
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-EGL6JRLHH0"></script>
     <script>

@@ -15743,3 +15743,77 @@ body:has(.sellerdit-supplier-layout) .community-shell .sellerdit-supplier-main .
   font-size: 13px !important;
   font-weight: 700 !important;
 }
+
+/* Supplier example sync: large white content panel + clearer left navigation */
+body:has(.sellerdit-supplier-layout) .community-shell {
+  max-width: 1440px !important;
+}
+
+body:has(.sellerdit-supplier-layout) .sellerdit-supplier-main {
+  display: grid !important;
+  gap: 26px !important;
+  padding: 18px 18px 20px !important;
+  border: 1px solid #dfe3e8 !important;
+  border-radius: 12px !important;
+  background: #fff !important;
+  box-shadow: none !important;
+}
+
+body:has(.sellerdit-supplier-layout) .sellerdit-supplier-section {
+  display: grid !important;
+  gap: 12px !important;
+}
+
+body:has(.sellerdit-supplier-layout) .sellerdit-supplier-section[hidden] {
+  display: none !important;
+}
+
+body:has(.sellerdit-supplier-layout) .sellerdit-supplier-section h2 {
+  margin: 0 0 2px !important;
+  color: #4b5563 !important;
+  font-size: 13px !important;
+  font-weight: 800 !important;
+  line-height: 1.35 !important;
+}
+
+body:has(.sellerdit-supplier-layout) .community-shell .sellerdit-supplier-main .sellerdit-tile-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 16px !important;
+}
+
+body:has(.sellerdit-supplier-layout) .sellerdit-left-rail .sellerdit-lnav-item,
+body:has(.sellerdit-supplier-layout) .sellerdit-supplier-filter-item {
+  min-height: 42px !important;
+  padding: 10px 12px !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+}
+
+body:has(.sellerdit-supplier-layout) .sellerdit-left-rail .sellerdit-lnav-sec {
+  font-size: 12px !important;
+  font-weight: 800 !important;
+}
+
+body:has(.sellerdit-supplier-layout) .sellerdit-lnav-login-note {
+  font-size: 13px !important;
+  line-height: 1.45 !important;
+}
+
+body:has(.sellerdit-supplier-layout) .sellerdit-lnav-count {
+  min-width: 28px !important;
+  height: 22px !important;
+  padding: 0 8px !important;
+  font-size: 13px !important;
+  background: #eef2f7 !important;
+  color: #64748b !important;
+}
+
+body:has(.sellerdit-supplier-layout) .sellerdit-supplier-filter-item.is-active .sellerdit-lnav-count {
+  background: #dbeafe !important;
+  color: #2563eb !important;
+}
+
+body:has(.sellerdit-supplier-layout) .sellerdit-supplier-filter-item.is-active {
+  background: #e9ebed !important;
+  color: #111827 !important;
+}
