@@ -169,6 +169,7 @@ app.post("/dev/auth/virtual-user", (req, res) => {
     return;
   }
   const nickname = normalizeText(req.body?.nickname, 40) || "가상셀러";
+  const requestedRole = req.body?.role === "admin" ? "admin" : "user";
   const kakaoId = `virtual-${nickname.replace(/\s+/g, "-")}`;
   const user = upsertUser({
     id: kakaoId,
@@ -177,12 +178,16 @@ app.post("/dev/auth/virtual-user", (req, res) => {
       profile: { nickname },
     },
   });
+  if (requestedRole === "admin" && user.role !== "admin") {
+    db.prepare("UPDATE users SET role = 'admin', updated_at = ? WHERE id = ?").run(new Date().toISOString(), user.id);
+    user.role = "admin";
+  }
   const sessionId = createSession(user.id);
   setSignedCookie(res, SESSION_COOKIE, sessionId, {
     maxAgeMs: SESSION_TTL_MS,
     path: "/",
   });
-  res.json({ ok: true, user: { id: user.id, nickname: user.nickname, handle: makeCommunityHandle(nickname) } });
+  res.json({ ok: true, user: { id: user.id, nickname: user.nickname, handle: makeCommunityHandle(nickname), role: user.role || requestedRole } });
 });
 
 app.get("/api/products", requireLogin, (req, res) => {
@@ -296,8 +301,76 @@ app.delete("/api/products/:id", requireLogin, (req, res) => {
 app.get("/api/community/posts", (req, res) => {
   const category = normalizeCommunityCategory(req.query.category || req.query.cat);
   const sort = COMMUNITY_SORTS[req.query.sort] ? String(req.query.sort) : "hot";
-  const posts = getCommunityPosts({ category, sort, limit: 50 });
+  const search = String(req.query.q || "").trim().slice(0, 80);
+  const posts = getCommunityPosts({ category, sort, search, limit: 50 });
   res.json({ posts });
+});
+
+app.get("/api/community/search", (req, res) => {
+  const search = String(req.query.q || "").trim().slice(0, 80);
+  const posts = search ? attachCommunityPostsState(getCommunityPosts({ search, sort: "new", limit: 50 }), req.currentUser) : [];
+  res.json({ query: search, posts });
+});
+
+app.get("/api/community/memberships", requireLogin, (req, res) => {
+  res.json({ communities: getCommunityMembershipsForUser(req.currentUser.id) });
+});
+
+app.post("/api/community/memberships", requireLogin, (req, res) => {
+  const slug = normalizeCommunitySlug(req.body?.slug || req.body?.communitySlug);
+  const community = getCommunityBySlug(slug);
+  if (!community) {
+    res.status(400).json({ error: "invalid_community", message: "가입할 커뮤니티를 찾지 못했습니다." });
+    return;
+  }
+  const existing = db.prepare("SELECT user_id FROM memberships WHERE user_id = ? AND community_id = ?").get(req.currentUser.id, community.id);
+  if (existing) db.prepare("DELETE FROM memberships WHERE user_id = ? AND community_id = ?").run(req.currentUser.id, community.id);
+  else db.prepare("INSERT INTO memberships (user_id, community_id, created_at) VALUES (?, ?, ?)").run(req.currentUser.id, community.id, new Date().toISOString());
+  syncCommunityMemberCount(community.id);
+  res.json({ active: !existing, community: getCommunityBySlug(slug), communities: getCommunityMembershipsForUser(req.currentUser.id) });
+});
+
+app.get("/api/community/notifications", requireLogin, (req, res) => {
+  const rows = db.prepare("SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT 30").all(req.currentUser.id);
+  res.json({ notifications: rows.map(notificationFromRow) });
+});
+
+app.get("/api/admin/suppliers", requireAdmin, (req, res) => {
+  res.json({ suppliers: getSuppliers() });
+});
+
+app.post("/api/admin/suppliers", requireAdmin, (req, res) => {
+  const supplier = normalizeSupplierPayload(req.body);
+  if (!supplier.name || !supplier.category || !supplier.linkUrl) {
+    res.status(400).json({ error: "invalid_supplier", message: "공급처 이름, 카테고리, 바로가기 URL을 입력해 주세요." });
+    return;
+  }
+  const slug = createUniqueSupplierSlug(supplier.slug || supplier.name);
+  const id = `supplier-${slug}`;
+  db.prepare("INSERT INTO suppliers (id, slug, name, category, avatar_color, link_url, created_by, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
+    .run(id, slug, supplier.name, supplier.category, supplier.avatarColor, supplier.linkUrl, req.currentUser.id, new Date().toISOString());
+  res.status(201).json({ supplier: getSupplierBySlug(slug) });
+});
+
+app.put("/api/admin/suppliers/:slug", requireAdmin, (req, res) => {
+  const existing = getSupplierBySlug(req.params.slug);
+  const supplier = normalizeSupplierPayload(req.body);
+  if (!existing || !supplier.name || !supplier.category || !supplier.linkUrl) {
+    res.status(existing ? 400 : 404).json({ error: existing ? "invalid_supplier" : "supplier_not_found", message: existing ? "공급처 정보를 확인해 주세요." : "공급처를 찾지 못했습니다." });
+    return;
+  }
+  db.prepare("UPDATE suppliers SET name = ?, category = ?, avatar_color = ?, link_url = ? WHERE slug = ?")
+    .run(supplier.name, supplier.category, supplier.avatarColor, supplier.linkUrl, existing.slug);
+  res.json({ supplier: getSupplierBySlug(existing.slug) });
+});
+
+app.delete("/api/admin/suppliers/:slug", requireAdmin, (req, res) => {
+  const result = db.prepare("DELETE FROM suppliers WHERE slug = ?").run(String(req.params.slug || ""));
+  if (result.changes === 0) {
+    res.status(404).json({ error: "supplier_not_found", message: "삭제할 공급처를 찾지 못했습니다." });
+    return;
+  }
+  res.json({ ok: true, deletedSlug: req.params.slug });
 });
 
 app.get("/api/community/posts/:slug", (req, res) => {
@@ -415,6 +488,7 @@ app.post("/api/community/comments", requireLogin, (req, res) => {
      VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?)`,
   ).run(id, post.id, parentComment?.id || null, req.currentUser.id, getDisplayUserName(req.currentUser), body, now, now);
   updateCommunityCommentCount(post.id);
+  createCommunityNotificationForComment(post, id, parentComment?.id || null, req.currentUser);
   res.status(201).json({ comment: getCommunityCommentById(id), comments: getCommunityCommentTree(post.id), post: getCommunityPostById(post.id) });
 });
 
@@ -520,6 +594,10 @@ app.get(["/community", "/community/"], (req, res) => {
   res.type("html").send(renderCommunityIndexPage(req.query, req.currentUser));
 });
 
+app.get(["/community/search", "/community/search/"], (req, res) => {
+  res.type("html").send(renderCommunityIndexPage({ ...req.query, q: req.query.q || req.query.query || "" }, req.currentUser));
+});
+
 app.get("/community/:legacyCategory(tips|cases|operations|logistics)", (req, res) => {
   const target = LEGACY_COMMUNITY_CATEGORY_REDIRECTS[req.params.legacyCategory] || "final-margin";
   res.redirect(301, `/community/${target}`);
@@ -539,7 +617,7 @@ app.get(["/mvp", "/mvp/:variant"], (req, res) => {
 
 
 app.get(["/community/suppliers", "/community/suppliers/"], (req, res) => {
-  res.type("html").send(renderCommunitySupplierDirectoryPage(req.query));
+  res.type("html").send(renderCommunitySupplierDirectoryPage(req.query, req.currentUser));
 });
 app.get("/community/:category(china-sourcing|china-korea-logistics|korea-coupang-inbound|coupang-selling-cost|final-margin|qna)", (req, res) => {
   res.type("html").send(renderCommunityCategoryPage(req.params.category, req.query, req.currentUser));
@@ -808,7 +886,7 @@ function sellerditIcon(name) {
   return icons[name] || "";
 }
 
-function renderCommunityLeftRail(activeKey = "community") {
+function renderCommunityLeftRail(activeKey = "community", currentUser = null) {
   const topItems = [
     ["home", "/community", "홈", activeKey === "community"],
     ["popular", "/community?sort=hot", "인기", false],
@@ -821,13 +899,17 @@ function renderCommunityLeftRail(activeKey = "community") {
     ["trend", "/trends", "검색 트렌드"],
     ["guide", "/guides", "계산 기준"],
   ];
+  const myCommunities = currentUser?.id ? getCommunityMembershipsForUser(currentUser.id) : [];
   const renderItem = ([icon, href, label, active = false]) => `<a class="sellerdit-lnav-item ${active ? "is-active" : ""}" href="${href}"><span class="sellerdit-lnav-ic">${sellerditIcon(icon)}</span><span>${escapeHtml(label)}</span></a>`;
+  const myCommunityBlock = currentUser?.id
+    ? `<div class="sellerdit-lnav-sec">내 커뮤니티</div>${myCommunities.length ? myCommunities.map((community) => `<a class="sellerdit-lnav-item sellerdit-my-community" href="/community?cat=${encodeURIComponent(community.slug)}"><span class="sellerdit-lnav-ic">${escapeHtml(getCommunityAuthorInitial(community.name))}</span><span>${escapeHtml(community.name)}</span><em class="sellerdit-lnav-count">${formatInteger(community.memberCount)}</em></a>`).join("") : `<p class="sellerdit-lnav-login-note">아직 가입한 커뮤니티가 없습니다.</p>`}`
+    : `<p class="sellerdit-lnav-login-note">로그인하면 내 커뮤니티가 여기에 표시됩니다</p>`;
   return `<aside class="community-left-rail sellerdit-left-rail" aria-label="셀러딧 왼쪽 메뉴">
     <nav class="sellerdit-lnav" aria-label="셀러딧 섹션">
       ${topItems.map(renderItem).join("")}
       <div class="sellerdit-lnav-sec">바로가기</div>
       ${quickItems.map(renderItem).join("")}
-      <p class="sellerdit-lnav-login-note">로그인하면 내 커뮤니티가 여기에 표시됩니다</p>
+      ${myCommunityBlock}
     </nav>
   </aside>`;
 }
@@ -1066,7 +1148,7 @@ function renderCommunityIndexPage(query = {}, currentUser = null) {
     body: `<main class="community-shell">
       ${renderCommunityHeader("community")}
       <section class="community-workspace community-reddit-layout sellerdit-with-left-rail">
-        ${renderCommunityLeftRail("community")}
+        ${renderCommunityLeftRail("community", currentUser)}
         <section class="community-feed-panel" aria-labelledby="community-title">
           <div class="community-feed-head">
             <div>
@@ -1093,35 +1175,29 @@ function renderCommunityIndexPage(query = {}, currentUser = null) {
 }
 
 
-function getCommunitySupplierTiles() {
-  return [
-    {
-      type: "community",
-      initial: "농",
-      name: "r/농수산사입",
-      members: "12,480",
-      posts: "186",
-      description: "농수산 사입, 산지 공급처, 신선식품 포장 기준을 공유합니다.",
-      href: "/community",
-      color: "#2563eb",
-    },
-    {
-      type: "community",
-      initial: "로",
-      name: "r/로켓그로스",
-      members: "8,115",
-      posts: "143",
-      description: "로켓그로스 입고와 판매 전 비용 계산을 함께 점검합니다.",
-      href: "/community",
-      color: "#1d4ed8",
-    },
-    { type: "supplier", initial: "월", name: "월억도전", category: "#농수산", filter: "direct agriculture", href: "/suppliers/month-billion", color: "#2563eb" },
-    { type: "supplier", initial: "신", name: "신선마켓", category: "#농산물", filter: "agriculture direct", href: "/suppliers/fresh-market", color: "#3b82f6" },
-    { type: "supplier", initial: "담", name: "따고담고", category: "#공산품", filter: "industrial wholesale", href: "/suppliers/ddaggo-damgo", color: "#1e40af" },
-    { type: "supplier", initial: "팜", name: "팜허브", category: "#농수산", filter: "direct agriculture", href: "/suppliers/farm-hub", color: "#2563eb" },
-    { type: "supplier", initial: "16", name: "1688소싱", category: "#1688·타오바오", filter: "china-market industrial", href: "/suppliers/1688-sourcing", color: "#1d4ed8" },
-    { type: "supplier", initial: "검", name: "검수파트너", category: "#물류·검수", filter: "logistics", href: "/suppliers/inspection-partner", color: "#2563eb" },
-  ];
+function getCommunitySupplierTiles(currentUser = null) {
+  const communityTiles = getCommunities().map((community) => ({
+    type: "community",
+    initial: getCommunityAuthorInitial(community.name),
+    name: community.name,
+    slug: community.slug,
+    memberCount: community.memberCount,
+    postsCount: countCommunityPosts({ category: community.category || "" }),
+    description: community.description,
+    href: community.slug && COMMUNITY_CATEGORIES[community.slug] ? `/community?cat=${encodeURIComponent(community.slug)}` : "/community",
+    color: "#2563eb",
+    joinedByMe: Boolean(currentUser?.id && isCommunityMember(currentUser.id, community.id)),
+  }));
+  const supplierTiles = getSuppliers().map((supplier) => ({
+    type: "supplier",
+    initial: getCommunityAuthorInitial(supplier.name),
+    name: supplier.name,
+    category: supplier.category,
+    filter: supplier.filter || supplier.categoryFilter || "",
+    href: supplier.linkUrl || `/suppliers/${supplier.slug}`,
+    color: supplier.avatarColor || "#2563eb",
+  }));
+  return [...communityTiles, ...supplierTiles];
 }
 
 function renderCommunitySupplierTile(tile) {
@@ -1141,11 +1217,11 @@ function renderCommunitySupplierTile(tile) {
         <span class="sellerdit-tile-avatar" style="--tile-avatar:${escapeHtml(tile.color)}">${escapeHtml(tile.initial)}</span>
         <strong>${escapeHtml(tile.name)}</strong>
       </div>
-      <span class="sellerdit-tile-meta">멤버 ${escapeHtml(tile.members)} · 글 ${escapeHtml(tile.posts)}</span>
+      <span class="sellerdit-tile-meta">멤버 ${formatInteger(tile.memberCount || 0)} · 글 ${formatInteger(tile.postsCount || 0)}</span>
       <p>${escapeHtml(tile.description)}</p>
     </a>
     <div class="sellerdit-tile-actions">
-      <button type="button">＋ 팔로우</button>
+      <button type="button" class="${tile.joinedByMe ? "is-active" : ""}" data-community-membership data-community-slug="${escapeHtml(tile.slug)}">${tile.joinedByMe ? "가입됨" : "＋ 팔로우"}</button>
       <span>⋯</span>
     </div>
   </article>`;
@@ -1187,11 +1263,11 @@ function renderCommunitySupplierFilterRail() {
   </aside>`;
 }
 
-function renderCommunitySupplierDirectoryPage(query = {}) {
+function renderCommunitySupplierDirectoryPage(query = {}, currentUser = null) {
   const title = "셀러딧 공급처";
   const description = "가입 운영 커뮤니티와 운영자가 등록한 공급처를 구분해 보는 셀러딧 공급처 카테고리입니다.";
   const canonicalUrl = `${PUBLIC_SITE_URL}/community/suppliers`;
-  const tiles = getCommunitySupplierTiles();
+  const tiles = getCommunitySupplierTiles(currentUser);
   const communityTiles = tiles.filter((tile) => tile.type === "community");
   const supplierTiles = tiles.filter((tile) => tile.type === "supplier");
   return renderDocumentShell({
@@ -1237,7 +1313,7 @@ function renderCommunityAiAnswerPage(query = {}) {
     body: `<main class="community-shell">
       ${renderCommunityHeader("qna")}
       <section class="community-workspace community-reddit-layout sellerdit-ai-layout sellerdit-with-left-rail sellerdit-no-right-rail">
-        ${renderCommunityLeftRail("qna")}
+        ${renderCommunityLeftRail("qna", currentUser)}
         <section class="community-feed-panel sellerdit-ai-main" aria-labelledby="sellerdit-ai-title">
           <div class="sellerdit-ai-hero">
             <div class="sellerdit-ai-orbit" aria-hidden="true">
@@ -1308,7 +1384,7 @@ function renderCommunityCategoryPage(categorySlug, query = {}, currentUser = nul
     body: `<main class="community-shell">
       ${renderCommunityHeader(category.slug)}
       <section class="community-workspace community-reddit-layout">
-        ${renderCommunityLeftRail(category.slug)}
+        ${renderCommunityLeftRail(category.slug, currentUser)}
         <section class="community-feed-panel" aria-labelledby="community-category-title">
           <div class="community-feed-head">
             <div>
@@ -1350,7 +1426,7 @@ function renderCommunityPostPage(post, currentUser = null) {
     body: `<main class="community-shell">
       ${renderCommunityHeader(post.category)}
       <section class="community-workspace community-reddit-layout sellerdit-with-left-rail is-post-detail">
-        ${renderCommunityLeftRail("community")}
+        ${renderCommunityLeftRail("community", currentUser)}
         <section class="community-detail-main">
           <article class="community-post-article sellerdit-detail-post" data-community-post="${escapeHtml(post.slug)}">
             <div class="sellerdit-post-meta">
@@ -1562,7 +1638,7 @@ function renderSellerditComment(comment, post, depth = 0, index = 0) {
 
 function renderProfileComments(comments) {
   if (!comments.length) return `<div class="community-feed-empty">아직 공개된 댓글이 없습니다.</div>`;
-  return `<div class="community-vote-list sellerdit-feedpanel">${comments.map((comment) => `<article class="community-vote-card sellerdit-feed-post"><div class="sellerdit-post-meta"><a class="sellerdit-author" href="/community/${escapeHtml(comment.postSlug)}#comments">${escapeHtml(comment.postTitle)}</a><span class="sellerdit-dot">·</span><time datetime="${escapeHtml(comment.createdAt)}">${escapeHtml(formatDate(comment.createdAt) || "")}</time></div><p class="sellerdit-post-excerpt">${escapeHtml(comment.body)}</p></article>`).join("")}</div>`;
+  return `<div class="community-vote-list sellerdit-feedpanel sellerdit-profile-feed-list" style="border:0!important;border-radius:0!important;padding:0!important;background:transparent!important;box-shadow:none!important">${comments.map((comment) => `<article class="community-vote-card sellerdit-feed-post"><div class="sellerdit-post-meta"><a class="sellerdit-author" href="/community/${escapeHtml(comment.postSlug)}#comments">${escapeHtml(comment.postTitle)}</a><span class="sellerdit-dot">·</span><time datetime="${escapeHtml(comment.createdAt)}">${escapeHtml(formatDate(comment.createdAt) || "")}</time></div><p class="sellerdit-post-excerpt">${escapeHtml(comment.body)}</p></article>`).join("")}</div>`;
 }
 
 function renderSellerditProfilePage(handle, query = {}, currentUser = null) {
@@ -1585,27 +1661,27 @@ function renderSellerditProfilePage(handle, query = {}, currentUser = null) {
     body: `<main class="community-shell">
       ${renderCommunityHeader("community")}
       <section class="community-workspace community-reddit-layout sellerdit-profile-layout sellerdit-with-left-rail">
-        ${renderCommunityLeftRail("community")}
+        ${renderCommunityLeftRail("community", currentUser)}
         <section class="community-feed-panel sellerdit-profile-main" aria-labelledby="sellerdit-profile-title">
           <header class="sellerdit-profile-header" style="${escapeHtml(getCommunityAuthorStyle(displayName))}">
             <span class="sellerdit-profile-avatar" style="background:${escapeHtml(getCommunityAuthorColor(displayName))}">${escapeHtml(getCommunityAuthorInitial(displayName))}</span>
-            <div>
-              <h1 id="sellerdit-profile-title">u/${escapeHtml(normalizedHandle)}</h1>
-              <p>${escapeHtml(displayName)} · 케이크데이 2026년 6월 22일</p>
-              <dl>
+            <div class="sellerdit-profile-summary">
+              <h1 id="sellerdit-profile-title">${escapeHtml(displayName)}</h1>
+              <p>u/${escapeHtml(normalizedHandle)} · 🍰 가입일 2026년 6월 22일</p>
+              <dl aria-label="프로필 요약">
                 <div><dt>받은 좋아요</dt><dd>${formatInteger(likes)}</dd></div>
                 <div><dt>게시물</dt><dd>${formatInteger(posts.length)}</dd></div>
                 <div><dt>댓글 카르마</dt><dd>${formatInteger(comments)}</dd></div>
               </dl>
             </div>
-            ${isMe ? `<a class="sellerdit-follow" href="#community-write">글쓰기</a><button class="sellerdit-follow" type="button">설정</button>` : `<button class="sellerdit-follow" type="button">팔로우</button>`}
+            <div class="sellerdit-profile-actions">${isMe ? `<a class="sellerdit-follow" href="#community-write">글쓰기</a><button class="sellerdit-follow" type="button">설정</button>` : `<button class="sellerdit-follow" type="button">팔로우</button>`}</div>
             <span class="sellerdit-more">⋯</span>
           </header>
           <nav class="sellerdit-profile-tabs" aria-label="프로필 탭">
             <a class="${tab === "posts" ? "is-active" : ""}" href="/u/${escapeHtml(normalizedHandle)}?tab=posts">게시물</a>
             <a class="${tab === "comments" ? "is-active" : ""}" href="/u/${escapeHtml(normalizedHandle)}?tab=comments">댓글</a>
           </nav>
-          ${tab === "comments" ? renderProfileComments(userComments) : renderCommunityFeed(posts, "아직 공개된 게시물이 없습니다.")}
+          ${tab === "comments" ? renderProfileComments(userComments) : renderCommunityFeed(posts, "아직 공개된 게시물이 없습니다.").replace('class="community-vote-list sellerdit-feedpanel"', 'class="community-vote-list sellerdit-feedpanel sellerdit-profile-feed-list" style="border:0!important;border-radius:0!important;padding:0!important;background:transparent!important;box-shadow:none!important"')}
           ${isMe ? renderCommunityWritePanel() : ""}
         </section>
         <aside class="community-right-rail sellerdit-right-rail sellerdit-profile-side">
@@ -1614,6 +1690,7 @@ function renderSellerditProfilePage(handle, query = {}, currentUser = null) {
             <strong>u/${escapeHtml(normalizedHandle)}</strong>
             <p>🍰 2026년 6월 22일 가입 · 카르마 ${formatInteger(likes + comments)}</p>
             <a href="/community">r/셀러딧으로 돌아가기</a>
+            ${isMe ? "" : `<button class="sellerdit-follow" type="button">팔로우</button>`}
           </section>
           ${renderSellerditFooterLinks()}
         </aside>
@@ -1636,7 +1713,7 @@ function renderCommunityHeader(activeKey) {
   return `<header class="community-topbar sellerdit-topbar">
     <div class="sellerdit-topbar-inner">
     <a class="community-brand" href="/community"><span>r/</span> 셀러딧</a>
-    <form class="community-global-search" method="get" action="/community" role="search">
+    <form class="community-global-search" method="get" action="/community/search" role="search">
       <input type="search" name="q" placeholder="커뮤니티 검색" aria-label="커뮤니티 전체 검색" />
     </form>
     <nav aria-label="커뮤니티 메뉴">
@@ -2210,6 +2287,27 @@ function renderCommunityScript(postSlug = "") {
       }
 
       setupSupplierFilters();
+      document.querySelectorAll("[data-community-membership]").forEach(function (button) {
+        button.addEventListener("click", async function () {
+          var beforeText = button.textContent;
+          var beforeActive = button.classList.contains("is-active");
+          button.classList.toggle("is-active", !beforeActive);
+          button.textContent = beforeActive ? "＋ 팔로우" : "가입됨";
+          try {
+            var response = await fetch("/api/community/memberships", {
+              method: "POST",
+              credentials: "same-origin",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ slug: button.dataset.communitySlug || "" })
+            });
+            if (response.status === 401) { window.location.href = loginUrl(); return; }
+            if (!response.ok) throw new Error("membership_failed");
+          } catch {
+            button.classList.toggle("is-active", beforeActive);
+            button.textContent = beforeText;
+          }
+        });
+      });
       refreshCommunityAuth();
 
       function setMessage(form, message, tone) {
@@ -2595,7 +2693,7 @@ function renderDocumentShell({ title, description, canonicalUrl, body, jsonLd, s
     <meta name="twitter:description" content="${escapeHtml(description)}" />
     <meta name="twitter:image" content="${PUBLIC_SITE_URL}/assets/site-flow.svg" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
-    <link rel="stylesheet" href="/styles.css?v=20260624-phase1-action-fix" />
+    <link rel="stylesheet" href="/styles.css?v=20260624-phase2-profile2" />
     <meta name="naver-site-verification" content="d2091fad160915c822215f48ce925c90637cf535" />
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-EGL6JRLHH0"></script>
     <script>
@@ -3582,6 +3680,16 @@ function requireLogin(req, res, next) {
   next();
 }
 
+function requireAdmin(req, res, next) {
+  requireLogin(req, res, () => {
+    if (req.currentUser?.role !== "admin") {
+      res.status(403).json({ error: "admin_required", message: "운영자 권한이 필요합니다." });
+      return;
+    }
+    next();
+  });
+}
+
 function normalizeProductNameKey(name) {
   return String(name || "")
     .trim()
@@ -3732,6 +3840,23 @@ function initializeDatabase() {
     );
 
     CREATE INDEX IF NOT EXISTS community_comment_votes_comment_idx ON community_comment_votes (comment_id);
+
+    CREATE TABLE IF NOT EXISTS notifications (
+      id TEXT PRIMARY KEY,
+      user_id INTEGER NOT NULL,
+      actor_user_id INTEGER,
+      post_id TEXT,
+      comment_id TEXT,
+      type TEXT NOT NULL,
+      message TEXT NOT NULL,
+      read_at TEXT,
+      created_at TEXT NOT NULL,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+      FOREIGN KEY (actor_user_id) REFERENCES users(id) ON DELETE SET NULL,
+      FOREIGN KEY (post_id) REFERENCES community_posts(id) ON DELETE CASCADE,
+      FOREIGN KEY (comment_id) REFERENCES community_comments(id) ON DELETE CASCADE
+    );
+    CREATE INDEX IF NOT EXISTS notifications_user_created_idx ON notifications (user_id, created_at);
   `);
 
   ensureColumn("users", "handle", "TEXT");
@@ -3768,7 +3893,11 @@ function seedCommunities() {
   const now = new Date().toISOString();
   const rows = [
     ["community-sellerdit", "sellerdit", "r/셀러딧", "쿠팡셀러 비용과 로켓그로스 운영을 나누는 커뮤니티"],
-    ["community-rocket-growth", "rocket-growth", "r/로켓그로스", "입고·수수료·마진 계산을 함께 점검하는 커뮤니티"],
+    ["community-china-sourcing", "china-sourcing", "r/중국사입", "1688·타오바오 상품 단가와 사입 리스크를 공유합니다."],
+    ["community-china-korea-logistics", "china-korea-logistics", "r/중국→한국", "포워더, LCL, 통관, 국내 도착 비용을 점검합니다."],
+    ["community-korea-coupang-inbound", "korea-coupang-inbound", "r/한국→쿠팡", "쿠팡센터 입고와 작업비, 바코드 라벨 기준을 나눕니다."],
+    ["community-coupang-selling-cost", "coupang-selling-cost", "r/쿠팡소모비", "판매 수수료, 광고비, 반품비처럼 판매 중 드는 비용을 계산합니다."],
+    ["community-final-margin", "final-margin", "r/최종마진", "최종 판매가와 순이익 판단을 함께 점검합니다."],
   ];
   const stmt = db.prepare("INSERT OR IGNORE INTO communities (id, slug, name, description, member_count, created_at) VALUES (?, ?, ?, ?, 0, ?)");
   rows.forEach((row) => stmt.run(...row, now));
@@ -3776,12 +3905,16 @@ function seedCommunities() {
 
 function seedSuppliers() {
   const now = new Date().toISOString();
-  const rows = getCommunitySupplierTiles().filter((tile) => tile.type === "supplier");
+  const rows = [
+    { slug: "month-billion", name: "월억도전", category: "#농수산", color: "#2563eb", url: "/suppliers/month-billion" },
+    { slug: "fresh-market", name: "신선마켓", category: "#농산물", color: "#3b82f6", url: "/suppliers/fresh-market" },
+    { slug: "ddaggo-damgo", name: "따고담고", category: "#공산품", color: "#1e40af", url: "/suppliers/ddaggo-damgo" },
+    { slug: "farm-hub", name: "팜허브", category: "#농수산", color: "#2563eb", url: "/suppliers/farm-hub" },
+    { slug: "1688-sourcing", name: "1688소싱", category: "#1688·타오바오", color: "#1d4ed8", url: "/suppliers/1688-sourcing" },
+    { slug: "inspection-partner", name: "검수파트너", category: "#물류·검수", color: "#2563eb", url: "/suppliers/inspection-partner" },
+  ];
   const stmt = db.prepare("INSERT OR IGNORE INTO suppliers (id, slug, name, category, avatar_color, link_url, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)");
-  rows.forEach((tile) => {
-    const slug = String(tile.href || '').split('/').filter(Boolean).pop() || makeCommunityHandle(tile.name);
-    stmt.run(`supplier-${slug}`, slug, tile.name, tile.category, tile.color || '#2563eb', tile.href, now);
-  });
+  rows.forEach((row) => stmt.run(`supplier-${row.slug}`, row.slug, row.name, row.category, row.color, row.url, now));
 }
 
 function migrateProductMetadataColumns() {
@@ -4069,6 +4202,95 @@ function attachCommunityCommentsState(comments, user) {
       likedByMe: Boolean(user?.id && db.prepare("SELECT 1 FROM community_comment_votes WHERE comment_id = ? AND user_id = ?").get(comment.id, user.id)),
       replies: attachCommunityCommentsState(comment.replies || [], user),
     };
+  });
+}
+
+function normalizeCommunitySlug(value) {
+  return String(value || "").trim().toLowerCase().replace(/[^a-z0-9-]/g, "").slice(0, 80);
+}
+
+function getCommunities() {
+  return db.prepare("SELECT id, slug, name, description, member_count FROM communities ORDER BY created_at ASC").all()
+    .map((row) => ({ id: row.id, slug: row.slug, name: row.name, description: row.description, memberCount: row.member_count || 0, category: COMMUNITY_CATEGORIES[row.slug] ? row.slug : "" }));
+}
+
+function getCommunityBySlug(slug) {
+  const normalized = normalizeCommunitySlug(slug);
+  const row = db.prepare("SELECT id, slug, name, description, member_count FROM communities WHERE slug = ?").get(normalized);
+  return row ? { id: row.id, slug: row.slug, name: row.name, description: row.description, memberCount: row.member_count || 0 } : null;
+}
+
+function isCommunityMember(userId, communityId) {
+  return Boolean(db.prepare("SELECT 1 FROM memberships WHERE user_id = ? AND community_id = ?").get(userId, communityId));
+}
+
+function getCommunityMembershipsForUser(userId) {
+  return db.prepare(`SELECT c.id, c.slug, c.name, c.description, c.member_count
+    FROM memberships m JOIN communities c ON c.id = m.community_id
+    WHERE m.user_id = ? ORDER BY m.created_at DESC`).all(userId)
+    .map((row) => ({ id: row.id, slug: row.slug, name: row.name, description: row.description, memberCount: row.member_count || 0 }));
+}
+
+function syncCommunityMemberCount(communityId) {
+  const count = db.prepare("SELECT COUNT(*) AS count FROM memberships WHERE community_id = ?").get(communityId)?.count || 0;
+  db.prepare("UPDATE communities SET member_count = ? WHERE id = ?").run(count, communityId);
+}
+
+function supplierCategoryFilter(category) {
+  const text = String(category || "");
+  const tags = [];
+  if (/농|수산|신선/.test(text)) tags.push("agriculture", "direct");
+  if (/공산|도매/.test(text)) tags.push("industrial", "wholesale");
+  if (/1688|타오바오|중국/.test(text)) tags.push("china-market", "industrial");
+  if (/물류|검수/.test(text)) tags.push("logistics");
+  return [...new Set(tags)].join(" ") || "wholesale";
+}
+
+function supplierFromRow(row) {
+  if (!row) return null;
+  return { id: row.id, slug: row.slug, name: row.name, category: row.category, avatarColor: row.avatar_color, linkUrl: row.link_url, createdBy: row.created_by, createdAt: row.created_at, filter: supplierCategoryFilter(row.category) };
+}
+
+function getSuppliers() {
+  return db.prepare("SELECT * FROM suppliers ORDER BY created_at ASC").all().map(supplierFromRow);
+}
+
+function getSupplierBySlug(slug) {
+  return supplierFromRow(db.prepare("SELECT * FROM suppliers WHERE slug = ?").get(String(slug || "")));
+}
+
+function normalizeSupplierPayload(body = {}) {
+  const name = normalizeText(body.name, 80);
+  const category = normalizeText(body.category, 40);
+  const slug = normalizeCommunitySlug(body.slug || name);
+  const avatarColor = /^#[0-9a-fA-F]{6}$/.test(String(body.avatarColor || body.avatar_color || "")) ? String(body.avatarColor || body.avatar_color) : "#2563eb";
+  const linkUrl = normalizeUrl(body.linkUrl || body.link_url, 500) || normalizeText(body.linkUrl || body.link_url, 500);
+  return { name, category, slug, avatarColor, linkUrl };
+}
+
+function createUniqueSupplierSlug(seed) {
+  const base = normalizeCommunitySlug(makeCommunityHandle(seed)) || `supplier-${Date.now()}`;
+  let slug = base;
+  let index = 2;
+  while (getSupplierBySlug(slug)) slug = `${base}-${index++}`;
+  return slug;
+}
+
+function notificationFromRow(row) {
+  return { id: row.id, userId: row.user_id, actorUserId: row.actor_user_id, postId: row.post_id, commentId: row.comment_id, type: row.type, message: row.message, readAt: row.read_at, createdAt: row.created_at };
+}
+
+function createCommunityNotificationForComment(post, commentId, parentId, actorUser) {
+  const targets = new Set();
+  if (post.authorUserId && Number(post.authorUserId) !== Number(actorUser?.id)) targets.add(Number(post.authorUserId));
+  if (parentId) {
+    const parent = db.prepare("SELECT user_id FROM community_comments WHERE id = ?").get(parentId);
+    if (parent?.user_id && Number(parent.user_id) !== Number(actorUser?.id)) targets.add(Number(parent.user_id));
+  }
+  const now = new Date().toISOString();
+  targets.forEach((userId) => {
+    db.prepare("INSERT INTO notifications (id, user_id, actor_user_id, post_id, comment_id, type, message, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
+      .run(`notification-${Date.now()}-${crypto.randomBytes(4).toString("hex")}`, userId, actorUser?.id || null, post.id, commentId, parentId ? "reply" : "comment", `${getDisplayUserName(actorUser)}님이 ${parentId ? "답글" : "댓글"}을 남겼습니다.`, now);
   });
 }
 
