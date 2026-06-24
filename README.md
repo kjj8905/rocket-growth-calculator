@@ -40,6 +40,37 @@ Kakao Developers settings:
 
 Without Kakao keys, the calculator still works, but product saving is blocked with a login/setup message.
 
+## Search Trend Setup
+
+The `/trends` page and `/api/search-trends` endpoint are wired to real providers when API keys are present.
+
+```env
+# Real NAVER DataLab Search Trend API
+NAVER_DATALAB_CLIENT_ID=
+NAVER_DATALAB_CLIENT_SECRET=
+
+# Daum search interest uses the same Kakao REST API key used for Kakao Login.
+KAKAO_REST_API_KEY=
+
+# Optional: use your own JSON endpoints instead of the built-in collectors.
+# Expected item shape: [{ "title": "keyword", "traffic": "1,000건", "url": "https://..." }]
+NAVER_TREND_API_URL=
+DAUM_TREND_API_URL=
+```
+
+Current behavior:
+
+- Google: reads Google Trends RSS for Korea.
+- NAVER: calls `https://openapi.naver.com/v1/datalab/search` when `NAVER_DATALAB_CLIENT_ID` and `NAVER_DATALAB_CLIENT_SECRET` are set. Without them, it shows fallback topic keywords.
+- Daum: calls Kakao Daum Search API when `KAKAO_REST_API_KEY` is set and ranks the configured seller keywords by result count.
+
+Required external console settings:
+
+- NAVER Developers / NAVER Cloud Open API: issue a Search Trend/DataLab client ID and secret.
+- Kakao Developers: issue a REST API key. The same REST key can be used for Kakao Login and Daum Search API.
+
+For production on Render, set the same variables in Render Environment, not in the repository.
+
 ## Handoff
 
 Current project handoff documentation is in:
