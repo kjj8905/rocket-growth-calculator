@@ -15781,7 +15781,7 @@ body:has(.sellerdit-supplier-layout) .community-shell .sellerdit-supplier-main .
   gap: 16px !important;
 }
 
-body:has(.sellerdit-supplier-layout) .sellerdit-left-rail .sellerdit-lnav-item,
+body:has(.sellerdit-topbar) .sellerdit-left-rail .sellerdit-lnav-item,
 body:has(.sellerdit-supplier-layout) .sellerdit-supplier-filter-item {
   min-height: 42px !important;
   padding: 10px 12px !important;
