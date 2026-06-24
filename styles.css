@@ -15456,3 +15456,15 @@ body:has(.sellerdit-topbar) .community-shell {
   display: grid;
   gap: 4px;
 }
+
+/* Supplier page width expansion */
+body:has(.sellerdit-supplier-layout) .community-shell {
+  max-width: 1440px !important;
+}
+
+body:has(.sellerdit-supplier-layout) .community-reddit-layout.sellerdit-supplier-layout,
+body:has(.sellerdit-supplier-layout) .community-reddit-layout.sellerdit-with-left-rail.sellerdit-supplier-layout {
+  width: 100% !important;
+  max-width: none !important;
+  grid-template-columns: 270px minmax(0, 1fr) 316px !important;
+}
