@@ -20905,3 +20905,35 @@ body:has(.sellerdit-supplier-layout) .community-reddit-layout.sellerdit-with-lef
     background-image: none !important;
   }
 }
+
+/* Desktop detail repair: keep clicked post in feed column, not right-rail column */
+@media (min-width: 1024px) {
+  body:has(.sellerdit-topbar) .community-reddit-layout.is-post-detail,
+  body:has(.sellerdit-topbar) .community-reddit-layout.sellerdit-with-left-rail.is-post-detail {
+    display: grid !important;
+    grid-template-columns: var(--sellerdit-feed-w, 728px) var(--sellerdit-right-w, 338px) !important;
+    gap: var(--sellerdit-gap-w, 12px) !important;
+  }
+
+  body:has(.sellerdit-topbar) .community-reddit-layout.is-post-detail > .community-detail-main,
+  body:has(.sellerdit-topbar) .community-reddit-layout.sellerdit-with-left-rail.is-post-detail > .community-detail-main,
+  body:has(.sellerdit-topbar) .community-shell .community-reddit-layout.is-post-detail > section.community-detail-main {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+    width: var(--sellerdit-feed-w, 728px) !important;
+    min-width: 0 !important;
+    max-width: var(--sellerdit-feed-w, 728px) !important;
+    margin: 0 !important;
+  }
+
+  body:has(.sellerdit-topbar) .community-reddit-layout.is-post-detail > .sellerdit-right-rail,
+  body:has(.sellerdit-topbar) .community-reddit-layout.sellerdit-with-left-rail.is-post-detail > .sellerdit-right-rail,
+  body:has(.sellerdit-topbar) .community-shell .community-reddit-layout.is-post-detail > aside.sellerdit-right-rail {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+    width: var(--sellerdit-right-w, 338px) !important;
+    min-width: var(--sellerdit-right-w, 338px) !important;
+    max-width: var(--sellerdit-right-w, 338px) !important;
+    align-self: start !important;
+  }
+}
