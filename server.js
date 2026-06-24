@@ -677,7 +677,19 @@ app.get("/healthz", (req, res) => {
   });
 });
 
-app.use(express.static(__dirname));
+app.get("/app.js", (req, res) => {
+  res.sendFile(path.join(__dirname, "app.js"));
+});
+
+app.get("/styles.css", (req, res) => {
+  res.sendFile(path.join(__dirname, "styles.css"));
+});
+
+app.use("/assets", express.static(path.join(__dirname, "assets"), {
+  fallthrough: false,
+  immutable: true,
+  maxAge: "1y",
+}));
 
 app.listen(PORT, () => {
   console.log(`Rocket Growth Calculator running at http://localhost:${PORT}`);
