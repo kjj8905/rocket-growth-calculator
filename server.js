@@ -19,6 +19,7 @@ const __dirname = path.dirname(__filename);
 loadEnvFile(path.join(__dirname, ".env"));
 
 const PORT = Number(process.env.PORT || 4176);
+const SEO_SITE_BRAND = "셀러딧";
 const PUBLIC_SITE_URL = normalizeSiteUrl(process.env.PUBLIC_SITE_URL || process.env.SITE_URL || `http://localhost:${PORT}`);
 const SESSION_COOKIE = "rg_session";
 const OAUTH_STATE_COOKIE = "rg_kakao_state";
@@ -994,7 +995,7 @@ function renderCommunityIndexPage(query = {}) {
   const page = Math.min(Math.max(1, Number(query.page) || 1), totalPages);
   const posts = getCommunityPosts({ ...feedOptions, limit: pageSize, offset: (page - 1) * pageSize });
   const notices = !search && !tag && page === 1 ? getCommunityPosts({ notice: true, sort: "new", limit: 3 }) : [];
-  const title = "쿠팡셀러 커뮤니티 | 로켓그로스 계산기";
+  const title = "셀러딧 커뮤니티";
   const description =
     "쿠팡셀러와 개인셀러를 위한 로켓그로스 5단계 커뮤니티입니다. 중국사입, 중국→한국 물류, 한국→쿠팡 입고, 쿠팡 소모 비용, 최종 비용을 단계별로 묻고 답합니다.";
   const canonicalUrl = `${PUBLIC_SITE_URL}/community`;
@@ -1130,7 +1131,7 @@ function renderCommunitySupplierFilterRail() {
 }
 
 function renderCommunitySupplierDirectoryPage(query = {}) {
-  const title = "셀러딧 공급처 | 로켓그로스 계산기";
+  const title = "셀러딧 공급처";
   const description = "가입 운영 커뮤니티와 운영자가 등록한 공급처를 구분해 보는 셀러딧 공급처 카테고리입니다.";
   const canonicalUrl = `${PUBLIC_SITE_URL}/community/suppliers`;
   const tiles = getCommunitySupplierTiles();
@@ -1168,7 +1169,7 @@ function renderCommunitySupplierDirectoryPage(query = {}) {
 function renderCommunityAiAnswerPage(query = {}) {
   const search = String(query.q || "").trim().slice(0, 80);
   const qnaPosts = getCommunityPosts({ category: "qna", notice: false, sort: "hot", limit: 8 });
-  const title = "셀러딧 AI 답변 | 로켓그로스 계산기";
+  const title = "셀러딧 AI 답변";
   const description = "쿠팡셀러와 개인셀러의 로켓그로스 비용, 사입, 물류, 수수료 질문을 AI 답변형으로 정리하는 셀러딧 질문답변 화면입니다.";
   const canonicalUrl = `${PUBLIC_SITE_URL}/community/qna`;
   const answerTitle = search || "터미널 운송료는 무슨 비용인가요?";
@@ -1244,7 +1245,7 @@ function renderCommunityCategoryPage(categorySlug, query = {}) {
   const subLabel = search ? `${category.label} · ${formatInteger(total)}개` : category.label;
 
   return renderDocumentShell({
-    title: `${category.title} | 로켓그로스 계산기 커뮤니티`,
+    title: `${category.title} | 셀러딧 커뮤니티`,
     description: category.description,
     canonicalUrl,
     body: `<main class="community-shell">
@@ -1285,7 +1286,7 @@ function renderCommunityPostPage(post) {
   const category = COMMUNITY_CATEGORIES[post.category] || COMMUNITY_CATEGORIES["final-margin"];
 
   return renderDocumentShell({
-    title: `${post.title} | 로켓그로스 계산기 커뮤니티`,
+    title: `${post.title} | 셀러딧 커뮤니티`,
     description: post.summary,
     canonicalUrl,
     body: `<main class="community-shell">
@@ -1782,7 +1783,7 @@ function buildNaverFallbackTrendItems() {
 }
 
 function renderTrendPage(trends) {
-  const title = "셀러 검색어 순위 | 로켓그로스 계산기";
+  const title = "셀러 검색어 순위 | 셀러딧";
   const description =
     "Google Trends, 네이버 데이터랩, Daum 검색 흐름을 10분 캐시 기준으로 확인하는 셀러용 검색어 순위 화면입니다.";
   const canonicalUrl = `${PUBLIC_SITE_URL}/trends`;
@@ -2177,7 +2178,7 @@ function renderCommunityScript(postSlug = "") {
 }
 
 function renderGuideIndexPage() {
-  const title = "로켓그로스 계산 기준";
+  const title = "셀러 비용 계산 기준 | 셀러딧";
   const description =
     "로켓그로스 계산기, LCL 물류비, 수입 부가세, 쿠팡 파레트 비용, 쿠팡 판매 수수료처럼 초보 셀러가 헷갈리는 계산 기준을 문서로 정리한 지식 허브입니다.";
   const canonicalUrl = `${PUBLIC_SITE_URL}/guides`;
@@ -2325,7 +2326,20 @@ function renderNotFoundPage() {
   });
 }
 
+function formatSeoTitle(title) {
+  const rawTitle = String(title || "");
+  const hadCommunitySuffix = /\|\s*로켓그로스 계산기 커뮤니티/.test(rawTitle);
+  const normalizedTitle = rawTitle
+    .replace(/\s*\|\s*로켓그로스 계산기 커뮤니티/g, "")
+    .replace(/\s*\|\s*로켓그로스 계산기/g, "")
+    .trim();
+  if (!normalizedTitle) return SEO_SITE_BRAND;
+  if (normalizedTitle.includes(SEO_SITE_BRAND)) return normalizedTitle;
+  return `${normalizedTitle} | ${hadCommunitySuffix ? `${SEO_SITE_BRAND} 커뮤니티` : SEO_SITE_BRAND}`;
+}
+
 function renderDocumentShell({ title, description, canonicalUrl, body, jsonLd, script = "" }) {
+  const seoTitle = formatSeoTitle(title);
   const jsonLdBlock = jsonLd
     ? `<script type="application/ld+json">${JSON.stringify(jsonLd, null, 2).replace(/</g, "\\u003c")}</script>`
     : "";
@@ -2335,7 +2349,7 @@ function renderDocumentShell({ title, description, canonicalUrl, body, jsonLd, s
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>${escapeHtml(title)}</title>
+    <title>${escapeHtml(seoTitle)}</title>
     <meta name="description" content="${escapeHtml(description)}" />
     <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1" />
     <link rel="icon" href="/assets/rocket-favicon.svg?v=20260611" type="image/svg+xml" />
@@ -2343,13 +2357,13 @@ function renderDocumentShell({ title, description, canonicalUrl, body, jsonLd, s
     <link rel="canonical" href="${escapeHtml(canonicalUrl)}" />
     <meta property="og:type" content="article" />
     <meta property="og:locale" content="ko_KR" />
-    <meta property="og:site_name" content="로켓그로스 계산기" />
-    <meta property="og:title" content="${escapeHtml(title)}" />
+    <meta property="og:site_name" content="${SEO_SITE_BRAND}" />
+    <meta property="og:title" content="${escapeHtml(seoTitle)}" />
     <meta property="og:description" content="${escapeHtml(description)}" />
     <meta property="og:url" content="${escapeHtml(canonicalUrl)}" />
     <meta property="og:image" content="${PUBLIC_SITE_URL}/assets/site-flow.svg" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="${escapeHtml(title)}" />
+    <meta name="twitter:title" content="${escapeHtml(seoTitle)}" />
     <meta name="twitter:description" content="${escapeHtml(description)}" />
     <meta name="twitter:image" content="${PUBLIC_SITE_URL}/assets/site-flow.svg" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
