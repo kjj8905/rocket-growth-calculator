@@ -15653,3 +15653,93 @@ body:has(.sellerdit-supplier-layout) .community-reddit-layout.sellerdit-supplier
 body:has(.sellerdit-supplier-layout) .community-reddit-layout.sellerdit-with-left-rail.sellerdit-supplier-layout {
   grid-template-columns: 270px minmax(0, 1fr) 316px !important;
 }
+
+/* Supplier page card audit pass: match attached example card density and action styling */
+body:has(.sellerdit-supplier-layout) .community-shell .sellerdit-supplier-main .sellerdit-tile-grid {
+  gap: 16px !important;
+  align-items: start !important;
+}
+
+body:has(.sellerdit-supplier-layout) .community-shell .sellerdit-supplier-main .sellerdit-tile {
+  padding: 14px 16px !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 12px !important;
+  background: #fff !important;
+  box-shadow: none !important;
+  transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease !important;
+}
+
+body:has(.sellerdit-supplier-layout) .community-shell .sellerdit-supplier-main .sellerdit-tile:hover,
+body:has(.sellerdit-supplier-layout) .community-shell .sellerdit-supplier-main .sellerdit-tile:focus-visible {
+  transform: translateY(-2px) !important;
+  border-color: #d8dde4 !important;
+  box-shadow: 0 10px 22px rgba(25, 31, 40, .08) !important;
+}
+
+body:has(.sellerdit-supplier-layout) .community-shell .sellerdit-supplier-main .sellerdit-tile-community {
+  min-height: 174px !important;
+  gap: 8px !important;
+}
+
+body:has(.sellerdit-supplier-layout) .community-shell .sellerdit-supplier-main .sellerdit-tile-community .sellerdit-tile-main {
+  gap: 6px !important;
+}
+
+body:has(.sellerdit-supplier-layout) .community-shell .sellerdit-supplier-main .sellerdit-tile-community p {
+  min-height: 36px !important;
+  line-height: 18px !important;
+}
+
+body:has(.sellerdit-supplier-layout) .community-shell .sellerdit-supplier-main .sellerdit-tile-actions {
+  min-height: 28px !important;
+  align-items: center !important;
+}
+
+body:has(.sellerdit-supplier-layout) .community-shell .sellerdit-supplier-main .sellerdit-tile-actions button {
+  height: 28px !important;
+  min-width: 66px !important;
+  padding: 0 11px !important;
+  border: 1px solid #2563eb !important;
+  border-radius: 999px !important;
+  background: #fff !important;
+  color: #2563eb !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  line-height: 1 !important;
+}
+
+body:has(.sellerdit-supplier-layout) .community-shell .sellerdit-supplier-main .sellerdit-tile-actions button:hover,
+body:has(.sellerdit-supplier-layout) .community-shell .sellerdit-supplier-main .sellerdit-tile-actions button:focus-visible {
+  background: #2563eb !important;
+  color: #fff !important;
+}
+
+body:has(.sellerdit-supplier-layout) .community-shell .sellerdit-supplier-main .sellerdit-tile-actions span {
+  width: 18px !important;
+  height: 28px !important;
+  display: inline-grid !important;
+  place-items: center !important;
+  color: #64748b !important;
+  font-size: 16px !important;
+  line-height: 1 !important;
+}
+
+body:has(.sellerdit-supplier-layout) .community-shell .sellerdit-supplier-main .sellerdit-tile-supplier {
+  min-height: 148px !important;
+  gap: 10px !important;
+}
+
+body:has(.sellerdit-supplier-layout) .community-shell .sellerdit-supplier-main .sellerdit-supplier-tag {
+  min-height: 24px !important;
+  padding: 0 9px !important;
+  font-size: 11px !important;
+  font-weight: 750 !important;
+}
+
+body:has(.sellerdit-supplier-layout) .community-shell .sellerdit-supplier-main .sellerdit-supplier-link {
+  min-height: 28px !important;
+  margin-top: 0 !important;
+  padding-top: 10px !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+}
