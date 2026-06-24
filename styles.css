@@ -15617,3 +15617,20 @@ body:has(.sellerdit-supplier-layout) .community-shell .sellerdit-supplier-main .
   height: 46px !important;
   flex: 0 0 46px !important;
 }
+
+/* Supplier community-card alignment: keep r/로켓그로스 aligned with the neighboring community card */
+body:has(.sellerdit-supplier-layout) .community-shell .sellerdit-supplier-main .sellerdit-tile-head {
+  grid-template-columns: 46px minmax(0, 1fr) !important;
+}
+
+body:has(.sellerdit-supplier-layout) .community-shell .sellerdit-supplier-main .sellerdit-tile-community {
+  min-height: 192px !important;
+}
+
+body:has(.sellerdit-supplier-layout) .community-shell .sellerdit-supplier-main .sellerdit-tile-community .sellerdit-tile-main {
+  gap: 8px !important;
+}
+
+body:has(.sellerdit-supplier-layout) .community-shell .sellerdit-supplier-main .sellerdit-tile-community p {
+  min-height: 38px !important;
+}
