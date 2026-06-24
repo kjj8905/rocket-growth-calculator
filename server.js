@@ -294,8 +294,9 @@ app.delete("/api/products/:id", requireLogin, (req, res) => {
 });
 
 app.get("/api/community/posts", (req, res) => {
-  const category = normalizeCommunityCategory(req.query.category);
-  const posts = getCommunityPosts({ category, limit: 50 });
+  const category = normalizeCommunityCategory(req.query.category || req.query.cat);
+  const sort = COMMUNITY_SORTS[req.query.sort] ? String(req.query.sort) : "hot";
+  const posts = getCommunityPosts({ category, sort, limit: 50 });
   res.json({ posts });
 });
 
@@ -305,7 +306,7 @@ app.get("/api/community/posts/:slug", (req, res) => {
     res.status(404).json({ error: "post_not_found", message: "게시글을 찾지 못했습니다." });
     return;
   }
-  res.json({ post, comments: getCommunityCommentTree(post.id) });
+  res.json({ post: attachCommunityPostState(post, req.currentUser), comments: getCommunityCommentTree(post.id) });
 });
 
 app.post("/api/community/posts", requireLogin, (req, res) => {
@@ -313,6 +314,8 @@ app.post("/api/community/posts", requireLogin, (req, res) => {
   const category = normalizeCommunityCategory(req.body?.category) || "final-margin";
   const summary = normalizeText(req.body?.summary, 180);
   const bodyText = normalizeText(req.body?.body, 5000);
+  const imageUrl = normalizeUrl(req.body?.imageUrl || req.body?.image_url, 500);
+  const postType = imageUrl ? "image" : "text";
   const tags = normalizeTags(req.body?.tags);
 
   if (!title || !bodyText) {
@@ -323,7 +326,7 @@ app.post("/api/community/posts", requireLogin, (req, res) => {
   const now = new Date().toISOString();
   const id = `post-${Date.now()}-${crypto.randomBytes(4).toString("hex")}`;
   const slug = createUniqueCommunitySlug(title);
-  const bodyJson = JSON.stringify([{ heading: "본문", body: bodyText.split(/\n{2,}/).map((line) => line.trim()).filter(Boolean) }]);
+  const bodyJson = JSON.stringify([{ heading: "본문", body: bodyText.split(/\n{2,}/).map((line) => line.trim()).filter(Boolean), imageUrl, type: postType }]);
 
   db.prepare(
     `INSERT INTO community_posts (
@@ -349,7 +352,7 @@ app.post("/api/community/posts", requireLogin, (req, res) => {
 });
 
 app.put("/api/community/posts/:id", requireLogin, (req, res) => {
-  const existing = getEditableCommunityPost(req.params.id, req.currentUser.id);
+  const existing = getEditableCommunityPost(req.params.id, req.currentUser);
   if (!existing) {
     res.status(404).json({ error: "post_not_found", message: "수정할 게시글을 찾지 못했습니다." });
     return;
@@ -359,22 +362,23 @@ app.put("/api/community/posts/:id", requireLogin, (req, res) => {
   const category = normalizeCommunityCategory(req.body?.category) || existing.category;
   const summary = normalizeText(req.body?.summary, 180) || existing.summary;
   const bodyText = normalizeText(req.body?.body, 5000);
+  const imageUrl = normalizeUrl(req.body?.imageUrl || req.body?.image_url, 500);
   const tags = normalizeTags(req.body?.tags);
   const bodyJson = bodyText
-    ? JSON.stringify([{ heading: "본문", body: bodyText.split(/\n{2,}/).map((line) => line.trim()).filter(Boolean) }])
+    ? JSON.stringify([{ heading: "본문", body: bodyText.split(/\n{2,}/).map((line) => line.trim()).filter(Boolean), imageUrl, type: imageUrl ? "image" : "text" }])
     : JSON.stringify(existing.sections);
 
   db.prepare(
     `UPDATE community_posts
      SET title = ?, category = ?, summary = ?, body_json = ?, tags_json = ?, updated_at = ?
      WHERE id = ? AND author_user_id = ?`,
-  ).run(title, category, summary, bodyJson, JSON.stringify(tags.length ? tags : existing.tags), new Date().toISOString(), existing.id, req.currentUser.id);
+  ).run(title, category, summary, bodyJson, JSON.stringify(tags.length ? tags : existing.tags), new Date().toISOString(), existing.id, existing.authorUserId);
 
   res.json({ post: communityPostFromRow(db.prepare("SELECT * FROM community_posts WHERE id = ?").get(existing.id)) });
 });
 
 app.delete("/api/community/posts/:id", requireLogin, (req, res) => {
-  const existing = getEditableCommunityPost(req.params.id, req.currentUser.id);
+  const existing = getEditableCommunityPost(req.params.id, req.currentUser);
   if (!existing) {
     res.status(404).json({ error: "post_not_found", message: "삭제할 게시글을 찾지 못했습니다." });
     return;
@@ -382,7 +386,7 @@ app.delete("/api/community/posts/:id", requireLogin, (req, res) => {
 
   db.prepare("DELETE FROM community_comments WHERE post_id = ?").run(existing.id);
   db.prepare("DELETE FROM community_reactions WHERE post_id = ?").run(existing.id);
-  db.prepare("DELETE FROM community_posts WHERE id = ? AND author_user_id = ?").run(existing.id, req.currentUser.id);
+  db.prepare("DELETE FROM community_posts WHERE id = ?").run(existing.id);
   res.json({ ok: true, deletedId: existing.id });
 });
 
@@ -414,16 +418,43 @@ app.post("/api/community/comments", requireLogin, (req, res) => {
   res.status(201).json({ comment: getCommunityCommentById(id), comments: getCommunityCommentTree(post.id), post: getCommunityPostById(post.id) });
 });
 
+app.put("/api/community/comments/:id", requireLogin, (req, res) => {
+  const comment = getEditableCommunityComment(req.params.id, req.currentUser);
+  const body = normalizeText(req.body?.body, 1500);
+  if (!comment || !body) {
+    res.status(comment ? 400 : 404).json({ error: comment ? "invalid_comment" : "comment_not_found", message: comment ? "댓글 내용을 입력해 주세요." : "수정할 댓글을 찾지 못했습니다." });
+    return;
+  }
+  db.prepare("UPDATE community_comments SET body = ?, updated_at = ? WHERE id = ?").run(body, new Date().toISOString(), comment.id);
+  res.json({ comment: getCommunityCommentById(comment.id), comments: getCommunityCommentTree(comment.postId), post: getCommunityPostById(comment.postId) });
+});
+
 app.delete("/api/community/comments/:id", requireLogin, (req, res) => {
-  const comment = db.prepare("SELECT * FROM community_comments WHERE id = ? AND user_id = ?").get(String(req.params.id || ""), req.currentUser.id);
+  const comment = getEditableCommunityComment(req.params.id, req.currentUser);
   if (!comment) {
     res.status(404).json({ error: "comment_not_found", message: "삭제할 댓글을 찾지 못했습니다." });
     return;
   }
 
-  deleteCommunityCommentThread(comment.id, req.currentUser.id);
+  deleteCommunityCommentThread(comment.id);
   updateCommunityCommentCount(comment.post_id);
   res.json({ ok: true, deletedId: comment.id });
+});
+
+app.post("/api/community/comment-reactions", requireLogin, (req, res) => {
+  const comment = getCommunityCommentById(req.body?.commentId);
+  if (!comment) {
+    res.status(400).json({ error: "invalid_comment", message: "추천할 댓글을 찾지 못했습니다." });
+    return;
+  }
+  const existing = db.prepare("SELECT id FROM community_comment_votes WHERE comment_id = ? AND user_id = ?").get(comment.id, req.currentUser.id);
+  if (existing) {
+    db.prepare("DELETE FROM community_comment_votes WHERE comment_id = ? AND user_id = ?").run(comment.id, req.currentUser.id);
+  } else {
+    db.prepare("INSERT INTO community_comment_votes (id, comment_id, user_id, value, created_at) VALUES (?, ?, ?, 1, ?)").run(`comment-vote-${Date.now()}-${crypto.randomBytes(4).toString("hex")}`, comment.id, req.currentUser.id, new Date().toISOString());
+  }
+  updateCommunityCommentVoteCount(comment.id);
+  res.json({ comment: getCommunityCommentById(comment.id), active: !existing });
 });
 
 app.post("/api/community/reactions", requireLogin, (req, res) => {
@@ -471,7 +502,7 @@ app.get("/saved", (req, res) => {
 });
 
 app.get(["/community", "/community/"], (req, res) => {
-  res.type("html").send(renderCommunityIndexPage(req.query));
+  res.type("html").send(renderCommunityIndexPage(req.query, req.currentUser));
 });
 
 app.get("/community/:legacyCategory(tips|cases|operations|logistics)", (req, res) => {
@@ -496,7 +527,7 @@ app.get(["/community/suppliers", "/community/suppliers/"], (req, res) => {
   res.type("html").send(renderCommunitySupplierDirectoryPage(req.query));
 });
 app.get("/community/:category(china-sourcing|china-korea-logistics|korea-coupang-inbound|coupang-selling-cost|final-margin|qna)", (req, res) => {
-  res.type("html").send(renderCommunityCategoryPage(req.params.category, req.query));
+  res.type("html").send(renderCommunityCategoryPage(req.params.category, req.query, req.currentUser));
 });
 
 app.get("/community/:slug", (req, res) => {
@@ -507,11 +538,11 @@ app.get("/community/:slug", (req, res) => {
   }
 
   incrementCommunityViews(post.id);
-  res.type("html").send(renderCommunityPostPage(getCommunityPostById(post.id)));
+  res.type("html").send(renderCommunityPostPage(getCommunityPostById(post.id), req.currentUser));
 });
 
 app.get("/u/:handle", (req, res) => {
-  res.type("html").send(renderSellerditProfilePage(req.params.handle));
+  res.type("html").send(renderSellerditProfilePage(req.params.handle, req.query, req.currentUser));
 });
 
 app.get(["/guides", "/guides/"], (req, res) => {
@@ -602,11 +633,12 @@ function communityQueryString(params = {}) {
   if (params.sort && params.sort !== "hot") parts.push(`sort=${encodeURIComponent(params.sort)}`);
   if (params.q) parts.push(`q=${encodeURIComponent(params.q)}`);
   if (params.tag) parts.push(`tag=${encodeURIComponent(params.tag)}`);
+  if (params.cat) parts.push(`cat=${encodeURIComponent(params.cat)}`);
   if (params.page && Number(params.page) > 1) parts.push(`page=${Number(params.page)}`);
   return parts.length ? `?${parts.join("&")}` : "";
 }
 
-function renderCommunitySortBar(basePath, activeSort, search, tag) {
+function renderCommunitySortBar(basePath, activeSort, search, tag, cat = "") {
   const activeLabel = {
     hot: "인기",
     new: "최신",
@@ -629,7 +661,7 @@ function renderCommunitySortBar(basePath, activeSort, search, tag) {
       <span class="sellerdit-sort-links">
         ${links
           .map((item) => {
-            const href = `${basePath}${communityQueryString({ sort: item.key, q: search, tag })}`;
+            const href = `${basePath}${communityQueryString({ sort: item.key, q: search, tag, cat })}`;
             return `<a class="${item.key === activeSort ? "is-active" : ""}" href="${escapeHtml(href)}">${escapeHtml(item.label)}</a>`;
           })
           .join("")}
@@ -641,7 +673,11 @@ function renderCommunitySortBar(basePath, activeSort, search, tag) {
 function renderCommunityVoteCard(post, index = 0) {
   const dateLabel = formatDate(post.createdAt);
   const authorName = post.authorName || "셀러";
-  return `<article class="community-vote-card sellerdit-feed-post${post.isNotice ? " is-notice" : ""}">
+  const primaryActions = post.canEdit
+    ? `<button type="button" class="sellerdit-action" data-community-edit-post data-post-id="${escapeHtml(post.id)}" data-post-title="${escapeHtml(post.title)}" data-post-summary="${escapeHtml(post.summary || "")}" data-post-body="${escapeHtml(getPostPlainBody(post))}" data-post-category="${escapeHtml(post.category)}" data-post-tags="${escapeHtml((post.tags || []).join(", "))}">수정</button>
+      <button type="button" class="sellerdit-action" data-community-delete-post data-post-id="${escapeHtml(post.id)}">삭제</button>`
+    : `<button type="button" class="sellerdit-action">🚩 신고</button>`;
+  return `<article class="community-vote-card sellerdit-feed-post${post.isNotice ? " is-notice" : ""}" data-post-id="${escapeHtml(post.id)}">
     <div class="sellerdit-post-meta">
       <span class="sellerdit-avatar" style="background:${escapeHtml(getCommunityAuthorColor(authorName))}">${escapeHtml(getCommunityAuthorInitial(authorName))}</span>
       <a class="sellerdit-author" href="/u/${escapeHtml(makeCommunityHandle(authorName))}">u/${escapeHtml(makeCommunityHandle(authorName))}</a>
@@ -655,15 +691,18 @@ function renderCommunityVoteCard(post, index = 0) {
     <a class="sellerdit-post-excerpt" href="/community/${escapeHtml(post.slug)}">${escapeHtml(post.summary || "")}</a>
     ${renderCommunityFeedMedia(post, index)}
     <div class="community-vote-actions sellerdit-actions" aria-label="게시글 작업">
-      <button type="button" class="sellerdit-action" data-community-reaction="like" data-post-slug="${escapeHtml(post.slug)}">👍 ${formatInteger(post.likesCount || 0)}</button>
+      <button type="button" class="sellerdit-action ${post.likedByMe ? "is-active" : ""}" data-community-reaction="like" data-post-slug="${escapeHtml(post.slug)}">👍 <span data-reaction-count>${formatInteger(post.likesCount || 0)}</span></button>
       <a class="sellerdit-action" href="/community/${escapeHtml(post.slug)}#comments">💬 댓글 ${formatInteger(post.commentsCount)}</a>
       <button type="button" class="sellerdit-action">↗ 공유</button>
-      <button type="button" class="sellerdit-action" data-community-reaction="bookmark" data-post-slug="${escapeHtml(post.slug)}">🔖 저장</button>
+      <button type="button" class="sellerdit-action ${post.savedByMe ? "is-active" : ""}" data-community-reaction="bookmark" data-post-slug="${escapeHtml(post.slug)}">🔖 ${post.savedByMe ? "저장됨" : "저장"}</button>
+      ${primaryActions}
     </div>
   </article>`;
 }
-
 function renderCommunityFeedMedia(post, index = 0) {
+  if (post.imageUrl) {
+    return `<a class="sellerdit-post-media" href="/community/${escapeHtml(post.slug)}" aria-label="${escapeHtml(post.title)} 이미지"><img src="${escapeHtml(post.imageUrl)}" alt="" loading="lazy"></a>`;
+  }
   if (post.isNotice || post.category === "qna" || index % 4 !== 0) {
     return "";
   }
@@ -690,6 +729,9 @@ function renderCommunityPostThumb(post, mode = "small") {
 }
 
 function renderCommunityDetailMedia(post) {
+  if (post?.imageUrl) {
+    return `<div class="sellerdit-post-media is-detail"><img src="${escapeHtml(post.imageUrl)}" alt="" loading="lazy"></div>`;
+  }
   if (!post || post.category === "qna") {
     return "";
   }
@@ -984,23 +1026,24 @@ function renderCommunityPager(basePath, page, totalPages, search, sort, tag) {
   return `<nav class="community-pager" aria-label="페이지 이동">${items.join("")}</nav>`;
 }
 
-function renderCommunityIndexPage(query = {}) {
+function renderCommunityIndexPage(query = {}, currentUser = null) {
   const sort = COMMUNITY_SORTS[query.sort] ? String(query.sort) : "hot";
   const search = String(query.q || "").trim().slice(0, 60);
   const tag = String(query.tag || "").trim().slice(0, 40);
   const pageSize = 12;
-  const feedOptions = { notice: false, sort, search, tag };
+  const category = normalizeCommunityCategory(query.cat || query.category);
+  const feedOptions = { notice: false, sort, search, tag, category };
   const total = countCommunityPosts(feedOptions);
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
   const page = Math.min(Math.max(1, Number(query.page) || 1), totalPages);
-  const posts = getCommunityPosts({ ...feedOptions, limit: pageSize, offset: (page - 1) * pageSize });
+  const posts = attachCommunityPostsState(getCommunityPosts({ ...feedOptions, limit: pageSize, offset: (page - 1) * pageSize }), currentUser);
   const notices = !search && !tag && page === 1 ? getCommunityPosts({ notice: true, sort: "new", limit: 3 }) : [];
   const title = "셀러딧 커뮤니티";
   const description =
     "쿠팡셀러와 개인셀러를 위한 로켓그로스 5단계 커뮤니티입니다. 중국사입, 중국→한국 물류, 한국→쿠팡 입고, 쿠팡 소모 비용, 최종 비용을 단계별로 묻고 답합니다.";
   const canonicalUrl = `${PUBLIC_SITE_URL}/community`;
-  const heading = search ? `‘${search}’ 검색 결과` : "쿠팡셀러 비용 게시판";
-  const subLabel = search ? `${formatInteger(total)}개의 글` : "셀러 커뮤니티";
+  const heading = search ? `‘${search}’ 검색 결과` : (category ? COMMUNITY_CATEGORIES[category].title : "쿠팡셀러 비용 게시판");
+  const subLabel = search ? `${formatInteger(total)}개의 글` : (category ? COMMUNITY_CATEGORIES[category].label : "셀러 커뮤니티");
 
   return renderDocumentShell({
     title,
@@ -1021,7 +1064,7 @@ function renderCommunityIndexPage(query = {}) {
               <a class="community-head-action" href="#community-write">글쓰기</a>
             </div>
           </div>
-          ${renderCommunitySortBar("/community", sort, search, tag)}
+          ${renderCommunitySortBar("/community", sort, search, tag, category)}
           ${renderCommunityPinned(notices)}
           ${renderCommunityFeed(posts, search ? "검색 결과가 없습니다. 다른 키워드로 찾아보세요." : "아직 등록된 글이 없습니다.")}
           ${renderCommunityPager("/community", page, totalPages, search, sort, tag)}
@@ -1224,7 +1267,7 @@ function renderCommunityAiAnswerPage(query = {}) {
   });
 }
 
-function renderCommunityCategoryPage(categorySlug, query = {}) {
+function renderCommunityCategoryPage(categorySlug, query = {}, currentUser = null) {
   if (categorySlug === "qna") {
     return renderCommunityAiAnswerPage(query);
   }
@@ -1237,7 +1280,7 @@ function renderCommunityCategoryPage(categorySlug, query = {}) {
   const total = countCommunityPosts(feedOptions);
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
   const page = Math.min(Math.max(1, Number(query.page) || 1), totalPages);
-  const posts = getCommunityPosts({ ...feedOptions, limit: pageSize, offset: (page - 1) * pageSize });
+  const posts = attachCommunityPostsState(getCommunityPosts({ ...feedOptions, limit: pageSize, offset: (page - 1) * pageSize }), currentUser);
   const notices =
     !search && page === 1 ? getCommunityPosts({ category: category.slug, notice: true, sort: "new", limit: 3 }) : [];
   const canonicalUrl = `${PUBLIC_SITE_URL}/community/${category.slug}`;
@@ -1277,9 +1320,10 @@ function renderCommunityCategoryPage(categorySlug, query = {}) {
   });
 }
 
-function renderCommunityPostPage(post) {
+function renderCommunityPostPage(post, currentUser = null) {
   const canonicalUrl = `${PUBLIC_SITE_URL}/community/${post.slug}`;
-  const comments = getCommunityCommentTree(post.id);
+  post = attachCommunityPostState(post, currentUser);
+  const comments = attachCommunityCommentsState(getCommunityCommentTree(post.id), currentUser);
   const displayComments = comments.length ? comments : getSampleCommunityComments(post);
   const commentCount = comments.length ? countRenderedComments(comments) : countRenderedComments(displayComments);
   const relatedPosts = getCommunityPosts({ category: post.category, limit: 5 }).filter((item) => item.id !== post.id).slice(0, 4);
@@ -1317,10 +1361,11 @@ function renderCommunityPostPage(post) {
             </div>
             ${renderCommunityDetailMedia(post)}
             <div class="community-vote-actions sellerdit-actions sellerdit-detail-actions" aria-label="게시글 작업">
-              <button type="button" class="sellerdit-action" data-community-reaction="like" data-post-slug="${escapeHtml(post.slug)}">👍 ${formatInteger(post.likesCount || 0)}</button>
+              <button type="button" class="sellerdit-action ${post.likedByMe ? "is-active" : ""}" data-community-reaction="like" data-post-slug="${escapeHtml(post.slug)}">👍 <span data-reaction-count>${formatInteger(post.likesCount || 0)}</span></button>
               <a class="sellerdit-action" href="#comments">💬 댓글 ${formatInteger(commentCount)}</a>
               <button type="button" class="sellerdit-action">↗ 공유</button>
-              <button type="button" class="sellerdit-action" data-community-reaction="bookmark" data-post-slug="${escapeHtml(post.slug)}">🔖 저장</button>
+              <button type="button" class="sellerdit-action ${post.savedByMe ? "is-active" : ""}" data-community-reaction="bookmark" data-post-slug="${escapeHtml(post.slug)}">🔖 ${post.savedByMe ? "저장됨" : "저장"}</button>
+              ${post.canEdit ? `<button type="button" class="sellerdit-action" data-community-edit-post data-post-id="${escapeHtml(post.id)}" data-post-title="${escapeHtml(post.title)}" data-post-summary="${escapeHtml(post.summary || "")}" data-post-body="${escapeHtml(getPostPlainBody(post))}" data-post-category="${escapeHtml(post.category)}" data-post-tags="${escapeHtml((post.tags || []).join(", "))}">수정</button><button type="button" class="sellerdit-action" data-community-delete-post data-post-id="${escapeHtml(post.id)}">삭제</button>` : `<button type="button" class="sellerdit-action">🚩 신고</button>`}
             </div>
           </article>
           ${renderCommunityDetailPromo()}
@@ -1465,10 +1510,18 @@ function renderSellerditComment(comment, post, depth = 0, index = 0) {
       </header>
       <p class="ctext">${escapeHtml(comment.body)}</p>
       <footer class="cactions">
-        <button type="button" class="sellerdit-comment-action cv">👍 ${formatInteger(comment.likesCount || 0)}</button>
+        <button type="button" class="sellerdit-comment-action cv ${comment.likedByMe ? "is-active" : ""}" data-community-comment-reaction data-comment-id="${escapeHtml(comment.id || "")}">👍 <span data-comment-reaction-count>${formatInteger(comment.likesCount || 0)}</span></button>
         <button type="button" class="sellerdit-comment-action cbtn" data-comment-reply-button data-parent-id="${escapeHtml(comment.id || "")}">답글 달기</button>
-        <button type="button" class="sellerdit-comment-action cbtn">⋯</button>
+        ${comment.canEdit ? `<button type="button" class="sellerdit-comment-action cbtn" data-comment-edit-button data-comment-id="${escapeHtml(comment.id || "")}">수정</button><button type="button" class="sellerdit-comment-action cbtn" data-comment-delete-button data-comment-id="${escapeHtml(comment.id || "")}">삭제</button>` : `<button type="button" class="sellerdit-comment-action cbtn">⋯</button>`}
       </footer>
+      <form class="community-comment-form sellerdit-reply-form" data-comment-edit-form data-comment-id="${escapeHtml(comment.id || "")}" hidden>
+        <textarea name="body" rows="2" maxlength="1500">${escapeHtml(comment.body)}</textarea>
+        <div class="sellerdit-reply-actions">
+          <p data-community-message></p>
+          <button type="button" data-comment-edit-cancel>취소</button>
+          <button class="primary-small-button" type="submit">수정 저장</button>
+        </div>
+      </form>
       <form class="community-comment-form sellerdit-reply-form" data-community-comment-form data-post-slug="${escapeHtml(post.slug)}" data-parent-id="${escapeHtml(comment.id || "")}" hidden>
         <textarea name="body" rows="2" maxlength="1500" placeholder="u/${escapeHtml(handle)}님에게 답글 남기기"></textarea>
         <div class="sellerdit-reply-actions">
@@ -1481,12 +1534,32 @@ function renderSellerditComment(comment, post, depth = 0, index = 0) {
     </div>
   </article>`;
   return body;
-}function renderSellerditProfilePage(handle) {
+}function getCommunityCommentsByHandle(handle) {
   const normalizedHandle = makeCommunityHandle(handle || "seller");
-  const posts = getCommunityPosts({ limit: 100, sort: "new" }).filter((post) => makeCommunityHandle(post.authorName) === normalizedHandle);
-  const displayName = posts[0]?.authorName || normalizedHandle;
+  return db.prepare(`SELECT c.*, p.slug AS post_slug, p.title AS post_title
+    FROM community_comments c
+    JOIN community_posts p ON p.id = c.post_id
+    WHERE p.status = 'published'
+    ORDER BY c.created_at DESC
+    LIMIT 100`).all()
+    .map((row) => ({ ...communityCommentFromRow(row), postSlug: row.post_slug, postTitle: row.post_title }))
+    .filter((comment) => makeCommunityHandle(comment.authorName) === normalizedHandle);
+}
+
+function renderProfileComments(comments) {
+  if (!comments.length) return `<div class="community-feed-empty">아직 공개된 댓글이 없습니다.</div>`;
+  return `<div class="community-vote-list sellerdit-feedpanel">${comments.map((comment) => `<article class="community-vote-card sellerdit-feed-post"><div class="sellerdit-post-meta"><a class="sellerdit-author" href="/community/${escapeHtml(comment.postSlug)}#comments">${escapeHtml(comment.postTitle)}</a><span class="sellerdit-dot">·</span><time datetime="${escapeHtml(comment.createdAt)}">${escapeHtml(formatDate(comment.createdAt) || "")}</time></div><p class="sellerdit-post-excerpt">${escapeHtml(comment.body)}</p></article>`).join("")}</div>`;
+}
+
+function renderSellerditProfilePage(handle, query = {}, currentUser = null) {
+  const normalizedHandle = makeCommunityHandle(handle || "seller");
+  const posts = attachCommunityPostsState(getCommunityPosts({ limit: 100, sort: "new" }).filter((post) => makeCommunityHandle(post.authorName) === normalizedHandle), currentUser);
+  const userComments = getCommunityCommentsByHandle(normalizedHandle);
+  const displayName = posts[0]?.authorName || userComments[0]?.authorName || normalizedHandle;
   const likes = posts.reduce((sum, post) => sum + Number(post.likesCount || 0), 0);
-  const comments = posts.reduce((sum, post) => sum + Number(post.commentsCount || 0), 0);
+  const comments = userComments.length;
+  const tab = ["posts", "comments"].includes(String(query.tab || "")) ? String(query.tab) : "posts";
+  const isMe = Boolean(currentUser && makeCommunityHandle(getDisplayUserName(currentUser)) === normalizedHandle);
   const title = `u/${normalizedHandle} | 셀러딧 프로필`;
   const description = `셀러딧 사용자 u/${normalizedHandle}의 게시물과 활동 요약입니다.`;
   const canonicalUrl = `${PUBLIC_SITE_URL}/u/${encodeURIComponent(normalizedHandle)}`;
@@ -1511,15 +1584,15 @@ function renderSellerditComment(comment, post, depth = 0, index = 0) {
                 <div><dt>댓글 카르마</dt><dd>${formatInteger(comments)}</dd></div>
               </dl>
             </div>
-            <button class="sellerdit-follow" type="button">팔로우</button>
+            ${isMe ? `<a class="sellerdit-follow" href="#community-write">글쓰기</a><button class="sellerdit-follow" type="button">설정</button>` : `<button class="sellerdit-follow" type="button">팔로우</button>`}
             <span class="sellerdit-more">⋯</span>
           </header>
           <nav class="sellerdit-profile-tabs" aria-label="프로필 탭">
-            <a class="is-active" href="/u/${escapeHtml(normalizedHandle)}">개요</a>
-            <a href="/u/${escapeHtml(normalizedHandle)}?tab=posts">게시물</a>
-            <a href="/u/${escapeHtml(normalizedHandle)}?tab=comments">댓글</a>
+            <a class="${tab === "posts" ? "is-active" : ""}" href="/u/${escapeHtml(normalizedHandle)}?tab=posts">게시물</a>
+            <a class="${tab === "comments" ? "is-active" : ""}" href="/u/${escapeHtml(normalizedHandle)}?tab=comments">댓글</a>
           </nav>
-          ${renderCommunityFeed(posts, "아직 공개된 게시물이 없습니다.")}
+          ${tab === "comments" ? renderProfileComments(userComments) : renderCommunityFeed(posts, "아직 공개된 게시물이 없습니다.")}
+          ${isMe ? renderCommunityWritePanel() : ""}
         </section>
         <aside class="community-right-rail sellerdit-right-rail sellerdit-profile-side">
           <section class="sellerdit-profile-card" style="${escapeHtml(getCommunityAuthorStyle(displayName))}">
@@ -1728,6 +1801,10 @@ function renderCommunityWritePanel(defaultCategory = "final-margin") {
         <label>
           <span>본문</span>
           <textarea name="body" rows="5" maxlength="5000" placeholder="상황, 숫자, 궁금한 점을 함께 적어주세요." required></textarea>
+        </label>
+        <label>
+          <span>이미지 URL</span>
+          <input name="imageUrl" maxlength="500" placeholder="선택: https://..." />
         </label>
         <label>
           <span>태그</span>
@@ -2017,11 +2094,45 @@ function renderCommunityScript(postSlug = "") {
         if (!writeModal) return;
         writeModal.hidden = true;
         document.body.classList.remove("community-write-open");
+        var form = writeModal.querySelector("[data-community-post-form]");
+        if (form) {
+          form.dataset.editPostId = "";
+          form.reset();
+          var submit = form.querySelector("button[type='submit']");
+          if (submit) submit.textContent = "글 등록";
+        }
+      }
+      function openEditModal(button) {
+        if (!writeModal) return;
+        var form = writeModal.querySelector("[data-community-post-form]");
+        if (!form) return;
+        form.dataset.editPostId = button.dataset.postId || "";
+        form.querySelector("select[name='category']").value = button.dataset.postCategory || "final-margin";
+        form.querySelector("input[name='title']").value = button.dataset.postTitle || "";
+        form.querySelector("input[name='summary']").value = button.dataset.postSummary || "";
+        form.querySelector("textarea[name='body']").value = button.dataset.postBody || "";
+        var tags = form.querySelector("input[name='tags']");
+        if (tags) tags.value = button.dataset.postTags || "";
+        var submit = form.querySelector("button[type='submit']");
+        if (submit) submit.textContent = "수정 저장";
+        openWriteModal();
       }
       document.querySelectorAll("a[href='#community-write']").forEach(function (link) {
         link.addEventListener("click", function (event) {
           event.preventDefault();
           openWriteModal();
+        });
+      });
+      document.querySelectorAll("[data-community-edit-post]").forEach(function (button) {
+        button.addEventListener("click", function () { openEditModal(button); });
+      });
+      document.querySelectorAll("[data-community-delete-post]").forEach(function (button) {
+        button.addEventListener("click", async function () {
+          if (!window.confirm("게시글을 삭제할까요?")) return;
+          var response = await fetch("/api/community/posts/" + encodeURIComponent(button.dataset.postId), { method: "DELETE", credentials: "same-origin" });
+          if (response.status === 401) { window.location.href = loginUrl(); return; }
+          if (!response.ok) { window.alert("삭제하지 못했습니다."); return; }
+          window.location.href = "/community";
         });
       });
       document.querySelectorAll("[data-community-write-close]").forEach(function (button) {
@@ -2103,11 +2214,13 @@ function renderCommunityScript(postSlug = "") {
             title: data.get("title"),
             summary: data.get("summary"),
             body: data.get("body"),
+            imageUrl: data.get("imageUrl"),
             tags: String(data.get("tags") || "").split(",").map(function (tag) { return tag.trim(); }).filter(Boolean)
           };
           try {
-            var response = await fetch("/api/community/posts", {
-              method: "POST",
+            var editPostId = form.dataset.editPostId || "";
+            var response = await fetch(editPostId ? "/api/community/posts/" + encodeURIComponent(editPostId) : "/api/community/posts", {
+              method: editPostId ? "PUT" : "POST",
               credentials: "same-origin",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify(payload)
@@ -2153,8 +2266,67 @@ function renderCommunityScript(postSlug = "") {
         });
       });
 
+      document.querySelectorAll("[data-comment-edit-button]").forEach(function (button) {
+        button.addEventListener("click", function () {
+          var comment = button.closest("[data-comment-id]");
+          var form = comment && comment.querySelector("[data-comment-edit-form]");
+          if (form) { form.hidden = !form.hidden; form.querySelector("textarea")?.focus(); }
+        });
+      });
+      document.querySelectorAll("[data-comment-edit-cancel]").forEach(function (button) {
+        button.addEventListener("click", function () {
+          var form = button.closest("[data-comment-edit-form]");
+          if (form) form.hidden = true;
+        });
+      });
+      document.querySelectorAll("[data-comment-edit-form]").forEach(function (form) {
+        form.addEventListener("submit", async function (event) {
+          event.preventDefault();
+          var textarea = form.querySelector("textarea");
+          var response = await fetch("/api/community/comments/" + encodeURIComponent(form.dataset.commentId), { method: "PUT", credentials: "same-origin", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ body: textarea.value }) });
+          if (response.status === 401) { window.location.href = loginUrl(); return; }
+          if (!response.ok) { setMessage(form, "댓글을 수정하지 못했습니다.", "warning"); return; }
+          window.location.reload();
+        });
+      });
+      document.querySelectorAll("[data-comment-delete-button]").forEach(function (button) {
+        button.addEventListener("click", async function () {
+          if (!window.confirm("댓글을 삭제할까요?")) return;
+          var response = await fetch("/api/community/comments/" + encodeURIComponent(button.dataset.commentId), { method: "DELETE", credentials: "same-origin" });
+          if (response.status === 401) { window.location.href = loginUrl(); return; }
+          if (!response.ok) { window.alert("댓글을 삭제하지 못했습니다."); return; }
+          window.location.reload();
+        });
+      });
+      document.querySelectorAll("[data-community-comment-reaction]").forEach(function (button) {
+        button.addEventListener("click", async function () {
+          var beforeActive = button.classList.contains("is-active");
+          var countNode = button.querySelector("[data-comment-reaction-count]");
+          var raw = parseInt((countNode?.textContent || "0").replace(/,/g, ""), 10) || 0;
+          if (countNode) countNode.textContent = String(Math.max(0, raw + (beforeActive ? -1 : 1))).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+          button.classList.toggle("is-active", !beforeActive);
+          try {
+            var response = await fetch("/api/community/comment-reactions", { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ commentId: button.dataset.commentId }) });
+            if (response.status === 401) { window.location.href = loginUrl(); return; }
+            if (!response.ok) throw new Error("failed");
+          } catch {
+            if (countNode) countNode.textContent = String(raw);
+            button.classList.toggle("is-active", beforeActive);
+          }
+        });
+      });
+
       document.querySelectorAll("[data-community-reaction]").forEach(function (button) {
         button.addEventListener("click", async function () {
+          var countNode = button.querySelector("[data-reaction-count]");
+          var beforeActive = button.classList.contains("is-active");
+          var beforeText = button.textContent;
+          if (countNode && button.dataset.communityReaction === "like") {
+            var raw = parseInt((countNode.textContent || "0").replace(/,/g, ""), 10) || 0;
+            countNode.textContent = String(Math.max(0, raw + (beforeActive ? -1 : 1))).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+          }
+          button.classList.toggle("is-active", !beforeActive);
+          if (button.dataset.communityReaction === "bookmark") button.textContent = !beforeActive ? "🔖 저장됨" : "🔖 저장";
           try {
             var response = await fetch("/api/community/reactions", {
               method: "POST",
@@ -2162,14 +2334,11 @@ function renderCommunityScript(postSlug = "") {
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ slug: button.dataset.postSlug, type: button.dataset.communityReaction })
             });
-            if (response.status === 401) {
-              window.location.href = loginUrl();
-              return;
-            }
+            if (response.status === 401) { window.location.href = loginUrl(); return; }
             if (!response.ok) throw new Error("반응을 저장하지 못했습니다.");
-            window.location.reload();
           } catch {
-            button.textContent = "잠시 후 다시 시도";
+            button.classList.toggle("is-active", beforeActive);
+            button.textContent = beforeText;
           }
         });
       });
@@ -3310,7 +3479,7 @@ function getSessionFromRequest(req) {
 
   const row = db
     .prepare(
-      `SELECT sessions.id AS session_id, sessions.expires_at, users.id, users.kakao_id, users.nickname, users.email
+      `SELECT sessions.id AS session_id, sessions.expires_at, users.id, users.kakao_id, users.nickname, users.email, users.handle, users.display_name, users.avatar_color, users.role
        FROM sessions
        JOIN users ON users.id = sessions.user_id
        WHERE sessions.id = ?`,
@@ -3333,6 +3502,10 @@ function getSessionFromRequest(req) {
       kakao_id: row.kakao_id,
       nickname: row.nickname,
       email: row.email,
+      handle: row.handle,
+      display_name: row.display_name,
+      avatar_color: row.avatar_color,
+      role: row.role || "user",
     },
   };
 }
@@ -3365,7 +3538,11 @@ function initializeDatabase() {
       nickname TEXT,
       email TEXT,
       created_at TEXT NOT NULL,
-      updated_at TEXT NOT NULL
+      updated_at TEXT NOT NULL,
+      handle TEXT,
+      display_name TEXT,
+      avatar_color TEXT,
+      role TEXT NOT NULL DEFAULT 'user'
     );
 
     CREATE TABLE IF NOT EXISTS sessions (
@@ -3445,14 +3622,99 @@ function initializeDatabase() {
     CREATE INDEX IF NOT EXISTS community_posts_status_updated_idx ON community_posts (status, updated_at);
     CREATE INDEX IF NOT EXISTS community_comments_post_created_idx ON community_comments (post_id, created_at);
     CREATE INDEX IF NOT EXISTS community_comments_parent_idx ON community_comments (parent_id, created_at);
+
+    CREATE TABLE IF NOT EXISTS communities (
+      id TEXT PRIMARY KEY,
+      slug TEXT NOT NULL UNIQUE,
+      name TEXT NOT NULL,
+      description TEXT NOT NULL DEFAULT '',
+      member_count INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS memberships (
+      user_id INTEGER NOT NULL,
+      community_id TEXT NOT NULL,
+      created_at TEXT NOT NULL,
+      PRIMARY KEY (user_id, community_id),
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+      FOREIGN KEY (community_id) REFERENCES communities(id) ON DELETE CASCADE
+    );
+
+    CREATE TABLE IF NOT EXISTS community_comment_votes (
+      id TEXT PRIMARY KEY,
+      comment_id TEXT NOT NULL,
+      user_id INTEGER NOT NULL,
+      value INTEGER NOT NULL DEFAULT 1,
+      created_at TEXT NOT NULL,
+      UNIQUE (comment_id, user_id),
+      FOREIGN KEY (comment_id) REFERENCES community_comments(id) ON DELETE CASCADE,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    );
+
+    CREATE TABLE IF NOT EXISTS suppliers (
+      id TEXT PRIMARY KEY,
+      slug TEXT NOT NULL UNIQUE,
+      name TEXT NOT NULL,
+      category TEXT NOT NULL,
+      avatar_color TEXT NOT NULL DEFAULT '#2563eb',
+      link_url TEXT NOT NULL DEFAULT '',
+      created_by INTEGER,
+      created_at TEXT NOT NULL,
+      FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL
+    );
+
+    CREATE INDEX IF NOT EXISTS community_comment_votes_comment_idx ON community_comment_votes (comment_id);
   `);
 
+  ensureColumn("users", "handle", "TEXT");
+  ensureColumn("users", "display_name", "TEXT");
+  ensureColumn("users", "avatar_color", "TEXT");
+  ensureColumn("users", "role", "TEXT NOT NULL DEFAULT 'user'");
   ensureColumn("community_comments", "parent_id", "TEXT");
   ensureColumn("community_comments", "likes_count", "INTEGER NOT NULL DEFAULT 0");
 
   migrateProductMetadataColumns();
   migrateProductNameKeys();
+  migrateUserProfileColumns();
+  seedCommunities();
   seedCommunityPosts();
+  seedSuppliers();
+}
+
+function migrateUserProfileColumns() {
+  const users = db.prepare("SELECT id, nickname, handle, display_name, avatar_color, role FROM users").all();
+  const update = db.prepare("UPDATE users SET handle = ?, display_name = ?, avatar_color = ?, role = ? WHERE id = ?");
+  users.forEach((user) => {
+    const displayName = user.display_name || user.nickname || `셀러${user.id}`;
+    update.run(
+      user.handle || makeCommunityHandle(displayName),
+      displayName,
+      user.avatar_color || getCommunityAuthorColor(displayName),
+      user.role || "user",
+      user.id,
+    );
+  });
+}
+
+function seedCommunities() {
+  const now = new Date().toISOString();
+  const rows = [
+    ["community-sellerdit", "sellerdit", "r/셀러딧", "쿠팡셀러 비용과 로켓그로스 운영을 나누는 커뮤니티"],
+    ["community-rocket-growth", "rocket-growth", "r/로켓그로스", "입고·수수료·마진 계산을 함께 점검하는 커뮤니티"],
+  ];
+  const stmt = db.prepare("INSERT OR IGNORE INTO communities (id, slug, name, description, member_count, created_at) VALUES (?, ?, ?, ?, 0, ?)");
+  rows.forEach((row) => stmt.run(...row, now));
+}
+
+function seedSuppliers() {
+  const now = new Date().toISOString();
+  const rows = getCommunitySupplierTiles().filter((tile) => tile.type === "supplier");
+  const stmt = db.prepare("INSERT OR IGNORE INTO suppliers (id, slug, name, category, avatar_color, link_url, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)");
+  rows.forEach((tile) => {
+    const slug = String(tile.href || '').split('/').filter(Boolean).pop() || makeCommunityHandle(tile.name);
+    stmt.run(`supplier-${slug}`, slug, tile.name, tile.category, tile.color || '#2563eb', tile.href, now);
+  });
 }
 
 function migrateProductMetadataColumns() {
@@ -3561,9 +3823,12 @@ function upsertUser(kakaoUser) {
   const existing = db.prepare("SELECT * FROM users WHERE kakao_id = ?").get(kakaoId);
 
   if (existing) {
-    db.prepare("UPDATE users SET nickname = ?, email = ?, updated_at = ? WHERE kakao_id = ?").run(
+    db.prepare("UPDATE users SET nickname = ?, email = ?, display_name = COALESCE(display_name, ?), handle = COALESCE(handle, ?), avatar_color = COALESCE(avatar_color, ?), updated_at = ? WHERE kakao_id = ?").run(
       nickname,
       email,
+      nickname || `셀러${kakaoId}`,
+      makeCommunityHandle(nickname || `seller${kakaoId}`),
+      getCommunityAuthorColor(nickname || `seller${kakaoId}`),
       now,
       kakaoId,
     );
@@ -3571,8 +3836,8 @@ function upsertUser(kakaoUser) {
   }
 
   const result = db
-    .prepare("INSERT INTO users (kakao_id, nickname, email, created_at, updated_at) VALUES (?, ?, ?, ?, ?)")
-    .run(kakaoId, nickname, email, now, now);
+    .prepare("INSERT INTO users (kakao_id, nickname, email, handle, display_name, avatar_color, role, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, 'user', ?, ?)")
+    .run(kakaoId, nickname, email, makeCommunityHandle(nickname || `seller${kakaoId}`), nickname || `셀러${kakaoId}`, getCommunityAuthorColor(nickname || `seller${kakaoId}`), now, now);
 
   return db.prepare("SELECT * FROM users WHERE id = ?").get(result.lastInsertRowid);
 }
@@ -3678,6 +3943,8 @@ function communityPostFromRow(row) {
     title: row.title,
     summary: row.summary,
     sections: normalizePostSections(parseJson(row.body_json, [])),
+    imageUrl: getPostImageUrl(parseJson(row.body_json, [])),
+    type: getPostImageUrl(parseJson(row.body_json, [])) ? "image" : "text",
     faq: getSeedPostFaq(row.slug),
     tags: parseJson(row.tags_json, []),
     authorUserId: row.author_user_id,
@@ -3693,6 +3960,49 @@ function communityPostFromRow(row) {
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
+}
+
+function getPostImageUrl(sections) {
+  if (!Array.isArray(sections)) return "";
+  const found = sections.find((section) => section && section.imageUrl);
+  return found ? String(found.imageUrl || "") : "";
+}
+
+function getPostPlainBody(post) {
+  return (post?.sections || [])
+    .flatMap((section) => Array.isArray(section.body) ? section.body : [section.body])
+    .filter(Boolean)
+    .join("\n\n");
+}
+
+function attachCommunityPostState(post, user) {
+  if (!post) return post;
+  const isOwner = Boolean(user && post.authorUserId && Number(post.authorUserId) === Number(user.id));
+  const isAdmin = Boolean(user && user.role === "admin");
+  const state = { ...post, canEdit: isOwner || isAdmin, canDelete: isOwner || isAdmin, likedByMe: false, savedByMe: false };
+  if (user?.id) {
+    state.likedByMe = Boolean(db.prepare("SELECT 1 FROM community_reactions WHERE post_id = ? AND user_id = ? AND type = 'like'").get(post.id, user.id));
+    state.savedByMe = Boolean(db.prepare("SELECT 1 FROM community_reactions WHERE post_id = ? AND user_id = ? AND type = 'bookmark'").get(post.id, user.id));
+  }
+  return state;
+}
+
+function attachCommunityPostsState(posts, user) {
+  return posts.map((post) => attachCommunityPostState(post, user));
+}
+
+function attachCommunityCommentsState(comments, user) {
+  return comments.map((comment) => {
+    const isOwner = Boolean(user && Number(comment.userId) === Number(user.id));
+    const isAdmin = Boolean(user && user.role === "admin");
+    return {
+      ...comment,
+      canEdit: isOwner || isAdmin,
+      canDelete: isOwner || isAdmin,
+      likedByMe: Boolean(user?.id && db.prepare("SELECT 1 FROM community_comment_votes WHERE comment_id = ? AND user_id = ?").get(comment.id, user.id)),
+      replies: attachCommunityCommentsState(comment.replies || [], user),
+    };
+  });
 }
 
 function normalizePostSections(sections) {
@@ -3799,9 +4109,22 @@ function getCommunityPostById(id) {
   return communityPostFromRow(db.prepare("SELECT * FROM community_posts WHERE id = ? AND status = 'published'").get(postId));
 }
 
-function getEditableCommunityPost(id, userId) {
-  const row = db.prepare("SELECT * FROM community_posts WHERE id = ? AND author_user_id = ? AND source = 'user'").get(String(id || ""), userId);
+function getEditableCommunityPost(id, user) {
+  if (!user?.id) return null;
+  const postId = String(id || "");
+  const row = user.role === "admin"
+    ? db.prepare("SELECT * FROM community_posts WHERE id = ? AND source = 'user'").get(postId)
+    : db.prepare("SELECT * FROM community_posts WHERE id = ? AND author_user_id = ? AND source = 'user'").get(postId, user.id);
   return communityPostFromRow(row);
+}
+
+function getEditableCommunityComment(id, user) {
+  if (!user?.id) return null;
+  const commentId = String(id || "");
+  const row = user.role === "admin"
+    ? db.prepare("SELECT * FROM community_comments WHERE id = ?").get(commentId)
+    : db.prepare("SELECT * FROM community_comments WHERE id = ? AND user_id = ?").get(commentId, user.id);
+  return communityCommentFromRow(row);
 }
 
 function getCommunityComments(postId) {
@@ -3847,9 +4170,7 @@ function communityCommentFromRow(row) {
   };
 }
 
-function deleteCommunityCommentThread(commentId, userId) {
-  const owned = db.prepare("SELECT id, post_id FROM community_comments WHERE id = ? AND user_id = ?").get(commentId, userId);
-  if (!owned) return;
+function deleteCommunityCommentThread(commentId) {
   const ids = collectCommunityCommentChildIds(commentId);
   ids.push(commentId);
   const deleteStmt = db.prepare("DELETE FROM community_comments WHERE id = ?");
@@ -3859,6 +4180,11 @@ function deleteCommunityCommentThread(commentId, userId) {
 function collectCommunityCommentChildIds(parentId) {
   const rows = db.prepare("SELECT id FROM community_comments WHERE parent_id = ?").all(parentId);
   return rows.flatMap((row) => [row.id, ...collectCommunityCommentChildIds(row.id)]);
+}
+
+function updateCommunityCommentVoteCount(commentId) {
+  const likes = db.prepare("SELECT COUNT(*) AS count FROM community_comment_votes WHERE comment_id = ?").get(commentId)?.count || 0;
+  db.prepare("UPDATE community_comments SET likes_count = ?, updated_at = ? WHERE id = ?").run(likes, new Date().toISOString(), commentId);
 }
 
 function updateCommunityCommentCount(postId) {
@@ -3891,6 +4217,17 @@ function normalizeText(value, maxLength) {
     .replace(/\r/g, "")
     .trim()
     .slice(0, maxLength);
+}
+
+function normalizeUrl(value, maxLength = 500) {
+  const text = normalizeText(value, maxLength);
+  if (!text) return "";
+  try {
+    const url = new URL(text);
+    return ["http:", "https:"].includes(url.protocol) ? url.toString() : "";
+  } catch {
+    return "";
+  }
 }
 
 function normalizeTags(value) {
