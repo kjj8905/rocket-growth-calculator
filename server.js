@@ -1095,28 +1095,23 @@ function renderCommunitySupplierTile(tile) {
 
 function renderCommunitySupplierFilterRail() {
   const filters = [
-    ["all", "전체 공급처"],
-    ["agriculture", "농산물"],
-    ["industrial", "공산품"],
-    ["direct", "농수산 직매입"],
-    ["china-market", "1688·타오바오"],
-    ["wholesale", "국내 도매"],
-    ["logistics", "물류·검수"],
+    ["all", "전체 공급처", 8],
+    ["agriculture", "농산물", 3],
+    ["industrial", "공산품", 2],
+    ["direct", "농수산 직매입", 3],
+    ["china-market", "1688·타오바오", 1],
+    ["wholesale", "국내 도매", 1],
+    ["logistics", "물류·검수", 1],
   ];
+  const renderItem = ([value, label, count], index) => `<button class="sellerdit-lnav-item sellerdit-supplier-filter-item ${index === 0 ? "is-active" : ""}" type="button" data-supplier-filter="${escapeHtml(value)}">
+    <span>${escapeHtml(label)}</span>
+    <em class="sellerdit-lnav-count">${escapeHtml(String(count))}</em>
+  </button>`;
   return `<aside class="community-left-rail sellerdit-left-rail sellerdit-supplier-filter-rail" aria-label="공급처 필터">
-    <section class="sellerdit-filter-panel" aria-labelledby="supplier-menu-title">
-      <h2 id="supplier-menu-title">공급처 메뉴</h2>
-      <button class="sellerdit-filter-menu-item is-active" type="button" data-supplier-filter="all">공급처 리스트 <em>NEW</em></button>
-      <button class="sellerdit-filter-menu-item" type="button" data-supplier-filter="community">커뮤니티 스레드 <em>42</em></button>
-      <button class="sellerdit-filter-menu-item" type="button" disabled>질문과 답변 <em>숨김</em></button>
-      <button class="sellerdit-filter-menu-item" type="button" disabled>계산 영역 <em>숨김</em></button>
-    </section>
-    <section class="sellerdit-filter-panel" aria-labelledby="supplier-filter-title">
-      <h2 id="supplier-filter-title">필터</h2>
-      <div class="sellerdit-filter-list">
-        ${filters.map(([value, label], index) => `<button class="sellerdit-filter-chip ${index === 0 ? "is-active" : ""}" type="button" data-supplier-filter="${escapeHtml(value)}">${escapeHtml(label)}</button>`).join("")}
-      </div>
-    </section>
+    <nav class="sellerdit-lnav" aria-label="공급처 카테고리">
+      <div class="sellerdit-lnav-sec">공급처</div>
+      ${filters.map(renderItem).join("")}
+    </nav>
   </aside>`;
 }
 
