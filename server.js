@@ -457,6 +457,21 @@ app.post("/api/community/comment-reactions", requireLogin, (req, res) => {
   res.json({ comment: getCommunityCommentById(comment.id), active: !existing });
 });
 
+app.post("/api/community/follow", requireLogin, (req, res) => {
+  const handle = makeCommunityHandle(req.body?.handle || req.body?.target || "");
+  if (!handle) {
+    res.status(400).json({ error: "invalid_follow", message: "팔로우할 대상을 찾지 못했습니다." });
+    return;
+  }
+  const existing = db.prepare("SELECT user_id FROM community_follows WHERE user_id = ? AND target_handle = ?").get(req.currentUser.id, handle);
+  if (existing) {
+    db.prepare("DELETE FROM community_follows WHERE user_id = ? AND target_handle = ?").run(req.currentUser.id, handle);
+  } else {
+    db.prepare("INSERT INTO community_follows (user_id, target_handle, created_at) VALUES (?, ?, ?)").run(req.currentUser.id, handle, new Date().toISOString());
+  }
+  res.json({ active: !existing, handle });
+});
+
 app.post("/api/community/reactions", requireLogin, (req, res) => {
   const post = getCommunityPostBySlug(req.body?.slug) || getCommunityPostById(req.body?.postId);
   const type = ["like", "bookmark"].includes(String(req.body?.type || "")) ? String(req.body.type) : "";
@@ -639,13 +654,6 @@ function communityQueryString(params = {}) {
 }
 
 function renderCommunitySortBar(basePath, activeSort, search, tag, cat = "") {
-  const activeLabel = {
-    hot: "인기",
-    new: "최신",
-    top: "추천 많은 순",
-    comments: "댓글 많은 순",
-    views: "조회 많은 순",
-  }[activeSort] || "인기";
   const links = [
     { key: "hot", label: "인기" },
     { key: "new", label: "최신" },
@@ -653,19 +661,25 @@ function renderCommunitySortBar(basePath, activeSort, search, tag, cat = "") {
     { key: "comments", label: "댓글" },
     { key: "views", label: "조회" },
   ];
+  const categoryLinks = [
+    { key: "", label: "전체" },
+    ...COMMUNITY_STAGE_SLUGS.map((slug) => ({ key: slug, label: COMMUNITY_CATEGORIES[slug].label })),
+  ];
   return `<div class="community-toolbar sellerdit-sortbar">
     <nav class="community-sort" aria-label="정렬 기준">
-      <span class="sellerdit-sort-chip">${escapeHtml(activeLabel)} ▾</span>
-      <span class="sellerdit-sort-chip">전체 기간 ▾</span>
-      <span class="sellerdit-sort-chip">카드 보기 ▾</span>
-      <span class="sellerdit-sort-links">
-        ${links
-          .map((item) => {
-            const href = `${basePath}${communityQueryString({ sort: item.key, q: search, tag, cat })}`;
-            return `<a class="${item.key === activeSort ? "is-active" : ""}" href="${escapeHtml(href)}">${escapeHtml(item.label)}</a>`;
-          })
-          .join("")}
+      <span class="sellerdit-sort-links sellerdit-filter-links">
+        ${links.map((item) => {
+          const href = `${basePath}${communityQueryString({ sort: item.key, q: search, tag, cat })}`;
+          return `<a class="${item.key === activeSort ? "is-active" : ""}" href="${escapeHtml(href)}">${escapeHtml(item.label)}</a>`;
+        }).join("")}
       </span>
+      ${basePath === "/community" ? `<span class="sellerdit-sort-links sellerdit-cat-links">
+        ${categoryLinks.map((item) => {
+          const href = `${basePath}${communityQueryString({ sort: activeSort, q: search, tag, cat: item.key })}`;
+          const isActive = (cat || "") === item.key;
+          return `<a class="${isActive ? "is-active" : ""}" href="${escapeHtml(href)}">${escapeHtml(item.label)}</a>`;
+        }).join("")}
+      </span>` : ""}
     </nav>
   </div>`;
 }
@@ -676,7 +690,7 @@ function renderCommunityVoteCard(post, index = 0) {
   const primaryActions = post.canEdit
     ? `<button type="button" class="sellerdit-action" data-community-edit-post data-post-id="${escapeHtml(post.id)}" data-post-title="${escapeHtml(post.title)}" data-post-summary="${escapeHtml(post.summary || "")}" data-post-body="${escapeHtml(getPostPlainBody(post))}" data-post-category="${escapeHtml(post.category)}" data-post-tags="${escapeHtml((post.tags || []).join(", "))}">수정</button>
       <button type="button" class="sellerdit-action" data-community-delete-post data-post-id="${escapeHtml(post.id)}">삭제</button>`
-    : `<button type="button" class="sellerdit-action">🚩 신고</button>`;
+    : "";
   return `<article class="community-vote-card sellerdit-feed-post${post.isNotice ? " is-notice" : ""}" data-post-id="${escapeHtml(post.id)}">
     <div class="sellerdit-post-meta">
       <span class="sellerdit-avatar" style="background:${escapeHtml(getCommunityAuthorColor(authorName))}">${escapeHtml(getCommunityAuthorInitial(authorName))}</span>
@@ -684,7 +698,7 @@ function renderCommunityVoteCard(post, index = 0) {
       <span class="sellerdit-dot">·</span>
       ${dateLabel ? `<time datetime="${escapeHtml(post.createdAt)}">${escapeHtml(dateLabel)}</time>` : ""}
       ${post.isNotice ? `<span class="community-pin-badge">공지</span>` : ""}
-      <button class="sellerdit-follow" type="button">팔로우</button>
+      <button class="sellerdit-follow" type="button" data-community-follow data-follow-handle="${escapeHtml(makeCommunityHandle(authorName))}">팔로우</button>
       <span class="sellerdit-more">⋯</span>
     </div>
     <a class="community-vote-title" href="/community/${escapeHtml(post.slug)}">${escapeHtml(post.title)}</a>
@@ -693,7 +707,7 @@ function renderCommunityVoteCard(post, index = 0) {
     <div class="community-vote-actions sellerdit-actions" aria-label="게시글 작업">
       <button type="button" class="sellerdit-action ${post.likedByMe ? "is-active" : ""}" data-community-reaction="like" data-post-slug="${escapeHtml(post.slug)}">👍 <span data-reaction-count>${formatInteger(post.likesCount || 0)}</span></button>
       <a class="sellerdit-action" href="/community/${escapeHtml(post.slug)}#comments">💬 댓글 ${formatInteger(post.commentsCount)}</a>
-      <button type="button" class="sellerdit-action">↗ 공유</button>
+      <button type="button" class="sellerdit-action" data-community-share data-share-url="/community/${escapeHtml(post.slug)}">↗ 공유</button>
       <button type="button" class="sellerdit-action ${post.savedByMe ? "is-active" : ""}" data-community-reaction="bookmark" data-post-slug="${escapeHtml(post.slug)}">🔖 ${post.savedByMe ? "저장됨" : "저장"}</button>
       ${primaryActions}
     </div>
@@ -1363,9 +1377,9 @@ function renderCommunityPostPage(post, currentUser = null) {
             <div class="community-vote-actions sellerdit-actions sellerdit-detail-actions" aria-label="게시글 작업">
               <button type="button" class="sellerdit-action ${post.likedByMe ? "is-active" : ""}" data-community-reaction="like" data-post-slug="${escapeHtml(post.slug)}">👍 <span data-reaction-count>${formatInteger(post.likesCount || 0)}</span></button>
               <a class="sellerdit-action" href="#comments">💬 댓글 ${formatInteger(commentCount)}</a>
-              <button type="button" class="sellerdit-action">↗ 공유</button>
+              <button type="button" class="sellerdit-action" data-community-share data-share-url="/community/${escapeHtml(post.slug)}">↗ 공유</button>
               <button type="button" class="sellerdit-action ${post.savedByMe ? "is-active" : ""}" data-community-reaction="bookmark" data-post-slug="${escapeHtml(post.slug)}">🔖 ${post.savedByMe ? "저장됨" : "저장"}</button>
-              ${post.canEdit ? `<button type="button" class="sellerdit-action" data-community-edit-post data-post-id="${escapeHtml(post.id)}" data-post-title="${escapeHtml(post.title)}" data-post-summary="${escapeHtml(post.summary || "")}" data-post-body="${escapeHtml(getPostPlainBody(post))}" data-post-category="${escapeHtml(post.category)}" data-post-tags="${escapeHtml((post.tags || []).join(", "))}">수정</button><button type="button" class="sellerdit-action" data-community-delete-post data-post-id="${escapeHtml(post.id)}">삭제</button>` : `<button type="button" class="sellerdit-action">🚩 신고</button>`}
+              ${post.canEdit ? `<button type="button" class="sellerdit-action" data-community-edit-post data-post-id="${escapeHtml(post.id)}" data-post-title="${escapeHtml(post.title)}" data-post-summary="${escapeHtml(post.summary || "")}" data-post-body="${escapeHtml(getPostPlainBody(post))}" data-post-category="${escapeHtml(post.category)}" data-post-tags="${escapeHtml((post.tags || []).join(", "))}">수정</button><button type="button" class="sellerdit-action" data-community-delete-post data-post-id="${escapeHtml(post.id)}">삭제</button>` : ""}
             </div>
           </article>
           ${renderCommunityDetailPromo()}
@@ -2144,8 +2158,8 @@ function renderCommunityScript(postSlug = "") {
 
       document.querySelectorAll("[data-comment-reply-button]").forEach(function (button) {
         button.addEventListener("click", function () {
-          var comment = button.closest("[data-comment-id]");
-          var form = comment && comment.querySelector(".sellerdit-reply-form");
+          var comment = button.closest("article.sellerdit-comment");
+          var form = comment && comment.querySelector("form[data-community-comment-form][data-parent-id]");
           if (!form) return;
           form.hidden = !form.hidden;
           if (!form.hidden) {
@@ -2266,9 +2280,54 @@ function renderCommunityScript(postSlug = "") {
         });
       });
 
+      document.querySelectorAll("[data-community-follow]").forEach(function (button) {
+        button.addEventListener("click", async function () {
+          var beforeText = button.textContent;
+          var beforeActive = button.classList.contains("is-active");
+          button.classList.toggle("is-active", !beforeActive);
+          button.textContent = beforeActive ? "팔로우" : "팔로잉";
+          try {
+            var response = await fetch("/api/community/follow", {
+              method: "POST",
+              credentials: "same-origin",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ handle: button.dataset.followHandle || "" })
+            });
+            if (response.status === 401) { window.location.href = loginUrl(); return; }
+            if (!response.ok) throw new Error("follow_failed");
+          } catch {
+            button.classList.toggle("is-active", beforeActive);
+            button.textContent = beforeText;
+          }
+        });
+      });
+
+      document.querySelectorAll("[data-community-share]").forEach(function (button) {
+        button.addEventListener("click", function () {
+          var url = new URL(button.dataset.shareUrl || window.location.pathname, window.location.origin).toString();
+          var beforeText = button.textContent;
+          try {
+            var input = document.createElement("input");
+            input.value = url;
+            input.setAttribute("readonly", "readonly");
+            input.style.position = "fixed";
+            input.style.left = "-9999px";
+            document.body.appendChild(input);
+            input.select();
+            document.execCommand("copy");
+            input.remove();
+            button.textContent = "링크 복사됨";
+            window.setTimeout(function () { button.textContent = beforeText; }, 1400);
+          } catch {
+            button.textContent = "링크 복사 실패";
+            window.setTimeout(function () { button.textContent = beforeText; }, 1400);
+          }
+        });
+      });
+
       document.querySelectorAll("[data-comment-edit-button]").forEach(function (button) {
         button.addEventListener("click", function () {
-          var comment = button.closest("[data-comment-id]");
+          var comment = button.closest("article.sellerdit-comment");
           var form = comment && comment.querySelector("[data-comment-edit-form]");
           if (form) { form.hidden = !form.hidden; form.querySelector("textarea")?.focus(); }
         });
@@ -2536,7 +2595,7 @@ function renderDocumentShell({ title, description, canonicalUrl, body, jsonLd, s
     <meta name="twitter:description" content="${escapeHtml(description)}" />
     <meta name="twitter:image" content="${PUBLIC_SITE_URL}/assets/site-flow.svg" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
-    <link rel="stylesheet" href="/styles.css?v=20260624-left-font-sync" />
+    <link rel="stylesheet" href="/styles.css?v=20260624-phase1-action-fix" />
     <meta name="naver-site-verification" content="d2091fad160915c822215f48ce925c90637cf535" />
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-EGL6JRLHH0"></script>
     <script>
@@ -3662,6 +3721,14 @@ function initializeDatabase() {
       created_by INTEGER,
       created_at TEXT NOT NULL,
       FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS community_follows (
+      user_id INTEGER NOT NULL,
+      target_handle TEXT NOT NULL,
+      created_at TEXT NOT NULL,
+      PRIMARY KEY (user_id, target_handle),
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
     );
 
     CREATE INDEX IF NOT EXISTS community_comment_votes_comment_idx ON community_comment_votes (comment_id);

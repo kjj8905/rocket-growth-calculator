@@ -15817,3 +15817,31 @@ body:has(.sellerdit-supplier-layout) .sellerdit-supplier-filter-item.is-active {
   background: #e9ebed !important;
   color: #111827 !important;
 }
+
+
+/* Sellerdit phase1 action fix: visible working sort/category filters */
+.community-shell .sellerdit-sortbar .community-sort {
+  flex-wrap: wrap !important;
+  align-items: flex-start !important;
+}
+
+.community-shell .sellerdit-filter-links,
+.community-shell .sellerdit-cat-links {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  width: 100% !important;
+  margin-left: 0 !important;
+  gap: 6px !important;
+}
+
+.community-shell .sellerdit-filter-links a,
+.community-shell .sellerdit-cat-links a,
+.community-shell .community-reddit-layout.sellerdit-with-left-rail:not(.sellerdit-ai-layout) .sellerdit-filter-links a,
+.community-shell .community-reddit-layout.sellerdit-with-left-rail:not(.sellerdit-ai-layout) .sellerdit-cat-links a {
+  display: inline-flex !important;
+}
+
+.community-shell .sellerdit-filter-links::after,
+.community-shell .sellerdit-cat-links::after {
+  content: none !important;
+}
