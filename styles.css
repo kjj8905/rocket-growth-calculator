@@ -15634,3 +15634,22 @@ body:has(.sellerdit-supplier-layout) .community-shell .sellerdit-supplier-main .
 body:has(.sellerdit-supplier-layout) .community-shell .sellerdit-supplier-main .sellerdit-tile-community p {
   min-height: 38px !important;
 }
+
+/* Wider community/content rail pass */
+body:has(.sellerdit-topbar) .community-shell,
+body:has(.sellerdit-supplier-layout) .community-shell {
+  max-width: 1440px !important;
+}
+
+.sellerdit-topbar-inner,
+body:has(.sellerdit-supplier-layout) .sellerdit-topbar-inner {
+  max-width: 1440px !important;
+}
+
+.community-shell .community-reddit-layout,
+.community-shell .community-reddit-layout.sellerdit-with-left-rail,
+.community-shell .community-reddit-layout.is-post-detail,
+body:has(.sellerdit-supplier-layout) .community-reddit-layout.sellerdit-supplier-layout,
+body:has(.sellerdit-supplier-layout) .community-reddit-layout.sellerdit-with-left-rail.sellerdit-supplier-layout {
+  grid-template-columns: 270px minmax(0, 1fr) 316px !important;
+}
