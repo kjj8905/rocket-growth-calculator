@@ -776,7 +776,8 @@ function renderCommunitySortBar(basePath, activeSort, search, tag, cat = "") {
 
 function renderCommunityActionIcon(type) {
   const icons = {
-    like: '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M21 8.25c0-2.49-2.1-4.5-4.69-4.5-1.93 0-3.6 1.13-4.31 2.73-.72-1.6-2.38-2.73-4.31-2.73C5.1 3.75 3 5.76 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z"/></svg>',
+    like: '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 4 4.5 11.5h4.25V20h6.5v-8.5h4.25L12 4Z"/></svg>',
+    dislike: '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 20 4.5 12.5h4.25V4h6.5v8.5h4.25L12 20Z"/></svg>',
     comment: '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M21 11.5a8.38 8.38 0 0 1-8.5 8.4 8.5 8.5 0 0 1-3.9-.9L3 21l1.9-5.1A8.38 8.38 0 0 1 4 11.5 8.5 8.5 0 0 1 12.5 3 8.38 8.38 0 0 1 21 11.5Z"/></svg>',
     share: '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7Z"/></svg>',
     bookmark: '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2Z"/></svg>',
@@ -789,7 +790,7 @@ function renderCommunityActions(post, options = {}) {
   const commentsHref = options.commentsHref || `/community/${escapeHtml(post.slug)}#comments`;
   const extraActions = options.extraActions || "";
   return `<div class="community-vote-actions sellerdit-actions${options.detail ? " sellerdit-detail-actions" : ""}" aria-label="게시글 작업">
-    <button type="button" class="sellerdit-action sellerdit-action-like ${post.likedByMe ? "is-active" : ""}" aria-label="좋아요" data-community-reaction="like" data-post-slug="${escapeHtml(post.slug)}">${renderCommunityActionIcon("like")}<span data-reaction-count>${formatInteger(post.likesCount || 0)}</span></button>
+    <button type="button" class="sellerdit-action sellerdit-action-like ${post.likedByMe ? "is-active" : ""}" aria-label="좋아요" data-community-reaction="like" data-post-slug="${escapeHtml(post.slug)}">${renderCommunityActionIcon("like")}<span data-reaction-count>${formatInteger(post.likesCount || 0)}</span>${renderCommunityActionIcon("dislike")}</button>
     <a class="sellerdit-action sellerdit-action-comment" aria-label="댓글" href="${commentsHref}">${renderCommunityActionIcon("comment")}<span>${formatInteger(commentsCount)}</span></a>
     <button type="button" class="sellerdit-action sellerdit-action-share" aria-label="공유" data-community-share data-share-url="/community/${escapeHtml(post.slug)}">${renderCommunityActionIcon("share")}</button>
     <button type="button" class="sellerdit-action sellerdit-action-bookmark ${post.savedByMe ? "is-active" : ""}" aria-label="${post.savedByMe ? "저장됨" : "저장"}" data-community-reaction="bookmark" data-post-slug="${escapeHtml(post.slug)}">${renderCommunityActionIcon("bookmark")}</button>
@@ -1819,7 +1820,14 @@ function renderCommunityHeader(activeKey) {
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 9a6 6 0 1 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9Z"/><path d="M9.8 21a2.4 2.4 0 0 0 4.4 0"/></svg>
         </a>
         <a class="sellerdit-avatar-button sellerdit-kakao" href="/auth/kakao/start" data-auth-button aria-label="프로필 또는 로그인">카카오 로그인</a>
+        <a class="sellerdit-open-app-pill" href="/community" aria-label="셀러딧 앱 열기">앱 열기</a>
+        <span class="sellerdit-mobile-dots" aria-hidden="true">•••</span>
         <button class="sellerdit-logout" type="button" data-auth-logout hidden>로그아웃</button>
+      </div>
+      <div class="sellerdit-mobile-filterbar" aria-label="피드 필터">
+        <a href="/community?sort=hot">좋아요 비율 높은 순 <span>⌄</span></a>
+        <a href="/community">전 세계 <span>⌄</span></a>
+        <a href="/community?view=card" aria-label="보기 방식">▭ <span>⌄</span></a>
       </div>
     </div>
   </header>
@@ -2820,7 +2828,7 @@ function renderDocumentShell({ title, description, canonicalUrl, body, jsonLd, s
     <meta name="twitter:description" content="${escapeHtml(description)}" />
     <meta name="twitter:image" content="${PUBLIC_SITE_URL}/assets/site-flow.svg" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
-    <link rel="stylesheet" href="/styles.css?v=20260624-supplier-page-final" />
+    <link rel="stylesheet" href="/styles.css?v=20260625-mobile-reddit-header" />
     <meta name="naver-site-verification" content="d2091fad160915c822215f48ce925c90637cf535" />
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-EGL6JRLHH0"></script>
     <script>
