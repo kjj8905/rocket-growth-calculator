@@ -490,6 +490,10 @@ app.get(["/mvp", "/mvp/:variant"], (req, res) => {
   res.redirect(302, "/community");
 });
 
+
+app.get(["/community/suppliers", "/community/suppliers/"], (req, res) => {
+  res.type("html").send(renderCommunitySupplierDirectoryPage(req.query));
+});
 app.get("/community/:category(china-sourcing|china-korea-logistics|korea-coupang-inbound|coupang-selling-cost|final-margin|qna)", (req, res) => {
   res.type("html").send(renderCommunityCategoryPage(req.params.category, req.query));
 });
@@ -1030,6 +1034,119 @@ function renderCommunityIndexPage(query = {}) {
   });
 }
 
+
+function getCommunitySupplierTiles() {
+  return [
+    {
+      type: "community",
+      initial: "농",
+      name: "r/농수산사입",
+      members: "12,480",
+      posts: "186",
+      description: "농수산 사입, 산지 공급처, 신선식품 포장 기준을 공유합니다.",
+      href: "/community",
+      color: "#2563eb",
+    },
+    {
+      type: "community",
+      initial: "로",
+      name: "r/로켓그로스",
+      members: "8,115",
+      posts: "143",
+      description: "로켓그로스 입고와 판매 전 비용 계산을 함께 점검합니다.",
+      href: "/community",
+      color: "#1d4ed8",
+    },
+    { type: "supplier", initial: "월", name: "월억도전", category: "#농수산", filter: "direct agriculture", href: "/suppliers/month-billion", color: "#2563eb" },
+    { type: "supplier", initial: "신", name: "신선마켓", category: "#농산물", filter: "agriculture direct", href: "/suppliers/fresh-market", color: "#3b82f6" },
+    { type: "supplier", initial: "담", name: "따고담고", category: "#공산품", filter: "industrial wholesale", href: "/suppliers/ddaggo-damgo", color: "#1e40af" },
+    { type: "supplier", initial: "팜", name: "팜허브", category: "#농수산", filter: "direct agriculture", href: "/suppliers/farm-hub", color: "#2563eb" },
+    { type: "supplier", initial: "16", name: "1688소싱", category: "#1688·타오바오", filter: "china-market industrial", href: "/suppliers/1688-sourcing", color: "#1d4ed8" },
+    { type: "supplier", initial: "검", name: "검수파트너", category: "#물류·검수", filter: "logistics", href: "/suppliers/inspection-partner", color: "#2563eb" },
+  ];
+}
+
+function renderCommunitySupplierTile(tile) {
+  if (tile.type === "supplier") {
+    return `<a class="sellerdit-tile sellerdit-tile-supplier" href="${escapeHtml(tile.href)}" data-tile-type="supplier" data-supplier-filter="${escapeHtml(tile.filter || "")}">
+      <div class="sellerdit-tile-head">
+        <span class="sellerdit-tile-avatar" style="--tile-avatar:${escapeHtml(tile.color)}">${escapeHtml(tile.initial)}</span>
+        <strong>${escapeHtml(tile.name)} <em>공급처</em></strong>
+      </div>
+      <span class="sellerdit-supplier-tag">${escapeHtml(tile.category)}</span>
+      <span class="sellerdit-supplier-link">바로가기 →</span>
+    </a>`;
+  }
+  return `<article class="sellerdit-tile sellerdit-tile-community" data-tile-type="community" data-supplier-filter="community">
+    <a class="sellerdit-tile-main" href="${escapeHtml(tile.href)}">
+      <div class="sellerdit-tile-head">
+        <span class="sellerdit-tile-avatar" style="--tile-avatar:${escapeHtml(tile.color)}">${escapeHtml(tile.initial)}</span>
+        <strong>${escapeHtml(tile.name)}</strong>
+      </div>
+      <span class="sellerdit-tile-meta">멤버 ${escapeHtml(tile.members)} · 글 ${escapeHtml(tile.posts)}</span>
+      <p>${escapeHtml(tile.description)}</p>
+    </a>
+    <div class="sellerdit-tile-actions">
+      <button type="button">＋ 팔로우</button>
+      <span>⋯</span>
+    </div>
+  </article>`;
+}
+
+function renderCommunitySupplierFilterRail() {
+  const filters = [
+    ["all", "전체 공급처"],
+    ["agriculture", "농산물"],
+    ["industrial", "공산품"],
+    ["direct", "농수산 직매입"],
+    ["china-market", "1688·타오바오"],
+    ["wholesale", "국내 도매"],
+    ["logistics", "물류·검수"],
+  ];
+  return `<aside class="community-left-rail sellerdit-left-rail sellerdit-supplier-filter-rail" aria-label="공급처 필터">
+    <section class="sellerdit-filter-panel" aria-labelledby="supplier-menu-title">
+      <h2 id="supplier-menu-title">공급처 메뉴</h2>
+      <button class="sellerdit-filter-menu-item is-active" type="button" data-supplier-filter="all">공급처 리스트 <em>NEW</em></button>
+      <button class="sellerdit-filter-menu-item" type="button" data-supplier-filter="community">커뮤니티 스레드 <em>42</em></button>
+      <button class="sellerdit-filter-menu-item" type="button" disabled>질문과 답변 <em>숨김</em></button>
+      <button class="sellerdit-filter-menu-item" type="button" disabled>계산 영역 <em>숨김</em></button>
+    </section>
+    <section class="sellerdit-filter-panel" aria-labelledby="supplier-filter-title">
+      <h2 id="supplier-filter-title">필터</h2>
+      <div class="sellerdit-filter-list">
+        ${filters.map(([value, label], index) => `<button class="sellerdit-filter-chip ${index === 0 ? "is-active" : ""}" type="button" data-supplier-filter="${escapeHtml(value)}">${escapeHtml(label)}</button>`).join("")}
+      </div>
+    </section>
+  </aside>`;
+}
+
+function renderCommunitySupplierDirectoryPage(query = {}) {
+  const title = "셀러딧 공급처 | 로켓그로스 계산기";
+  const description = "가입 운영 커뮤니티와 운영자가 등록한 공급처를 구분해 보는 셀러딧 공급처 카테고리입니다.";
+  const canonicalUrl = `${PUBLIC_SITE_URL}/community/suppliers`;
+  const tiles = getCommunitySupplierTiles();
+  return renderDocumentShell({
+    title,
+    description,
+    canonicalUrl,
+    body: `${renderCommunityHeader("suppliers")}
+    <main class="community-shell">
+      <section class="community-reddit-layout sellerdit-with-left-rail sellerdit-supplier-layout">
+        ${renderCommunitySupplierFilterRail()}
+        <section class="community-feed-panel sellerdit-supplier-main" aria-label="공급처">
+          <div class="sellerdit-tile-grid">${tiles.map(renderCommunitySupplierTile).join("")}</div>
+        </section>
+        <aside class="community-right-rail sellerdit-right-rail">
+          ${renderPopularCommunitiesPanel()}
+          ${renderSellerditFooterLinks()}
+        </aside>
+      </section>
+    </main>`,
+    jsonLd: null,
+    script: renderCommunityScript(),
+  });
+}
+
 function renderCommunityAiAnswerPage(query = {}) {
   const search = String(query.q || "").trim().slice(0, 80);
   const qnaPosts = getCommunityPosts({ category: "qna", notice: false, sort: "hot", limit: 8 });
@@ -1406,7 +1523,7 @@ function renderCommunityHeader(activeKey) {
     { key: "calculator", label: "로켓계산기", href: "/" },
     { key: "trends", label: "검색 트렌드", href: "/trends" },
     { key: "community", label: "셀러 커뮤니티", href: "/community" },
-    { key: "qna", label: "질문답변", href: "/community/qna" },
+    { key: "suppliers", label: "공급처", href: "/community/suppliers" },
     { key: "guides", label: "계산 기준", href: "/guides" },
   ];
 
@@ -1915,6 +2032,33 @@ function renderCommunityScript(postSlug = "") {
         });
       });
 
+
+      function setupSupplierFilters() {
+        var tiles = Array.prototype.slice.call(document.querySelectorAll(".sellerdit-supplier-main [data-tile-type]"));
+        var buttons = Array.prototype.slice.call(document.querySelectorAll(".sellerdit-supplier-filter-rail [data-supplier-filter]"));
+        if (!tiles.length || !buttons.length) return;
+        function applyFilter(value) {
+          buttons.forEach(function (button) {
+            if (button.disabled) return;
+            button.classList.toggle("is-active", button.dataset.supplierFilter === value);
+          });
+          tiles.forEach(function (tile) {
+            var tileType = tile.dataset.tileType || "";
+            var tags = (tile.dataset.supplierFilter || "").split(/\\s+/);
+            var visible = value === "all" || (value === "community" ? tileType === "community" : tags.indexOf(value) !== -1);
+            tile.hidden = !visible;
+          });
+        }
+        buttons.forEach(function (button) {
+          button.addEventListener("click", function () {
+            if (button.disabled) return;
+            applyFilter(button.dataset.supplierFilter || "all");
+          });
+        });
+        applyFilter("all");
+      }
+
+      setupSupplierFilters();
       refreshCommunityAuth();
 
       function setMessage(form, message, tone) {

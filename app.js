@@ -2771,6 +2771,7 @@ function buildDonutBackground(items, total) {
 }
 
 function resetFormulaCardMode() {
+  formulaCard.hidden = false;
   formulaCard.classList.remove("help-card", "final-chart-card");
   formulaList.classList.remove("chart-legend-list");
   formulaCard.querySelector(".ai-analysis-button")?.remove();
@@ -3716,35 +3717,7 @@ function renderFinalChart(calculations, selectedKey = "grand") {
     </div>
   `;
 
-  formulaCard.querySelector(".eyebrow").textContent = "최종 해석";
-  formulaTitle.textContent = "비용 비중과 마진";
-  formulaList.innerHTML = items
-    .map((item) => {
-      const percent = total > 0 ? (item.value / total) * 100 : 0;
-      const percentLabel = Math.round(percent);
-      return `
-        <li class="chart-legend-item${selectedKey === item.key ? " is-selected" : ""}">
-          <div class="chart-legend-main">
-            <span class="chart-name">
-              <i class="chart-color-dot" style="--dot-color: ${item.color}"></i>
-              ${escapeHtml(item.label)}
-            </span>
-            <strong>${percentLabel}%</strong>
-          </div>
-          <div class="chart-legend-amount">${formatCurrency(item.value)}</div>
-          <div class="chart-progress-track" aria-hidden="true">
-            <i style="--bar-color: ${item.color}; --bar-width: ${percent.toFixed(2)}%"></i>
-          </div>
-        </li>
-      `;
-    })
-    .join("");
-
-  const aiButton = document.createElement("button");
-  aiButton.className = "ai-analysis-button";
-  aiButton.type = "button";
-  aiButton.textContent = "AI 분석 하기";
-  formulaCard.append(aiButton);
+  formulaCard.hidden = true;
 
   finalSummaryPanel.querySelectorAll("[data-final-help]").forEach((row) => {
     row.classList.toggle("is-help-selected", row.dataset.finalHelp === selectedKey);
