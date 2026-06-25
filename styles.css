@@ -21749,3 +21749,26 @@ body:has(.sellerdit-topbar) .community-shell .sellerdit-detail-post .sellerdit-p
     display: none !important;
   }
 }
+
+/* Sellerdit mobile detail v3: remove dead gap before profile row */
+@media (max-width: 767.98px) {
+  body:has(.sellerdit-topbar):has(.is-post-detail) .community-shell .community-detail-main {
+    gap: 0 !important;
+  }
+
+  body:has(.sellerdit-topbar):has(.is-post-detail) .community-shell .is-post-detail .sellerdit-detail-post,
+  body:has(.sellerdit-topbar):has(.is-post-detail) .community-shell .is-post-detail .community-post-article.sellerdit-detail-post,
+  body:has(.sellerdit-topbar):has(.is-post-detail) .community-shell .sellerdit-detail-post {
+    margin-top: 0 !important;
+    padding-top: 8px !important;
+  }
+
+  body:has(.sellerdit-topbar):has(.is-post-detail) .community-shell .sellerdit-detail-post .sellerdit-post-meta {
+    margin-top: 0 !important;
+    margin-bottom: 10px !important;
+  }
+
+  body:has(.sellerdit-topbar):has(.is-post-detail) .community-shell .sellerdit-detail-post .sellerdit-post-meta .sellerdit-more {
+    display: none !important;
+  }
+}
