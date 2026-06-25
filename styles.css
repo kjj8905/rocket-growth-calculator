@@ -21772,3 +21772,59 @@ body:has(.sellerdit-topbar) .community-shell .sellerdit-detail-post .sellerdit-p
     display: none !important;
   }
 }
+
+/* Sellerdit post sync v3: match community-list and detail post sizing/typography */
+body:has(.sellerdit-topbar) .community-shell .is-post-detail .sellerdit-detail-post .sellerdit-thread-body.is-detail {
+  color: #0f172a !important;
+  font-size: 16px !important;
+  font-weight: 400 !important;
+  line-height: 24px !important;
+  letter-spacing: -0.01em !important;
+}
+
+@media (max-width: 767.98px) {
+  body:has(.sellerdit-topbar):has(.is-post-detail) .community-shell .is-post-detail .sellerdit-detail-post,
+  body:has(.sellerdit-topbar):has(.is-post-detail) .community-shell .is-post-detail .community-post-article.sellerdit-detail-post,
+  body:has(.sellerdit-topbar):has(.is-post-detail) .community-shell .sellerdit-detail-post {
+    width: auto !important;
+    max-width: none !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+
+  body:has(.sellerdit-topbar):has(.is-post-detail) .community-shell .is-post-detail .sellerdit-detail-post .sellerdit-thread-body.is-detail {
+    width: calc(100% - 22px) !important;
+    max-width: calc(100% - 22px) !important;
+    margin-left: 4px !important;
+    margin-right: 18px !important;
+    font-size: 16px !important;
+    line-height: 21.76px !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  body:has(.sellerdit-topbar) .community-reddit-layout.is-post-detail,
+  body:has(.sellerdit-topbar) .community-reddit-layout.sellerdit-with-left-rail.is-post-detail {
+    grid-template-columns: 640px var(--sellerdit-right-w, 338px) !important;
+  }
+
+  body:has(.sellerdit-topbar) .community-reddit-layout.is-post-detail > .community-detail-main,
+  body:has(.sellerdit-topbar) .community-reddit-layout.sellerdit-with-left-rail.is-post-detail > .community-detail-main,
+  body:has(.sellerdit-topbar) .community-shell .community-reddit-layout.is-post-detail > section.community-detail-main {
+    width: 640px !important;
+    max-width: 640px !important;
+  }
+
+  body:has(.sellerdit-topbar) .community-shell .is-post-detail .sellerdit-detail-post,
+  body:has(.sellerdit-topbar) .community-shell .is-post-detail .community-post-article.sellerdit-detail-post {
+    box-sizing: border-box !important;
+    width: 640px !important;
+    max-width: 640px !important;
+    padding: 16px 18px 18px !important;
+  }
+
+  body:has(.sellerdit-topbar) .community-shell .is-post-detail .sellerdit-detail-post .sellerdit-thread-body.is-detail {
+    font-size: 16px !important;
+    line-height: 24px !important;
+  }
+}
