@@ -20980,3 +20980,50 @@ body:has(.sellerdit-supplier-layout) .community-reddit-layout.sellerdit-with-lef
     margin-top: 24px !important;
   }
 }
+
+/* Desktop feed typography QA: +1 post font and vertically center profile meta beside avatar */
+@media (min-width: 1024px) {
+  body:has(.sellerdit-topbar) .sellerdit-feed-post .sellerdit-post-meta {
+    height: 44px !important;
+    min-height: 44px !important;
+    align-items: center !important;
+    margin: 0 0 0 !important;
+    line-height: 22px !important;
+  }
+
+  body:has(.sellerdit-topbar) .sellerdit-feed-post .sellerdit-author {
+    font-size: 15px !important;
+    line-height: 22px !important;
+    font-weight: 800 !important;
+  }
+
+  body:has(.sellerdit-topbar) .sellerdit-feed-post .sellerdit-post-meta time,
+  body:has(.sellerdit-topbar) .sellerdit-feed-post .sellerdit-dot {
+    font-size: 13px !important;
+    line-height: 22px !important;
+  }
+
+  body:has(.sellerdit-topbar) .sellerdit-feed-post .sellerdit-thread-body.is-feed {
+    margin-top: 10px !important;
+    font-size: 16px !important;
+    line-height: 1.5 !important;
+  }
+}
+
+/* Desktop feed profile text force: make author/time visibly larger after legacy high-specificity rules */
+@media (min-width: 1024px) {
+  body:has(.sellerdit-topbar) .community-shell article.community-vote-card.sellerdit-feed-post .sellerdit-post-meta > a.sellerdit-author,
+  body:has(.sellerdit-topbar) .community-shell .sellerdit-feed-post .sellerdit-post-meta > a.sellerdit-author {
+    font-size: 15px !important;
+    line-height: 22px !important;
+    font-weight: 800 !important;
+  }
+
+  body:has(.sellerdit-topbar) .community-shell article.community-vote-card.sellerdit-feed-post .sellerdit-post-meta > time,
+  body:has(.sellerdit-topbar) .community-shell .sellerdit-feed-post .sellerdit-post-meta > time,
+  body:has(.sellerdit-topbar) .community-shell article.community-vote-card.sellerdit-feed-post .sellerdit-post-meta > .sellerdit-dot,
+  body:has(.sellerdit-topbar) .community-shell .sellerdit-feed-post .sellerdit-post-meta > .sellerdit-dot {
+    font-size: 13px !important;
+    line-height: 22px !important;
+  }
+}
