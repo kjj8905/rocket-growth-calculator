@@ -20973,3 +20973,10 @@ body:has(.sellerdit-supplier-layout) .community-reddit-layout.sellerdit-with-lef
     transform: none !important;
   }
 }
+
+/* Desktop feed QA: title/body must clear the avatar row before starting at the avatar-left baseline */
+@media (min-width: 1024px) {
+  body:has(.sellerdit-topbar) .sellerdit-feed-post .sellerdit-thread-body.is-feed {
+    margin-top: 24px !important;
+  }
+}
