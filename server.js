@@ -1684,22 +1684,28 @@ function renderSellerditComment(comment, post, depth = 0, index = 0) {
   const isAuthor = makeCommunityHandle(authorName) === makeCommunityHandle(post.authorName);
   const badge = comment.badge || (isAuthor ? "원글 작성자" : "");
   const handle = makeCommunityHandle(authorName);
-  const body = `<article class="sellerdit-comment c ${depth > 0 ? "is-reply" : ""}" data-comment-id="${escapeHtml(comment.id || "")}">
+  const commentId = escapeHtml(comment.id || "");
+  const commentUrl = `/community/${escapeHtml(post.slug)}#comment-${commentId}`;
+  const body = `<article id="comment-${commentId}" class="sellerdit-comment c ${depth > 0 ? "is-reply" : ""}" data-comment-id="${commentId}">
+    <button type="button" class="sellerdit-comment-collapse" aria-label="댓글 접기" data-comment-collapse>−</button>
     <span class="sellerdit-avatar avatar" style="background:${escapeHtml(getCommunityAuthorColor(authorName))}">${escapeHtml(getCommunityAuthorInitial(authorName))}</span>
     <div class="sellerdit-comment-body body">
       <header class="chead">
-        <a class="sellerdit-author cauthor" href="/u/${escapeHtml(handle)}">u/${escapeHtml(handle)}</a>
+        <a class="sellerdit-author cauthor" href="/u/${escapeHtml(handle)}">${escapeHtml(handle)}</a>
         ${badge ? `<span class="sellerdit-comment-badge cbadge ${isAuthor || badge === "원글 작성자" ? "is-author op" : "top"}">${escapeHtml(badge)}</span>` : ""}
         <span class="sellerdit-dot dot">·</span>
         <time datetime="${escapeHtml(comment.createdAt)}">${escapeHtml(formatDate(comment.createdAt) || "방금 전")}</time>
       </header>
       <p class="ctext">${escapeHtml(comment.body)}</p>
       <footer class="cactions">
-        <button type="button" class="sellerdit-comment-action cv ${comment.likedByMe ? "is-active" : ""}" data-community-comment-reaction data-comment-id="${escapeHtml(comment.id || "")}">👍 <span data-comment-reaction-count>${formatInteger(comment.likesCount || 0)}</span></button>
-        <button type="button" class="sellerdit-comment-action cbtn" data-comment-reply-button data-parent-id="${escapeHtml(comment.id || "")}">답글 달기</button>
-        ${comment.canEdit ? `<button type="button" class="sellerdit-comment-action cbtn" data-comment-edit-button data-comment-id="${escapeHtml(comment.id || "")}">수정</button><button type="button" class="sellerdit-comment-action cbtn" data-comment-delete-button data-comment-id="${escapeHtml(comment.id || "")}">삭제</button>` : `<button type="button" class="sellerdit-comment-action cbtn">⋯</button>`}
+        <button type="button" class="sellerdit-comment-action cv ${comment.likedByMe ? "is-active" : ""}" aria-label="추천" data-community-comment-reaction data-comment-id="${commentId}">${renderCommunityActionIcon("like")}<span data-comment-reaction-count>${formatInteger(comment.likesCount || 0)}</span></button>
+        <button type="button" class="sellerdit-comment-action cv is-down" aria-label="비추천" data-comment-downvote>${renderCommunityActionIcon("dislike")}</button>
+        <button type="button" class="sellerdit-comment-action cbtn" data-comment-reply-button data-parent-id="${commentId}">${renderCommunityActionIcon("comment")}<span>답글 달기</span></button>
+        <button type="button" class="sellerdit-comment-action cbtn" data-comment-award>⚭<span>어워드</span></button>
+        <button type="button" class="sellerdit-comment-action cbtn" data-comment-share data-share-url="${commentUrl}">${renderCommunityActionIcon("share")}<span>공유</span></button>
+        ${comment.canEdit ? `<button type="button" class="sellerdit-comment-action cbtn" data-comment-edit-button data-comment-id="${commentId}">수정</button><button type="button" class="sellerdit-comment-action cbtn" data-comment-delete-button data-comment-id="${commentId}">삭제</button>` : `<button type="button" class="sellerdit-comment-action cbtn is-more" aria-label="더 보기">...</button>`}
       </footer>
-      <form class="community-comment-form sellerdit-reply-form" data-comment-edit-form data-comment-id="${escapeHtml(comment.id || "")}" hidden>
+      <form class="community-comment-form sellerdit-reply-form" data-comment-edit-form data-comment-id="${commentId}" hidden>
         <textarea name="body" rows="2" maxlength="1500">${escapeHtml(comment.body)}</textarea>
         <div class="sellerdit-reply-actions">
           <p data-community-message></p>
@@ -1707,8 +1713,8 @@ function renderSellerditComment(comment, post, depth = 0, index = 0) {
           <button class="primary-small-button" type="submit">수정 저장</button>
         </div>
       </form>
-      <form class="community-comment-form sellerdit-reply-form" data-community-comment-form data-post-slug="${escapeHtml(post.slug)}" data-parent-id="${escapeHtml(comment.id || "")}" hidden>
-        <textarea name="body" rows="2" maxlength="1500" placeholder="u/${escapeHtml(handle)}님에게 답글 남기기"></textarea>
+      <form class="community-comment-form sellerdit-reply-form" data-community-comment-form data-post-slug="${escapeHtml(post.slug)}" data-parent-id="${commentId}" hidden>
+        <textarea name="body" rows="2" maxlength="1500" placeholder="${escapeHtml(handle)}님에게 답글 남기기"></textarea>
         <div class="sellerdit-reply-actions">
           <p data-community-message></p>
           <button type="button" data-comment-reply-cancel>취소</button>
@@ -1719,7 +1725,8 @@ function renderSellerditComment(comment, post, depth = 0, index = 0) {
     </div>
   </article>`;
   return body;
-}function getCommunityCommentsByHandle(handle) {
+}
+function getCommunityCommentsByHandle(handle) {
   const normalizedHandle = makeCommunityHandle(handle || "seller");
   return db.prepare(`SELECT c.*, p.slug AS post_slug, p.title AS post_title
     FROM community_comments c
@@ -2558,6 +2565,53 @@ function renderCommunityScript(postSlug = "") {
         });
       });
 
+      document.querySelectorAll("[data-comment-collapse]").forEach(function (button) {
+        button.addEventListener("click", function () {
+          var comment = button.closest("article.sellerdit-comment");
+          if (!comment) return;
+          var collapsed = comment.classList.toggle("is-collapsed");
+          button.textContent = collapsed ? "+" : "−";
+          button.setAttribute("aria-label", collapsed ? "댓글 펼치기" : "댓글 접기");
+        });
+      });
+
+      document.querySelectorAll("[data-comment-award]").forEach(function (button) {
+        button.addEventListener("click", function () {
+          var active = button.classList.toggle("is-active");
+          var label = button.querySelector("span");
+          if (label) label.textContent = active ? "어워드됨" : "어워드";
+        });
+      });
+
+      document.querySelectorAll("[data-comment-downvote]").forEach(function (button) {
+        button.addEventListener("click", function () {
+          button.classList.toggle("is-active");
+        });
+      });
+
+      document.querySelectorAll("[data-comment-share]").forEach(function (button) {
+        button.addEventListener("click", function () {
+          var url = new URL(button.dataset.shareUrl || window.location.pathname, window.location.origin).toString();
+          var beforeText = button.textContent;
+          try {
+            var input = document.createElement("input");
+            input.value = url;
+            input.setAttribute("readonly", "readonly");
+            input.style.position = "fixed";
+            input.style.left = "-9999px";
+            document.body.appendChild(input);
+            input.select();
+            document.execCommand("copy");
+            input.remove();
+            button.textContent = "복사됨";
+            window.setTimeout(function () { button.textContent = beforeText; }, 1200);
+          } catch {
+            button.textContent = "실패";
+            window.setTimeout(function () { button.textContent = beforeText; }, 1200);
+          }
+        });
+      });
+
       document.querySelectorAll("[data-comment-edit-button]").forEach(function (button) {
         button.addEventListener("click", function () {
           var comment = button.closest("article.sellerdit-comment");
@@ -2828,7 +2882,7 @@ function renderDocumentShell({ title, description, canonicalUrl, body, jsonLd, s
     <meta name="twitter:description" content="${escapeHtml(description)}" />
     <meta name="twitter:image" content="${PUBLIC_SITE_URL}/assets/site-flow.svg" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
-    <link rel="stylesheet" href="/styles.css?v=20260625-feed-font-profile-align" />
+    <link rel="stylesheet" href="/styles.css?v=20260625-comments-thread-v1" />
     <meta name="naver-site-verification" content="d2091fad160915c822215f48ce925c90637cf535" />
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-EGL6JRLHH0"></script>
     <script>
