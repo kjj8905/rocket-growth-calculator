@@ -1537,7 +1537,7 @@ function renderCommunityPostPage(post, currentUser = null) {
       <section class="community-workspace community-reddit-layout sellerdit-with-left-rail is-post-detail">
         ${renderCommunityLeftRail("community", currentUser)}
         <section class="community-detail-main">
-          <div class="sellerdit-mobile-detailbar"><a href="/community" aria-label="목록으로 돌아가기">←</a><span>${escapeHtml(makeCommunityHandle(post.authorName))}</span></div>
+          <div class="sellerdit-mobile-detailbar"><a href="/community" aria-label="목록으로 돌아가기">←</a></div>
           <article class="community-post-article sellerdit-detail-post" data-community-post="${escapeHtml(post.slug)}">
             <div class="sellerdit-post-meta">
               <span class="sellerdit-avatar" style="background:${escapeHtml(getCommunityAuthorColor(post.authorName))}">${escapeHtml(getCommunityAuthorInitial(post.authorName))}</span>
@@ -1827,7 +1827,7 @@ function renderCommunityHeader(activeKey) {
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 9a6 6 0 1 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9Z"/><path d="M9.8 21a2.4 2.4 0 0 0 4.4 0"/></svg>
         </a>
         <a class="sellerdit-avatar-button sellerdit-kakao" href="/auth/kakao/start" data-auth-button aria-label="프로필 또는 로그인">카카오 로그인</a>
-        <a class="sellerdit-open-app-pill" href="/community" aria-label="셀러딧 앱 열기">앱 열기</a>
+        <a class="sellerdit-open-app-pill" href="/auth/kakao/start" data-auth-button aria-label="로그인">로그인</a>
         <span class="sellerdit-mobile-dots" aria-hidden="true">•••</span>
         <button class="sellerdit-logout" type="button" data-auth-logout hidden>로그아웃</button>
       </div>
@@ -2894,7 +2894,7 @@ function renderDocumentShell({ title, description, canonicalUrl, body, jsonLd, s
     <meta name="twitter:description" content="${escapeHtml(description)}" />
     <meta name="twitter:image" content="${PUBLIC_SITE_URL}/assets/site-flow.svg" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
-    <link rel="stylesheet" href="/styles.css?v=20260625-mobile-detail-v1" />
+    <link rel="stylesheet" href="/styles.css?v=20260625-mobile-detail-v2" />
     <meta name="naver-site-verification" content="d2091fad160915c822215f48ce925c90637cf535" />
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-EGL6JRLHH0"></script>
     <script>
