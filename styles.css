@@ -21891,3 +21891,37 @@ body:has(.sellerdit-topbar) .community-shell .sellerdit-detail-post .sellerdit-p
     max-width: 640px !important;
   }
 }
+
+/* Sellerdit post sync v6: keep 1275px detail in the same feed column */
+@media (min-width: 1024px) and (max-width: 1320px) {
+  body:has(.sellerdit-topbar) .community-reddit-layout.is-post-detail,
+  body:has(.sellerdit-topbar) .community-reddit-layout.sellerdit-with-left-rail.is-post-detail {
+    grid-template-columns: 154px 640px 250px !important;
+    gap: 14px !important;
+  }
+
+  body:has(.sellerdit-topbar) .community-reddit-layout.is-post-detail > .community-left-rail,
+  body:has(.sellerdit-topbar) .community-reddit-layout.sellerdit-with-left-rail.is-post-detail > .community-left-rail {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+  }
+
+  body:has(.sellerdit-topbar) .community-reddit-layout.is-post-detail > .community-detail-main,
+  body:has(.sellerdit-topbar) .community-reddit-layout.sellerdit-with-left-rail.is-post-detail > .community-detail-main,
+  body:has(.sellerdit-topbar) .community-shell .community-reddit-layout.is-post-detail > section.community-detail-main {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+    width: 640px !important;
+    max-width: 640px !important;
+  }
+
+  body:has(.sellerdit-topbar) .community-reddit-layout.is-post-detail > .sellerdit-right-rail,
+  body:has(.sellerdit-topbar) .community-reddit-layout.sellerdit-with-left-rail.is-post-detail > .sellerdit-right-rail,
+  body:has(.sellerdit-topbar) .community-shell .community-reddit-layout.is-post-detail > aside.sellerdit-right-rail {
+    grid-column: 3 !important;
+    grid-row: 1 !important;
+    width: 250px !important;
+    min-width: 250px !important;
+    max-width: 250px !important;
+  }
+}
