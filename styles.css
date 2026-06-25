@@ -21345,3 +21345,73 @@ body:has(.sellerdit-supplier-layout) .community-reddit-layout.sellerdit-with-lef
     gap: 5px !important;
   }
 }
+
+/* Sellerdit comments v3: connect only direct replies and define expand state */
+.community-shell .is-post-detail .sellerdit-replies,
+.community-shell .is-post-detail .reply {
+  position: relative !important;
+  margin: 8px 0 0 0 !important;
+  padding: 2px 0 0 20px !important;
+  border-left: 2px solid #e1e6eb !important;
+}
+
+.community-shell .is-post-detail .sellerdit-replies::before,
+.community-shell .is-post-detail .reply::before {
+  content: "" !important;
+  position: absolute !important;
+  left: -2px !important;
+  top: -6px !important;
+  width: 18px !important;
+  height: 18px !important;
+  border-left: 2px solid #e1e6eb !important;
+  border-bottom: 2px solid #e1e6eb !important;
+  border-bottom-left-radius: 10px !important;
+  pointer-events: none !important;
+}
+
+.community-shell .is-post-detail .sellerdit-replies article.sellerdit-comment,
+.community-shell .is-post-detail .reply article.c {
+  padding-top: 9px !important;
+  padding-bottom: 8px !important;
+}
+
+.community-shell .is-post-detail .sellerdit-replies.is-replies-collapsed,
+.community-shell .is-post-detail .reply.is-replies-collapsed {
+  padding-top: 0 !important;
+}
+
+.community-shell .is-post-detail .sellerdit-replies.is-replies-collapsed > article.sellerdit-comment,
+.community-shell .is-post-detail .reply.is-replies-collapsed > article.c,
+.community-shell .is-post-detail .sellerdit-replies.is-replies-collapsed > .sellerdit-comment-ad,
+.community-shell .is-post-detail .reply.is-replies-collapsed > .sellerdit-comment-ad {
+  display: none !important;
+}
+
+.community-shell .is-post-detail .sellerdit-replies.is-replies-collapsed::before,
+.community-shell .is-post-detail .reply.is-replies-collapsed::before {
+  height: 13px !important;
+  border-bottom-left-radius: 7px !important;
+}
+
+.community-shell .is-post-detail .more-replies {
+  width: fit-content !important;
+  margin: 4px 0 0 -1px !important;
+  padding: 4px 8px 4px 0 !important;
+  background: #ffffff !important;
+}
+
+.community-shell .is-post-detail .more-replies[aria-expanded="false"] .plus::after {
+  display: block !important;
+}
+
+.community-shell .is-post-detail .more-replies[aria-expanded="true"] .plus::after {
+  display: none !important;
+}
+
+@media (max-width: 767.98px) {
+  .community-shell .is-post-detail .sellerdit-replies,
+  .community-shell .is-post-detail .reply {
+    padding-left: 16px !important;
+    margin-top: 7px !important;
+  }
+}

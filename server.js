@@ -1721,7 +1721,7 @@ function renderSellerditComment(comment, post, depth = 0, index = 0) {
           <button class="primary-small-button" type="submit">답글 등록</button>
         </div>
       </form>
-      ${replies.length ? `<div class="sellerdit-replies reply">${renderSellerditComments(replies, post, depth + 1)}<button class="more-replies" type="button" aria-label="답글 더 보기"><span class="plus" aria-hidden="true"></span><span>답글 ${formatInteger(Math.max(1, replies.length * 8 + 9))}개 더 보기</span></button></div>` : ""}
+      ${replies.length ? `<div class="sellerdit-replies reply" data-replies-group>${renderSellerditComments(replies, post, depth + 1)}<button class="more-replies" type="button" aria-expanded="true" data-replies-toggle><span class="plus" aria-hidden="true"></span><span>답글 ${formatInteger(replies.length)}개 접기</span></button></div>` : ""}
     </div>
   </article>`;
   return body;
@@ -2612,6 +2612,18 @@ function renderCommunityScript(postSlug = "") {
         });
       });
 
+      document.querySelectorAll("[data-replies-toggle]").forEach(function (button) {
+        button.addEventListener("click", function () {
+          var group = button.closest("[data-replies-group]");
+          if (!group) return;
+          var collapsed = group.classList.toggle("is-replies-collapsed");
+          var replyCount = group.querySelectorAll(":scope > article.sellerdit-comment").length || 1;
+          var label = button.querySelector("span:last-child");
+          button.setAttribute("aria-expanded", collapsed ? "false" : "true");
+          if (label) label.textContent = "답글 " + replyCount + "개 " + (collapsed ? "펼치기" : "접기");
+        });
+      });
+
       document.querySelectorAll("[data-comment-edit-button]").forEach(function (button) {
         button.addEventListener("click", function () {
           var comment = button.closest("article.sellerdit-comment");
@@ -2882,7 +2894,7 @@ function renderDocumentShell({ title, description, canonicalUrl, body, jsonLd, s
     <meta name="twitter:description" content="${escapeHtml(description)}" />
     <meta name="twitter:image" content="${PUBLIC_SITE_URL}/assets/site-flow.svg" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
-    <link rel="stylesheet" href="/styles.css?v=20260625-comments-clean-v2" />
+    <link rel="stylesheet" href="/styles.css?v=20260625-reply-links-v3" />
     <meta name="naver-site-verification" content="d2091fad160915c822215f48ce925c90637cf535" />
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-EGL6JRLHH0"></script>
     <script>
