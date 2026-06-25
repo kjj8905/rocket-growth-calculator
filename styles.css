@@ -21415,3 +21415,28 @@ body:has(.sellerdit-supplier-layout) .community-reddit-layout.sellerdit-with-lef
     margin-top: 7px !important;
   }
 }
+
+/* Sellerdit detail post v1: replace outer card box with bottom divider only */
+body:has(.sellerdit-topbar) .community-shell .is-post-detail .sellerdit-detail-post,
+body:has(.sellerdit-topbar) .community-shell .is-post-detail .community-post-article.sellerdit-detail-post {
+  padding: 18px 0 18px !important;
+  border: 0 !important;
+  border-bottom: 1px solid #e5e7eb !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+body:has(.sellerdit-topbar) .community-shell .is-post-detail .sellerdit-detail-post .sellerdit-post-meta,
+body:has(.sellerdit-topbar) .community-shell .is-post-detail .sellerdit-detail-post .sellerdit-thread-body,
+body:has(.sellerdit-topbar) .community-shell .is-post-detail .sellerdit-detail-post .sellerdit-post-media,
+body:has(.sellerdit-topbar) .community-shell .is-post-detail .sellerdit-detail-post .sellerdit-detail-actions {
+  max-width: none !important;
+}
+
+@media (max-width: 767.98px) {
+  body:has(.sellerdit-topbar) .community-shell .is-post-detail .sellerdit-detail-post,
+  body:has(.sellerdit-topbar) .community-shell .is-post-detail .community-post-article.sellerdit-detail-post {
+    padding: 14px 0 16px !important;
+  }
+}
