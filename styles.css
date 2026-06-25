@@ -20937,3 +20937,24 @@ body:has(.sellerdit-supplier-layout) .community-reddit-layout.sellerdit-with-lef
     align-self: start !important;
   }
 }
+
+/* Desktop QA repair: prevent search placeholder overlap and keep feed body aligned after avatar */
+@media (min-width: 1024px) {
+  body:has(.sellerdit-topbar) header.sellerdit-topbar.sellerdit-reddit-topbar .community-global-search.sellerdit-reddit-search input,
+  body:has(.sellerdit-topbar) .community-global-search.sellerdit-reddit-search input {
+    padding: 0 18px 0 44px !important;
+    line-height: 40px !important;
+  }
+
+  body:has(.sellerdit-topbar) .sellerdit-feed-post .sellerdit-thread-body.is-feed,
+  body:has(.sellerdit-topbar) .sellerdit-feed-post .sellerdit-thread-more,
+  body:has(.sellerdit-topbar) .sellerdit-feed-post .sellerdit-post-media,
+  body:has(.sellerdit-topbar) .sellerdit-feed-post .sellerdit-box-photo,
+  body:has(.sellerdit-topbar) .sellerdit-feed-post .community-vote-actions,
+  body:has(.sellerdit-topbar) .sellerdit-feed-post .sellerdit-actions {
+    margin-left: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    transform: none !important;
+  }
+}
