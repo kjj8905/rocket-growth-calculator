@@ -1703,8 +1703,7 @@ function renderSellerditComment(comment, post, depth = 0, index = 0) {
       </header>
       <p class="ctext">${escapeHtml(comment.body)}</p>
       <footer class="cactions">
-        <button type="button" class="sellerdit-comment-action cv ${comment.likedByMe ? "is-active" : ""}" aria-label="추천" data-community-comment-reaction data-comment-id="${commentId}">${renderCommunityActionIcon("like")}<span data-comment-reaction-count>${formatInteger(comment.likesCount || 0)}</span></button>
-        <button type="button" class="sellerdit-comment-action cv is-down" aria-label="비추천" data-comment-downvote>${renderCommunityActionIcon("dislike")}</button>
+        <button type="button" class="sellerdit-comment-action cv ${comment.likedByMe ? "is-active" : ""}" aria-label="좋아요" data-community-comment-reaction data-comment-id="${commentId}">${renderCommunityActionIcon("like")}<span data-comment-reaction-count>${formatInteger(comment.likesCount || 0)}</span></button>
         <button type="button" class="sellerdit-comment-action cbtn" data-comment-reply-button data-parent-id="${commentId}">${renderCommunityActionIcon("comment")}<span>답글 달기</span></button>
         <button type="button" class="sellerdit-comment-action cbtn" data-comment-award>⚭<span>어워드</span></button>
         <button type="button" class="sellerdit-comment-action cbtn" data-comment-share data-share-url="${commentUrl}">${renderCommunityActionIcon("share")}<span>공유</span></button>
@@ -2899,7 +2898,7 @@ function renderDocumentShell({ title, description, canonicalUrl, body, jsonLd, s
     <meta name="twitter:description" content="${escapeHtml(description)}" />
     <meta name="twitter:image" content="${PUBLIC_SITE_URL}/assets/site-flow.svg" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
-    <link rel="stylesheet" href="/styles.css?v=20260625-action-spacing-v11" />
+    <link rel="stylesheet" href="/styles.css?v=20260625-comments-v12" />
     <meta name="naver-site-verification" content="d2091fad160915c822215f48ce925c90637cf535" />
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-EGL6JRLHH0"></script>
     <script>
