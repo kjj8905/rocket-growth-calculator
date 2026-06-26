@@ -776,7 +776,7 @@ function renderCommunitySortBar(basePath, activeSort, search, tag, cat = "") {
 
 function renderCommunityActionIcon(type) {
   const icons = {
-    like: '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 4 4.5 11.5h4.25V20h6.5v-8.5h4.25L12 4Z"/></svg>',
+    like: '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78Z"/></svg>',
     dislike: '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 20 4.5 12.5h4.25V4h6.5v8.5h4.25L12 20Z"/></svg>',
     comment: '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M21 11.5a8.38 8.38 0 0 1-8.5 8.4 8.5 8.5 0 0 1-3.9-.9L3 21l1.9-5.1A8.38 8.38 0 0 1 4 11.5 8.5 8.5 0 0 1 12.5 3 8.38 8.38 0 0 1 21 11.5Z"/></svg>',
     share: '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7Z"/></svg>',
@@ -790,7 +790,7 @@ function renderCommunityActions(post, options = {}) {
   const commentsHref = options.commentsHref || `/community/${escapeHtml(post.slug)}#comments`;
   const extraActions = options.extraActions || "";
   return `<div class="community-vote-actions sellerdit-actions${options.detail ? " sellerdit-detail-actions" : ""}" aria-label="게시글 작업">
-    <button type="button" class="sellerdit-action sellerdit-action-like ${post.likedByMe ? "is-active" : ""}" aria-label="좋아요" data-community-reaction="like" data-post-slug="${escapeHtml(post.slug)}">${renderCommunityActionIcon("like")}<span data-reaction-count>${formatInteger(post.likesCount || 0)}</span>${renderCommunityActionIcon("dislike")}</button>
+    <button type="button" class="sellerdit-action sellerdit-action-like ${post.likedByMe ? "is-active" : ""}" aria-label="좋아요" data-community-reaction="like" data-post-slug="${escapeHtml(post.slug)}">${renderCommunityActionIcon("like")}<span data-reaction-count>${formatInteger(post.likesCount || 0)}</span></button>
     <a class="sellerdit-action sellerdit-action-comment" aria-label="댓글" href="${commentsHref}">${renderCommunityActionIcon("comment")}<span>${formatInteger(commentsCount)}</span></a>
     <button type="button" class="sellerdit-action sellerdit-action-share" aria-label="공유" data-community-share data-share-url="/community/${escapeHtml(post.slug)}">${renderCommunityActionIcon("share")}</button>
     <button type="button" class="sellerdit-action sellerdit-action-bookmark ${post.savedByMe ? "is-active" : ""}" aria-label="${post.savedByMe ? "저장됨" : "저장"}" data-community-reaction="bookmark" data-post-slug="${escapeHtml(post.slug)}">${renderCommunityActionIcon("bookmark")}</button>
@@ -824,6 +824,16 @@ function renderCommunityVoteCard(post, index = 0) {
     </div>
   </article>`;
 }
+function getCommunityMediaLabel(category) {
+  return {
+    "china-sourcing": "사입 박스 사진",
+    "china-korea-logistics": "LCL 화물 사진",
+    "korea-coupang-inbound": "입고 박스 사진",
+    "coupang-selling-cost": "정산 화면 사진",
+    "final-margin": "입고 박스 사진",
+  }[category] || "입고 박스 사진";
+}
+
 function renderCommunityFeedMedia(post, index = 0) {
   if (post.imageUrl) {
     return `<a class="sellerdit-post-media" href="/community/${escapeHtml(post.slug)}" aria-label="${escapeHtml(getThreadPostSeoTitle(post))} 이미지"><img src="${escapeHtml(post.imageUrl)}" alt="" loading="lazy"></a>`;
@@ -831,15 +841,9 @@ function renderCommunityFeedMedia(post, index = 0) {
   if (post.isNotice || post.category === "qna" || index % 4 !== 0) {
     return "";
   }
-  const media = {
-    "china-sourcing": ["사입 박스 사진", "사입 박스 사진"],
-    "china-korea-logistics": ["LCL 화물 사진", "LCL 화물 사진"],
-    "korea-coupang-inbound": ["입고 박스 사진", "입고 박스 사진"],
-    "coupang-selling-cost": ["정산 화면 사진", "정산 화면 사진"],
-    "final-margin": ["입고 박스 사진", "입고 박스 사진"],
-  }[post.category] || ["입고 박스 사진", "입고 박스 사진"];
+  const mediaLabel = getCommunityMediaLabel(post.category);
   return `<a class="sellerdit-post-media sellerdit-box-photo is-${escapeHtml(post.category)}" href="/community/${escapeHtml(post.slug)}" aria-label="${escapeHtml(getThreadPostSeoTitle(post))} 미리보기">
-    <span>${escapeHtml(media[0])}</span>
+    <span>${escapeHtml(mediaLabel)}</span>
     <i aria-hidden="true"><b></b></i>
   </a>`;
 }
@@ -860,8 +864,9 @@ function renderCommunityDetailMedia(post) {
   if (!post || post.category === "qna") {
     return "";
   }
+  const mediaLabel = getCommunityMediaLabel(post.category);
   return `<div class="sellerdit-post-media sellerdit-box-photo is-detail is-${escapeHtml(post.category)}" aria-label="${escapeHtml(getThreadPostSeoTitle(post))} 이미지">
-    <span>입고 박스 사진</span>
+    <span>${escapeHtml(mediaLabel)}</span>
     <i aria-hidden="true"><b></b></i>
   </div>`;
 }
@@ -2894,7 +2899,7 @@ function renderDocumentShell({ title, description, canonicalUrl, body, jsonLd, s
     <meta name="twitter:description" content="${escapeHtml(description)}" />
     <meta name="twitter:image" content="${PUBLIC_SITE_URL}/assets/site-flow.svg" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
-    <link rel="stylesheet" href="/styles.css?v=20260625-post-sync-v9" />
+    <link rel="stylesheet" href="/styles.css?v=20260625-actions-media-v10" />
     <meta name="naver-site-verification" content="d2091fad160915c822215f48ce925c90637cf535" />
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-EGL6JRLHH0"></script>
     <script>

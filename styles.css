@@ -22035,3 +22035,76 @@ body:has(.sellerdit-topbar) .community-shell .sellerdit-detail-post .sellerdit-a
     max-width: 316px !important;
   }
 }
+
+/* Sellerdit post sync v10: like-only action row and consistent media alignment */
+body:has(.sellerdit-topbar) .community-shell .sellerdit-actions .sellerdit-action-like,
+body:has(.sellerdit-topbar) .community-shell .community-vote-actions .sellerdit-action-like {
+  gap: 6px !important;
+}
+
+body:has(.sellerdit-topbar) .community-shell .sellerdit-actions .sellerdit-action,
+body:has(.sellerdit-topbar) .community-shell .community-vote-actions .sellerdit-action {
+  min-height: 30px !important;
+  height: 30px !important;
+  padding: 0 !important;
+}
+
+body:has(.sellerdit-topbar) .community-shell .sellerdit-detail-actions .sellerdit-action {
+  min-height: 30px !important;
+  height: 30px !important;
+  padding: 0 !important;
+}
+
+body:has(.sellerdit-topbar) .community-shell .sellerdit-action-like,
+body:has(.sellerdit-topbar) .community-shell .sellerdit-action-comment {
+  min-width: 60px !important;
+}
+
+body:has(.sellerdit-topbar) .community-shell .sellerdit-actions .sellerdit-action-like svg,
+body:has(.sellerdit-topbar) .community-shell .community-vote-actions .sellerdit-action-like svg {
+  width: 21px !important;
+  height: 21px !important;
+}
+
+body:has(.sellerdit-topbar) .community-shell .sellerdit-actions .sellerdit-action-like.is-active svg,
+body:has(.sellerdit-topbar) .community-shell .community-vote-actions .sellerdit-action-like.is-active svg {
+  fill: currentColor !important;
+}
+
+body:has(.sellerdit-topbar) .community-shell .sellerdit-post-media.sellerdit-box-photo {
+  display: grid !important;
+  place-items: center !important;
+  height: 324px !important;
+  min-height: 324px !important;
+  padding: 18px !important;
+}
+
+body:has(.sellerdit-topbar) .community-shell .sellerdit-post-media.sellerdit-box-photo.is-detail {
+  height: 324px !important;
+  min-height: 324px !important;
+}
+
+body:has(.sellerdit-topbar) .community-shell .sellerdit-post-media.sellerdit-box-photo span {
+  left: 50% !important;
+  top: 36px !important;
+  transform: translateX(-50%) !important;
+  text-align: center !important;
+  white-space: nowrap !important;
+}
+
+body:has(.sellerdit-topbar) .community-shell .sellerdit-post-media.sellerdit-box-photo i {
+  position: absolute !important;
+  left: 50% !important;
+  right: auto !important;
+  top: 50% !important;
+  bottom: auto !important;
+  margin: 16px 0 0 !important;
+  transform: translate(-50%, -50%) !important;
+}
+
+body:has(.sellerdit-topbar) .community-shell .sellerdit-post-media img {
+  width: 100% !important;
+  height: 100% !important;
+  display: block !important;
+  object-fit: cover !important;
+}
