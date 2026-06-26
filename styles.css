@@ -22108,3 +22108,69 @@ body:has(.sellerdit-topbar) .community-shell .sellerdit-post-media img {
   display: block !important;
   object-fit: cover !important;
 }
+
+/* Sellerdit post sync v11: tighten like/count and separate share/save */
+body:has(.sellerdit-topbar) .community-shell .sellerdit-actions,
+body:has(.sellerdit-topbar) .community-shell .community-vote-actions,
+body:has(.sellerdit-topbar) .community-shell .sellerdit-feedpanel .sellerdit-actions,
+body:has(.sellerdit-topbar) .community-shell .sellerdit-detail-actions {
+  gap: 8px !important;
+  column-gap: 8px !important;
+}
+
+body:has(.sellerdit-topbar) .community-shell .sellerdit-actions > .sellerdit-action,
+body:has(.sellerdit-topbar) .community-shell .community-vote-actions > .sellerdit-action,
+body:has(.sellerdit-topbar) article.sellerdit-feed-post .sellerdit-actions > .sellerdit-action,
+body:has(.sellerdit-topbar) .community-vote-card.sellerdit-feed-post .sellerdit-actions > .sellerdit-action {
+  height: 30px !important;
+  min-height: 30px !important;
+  padding: 0 !important;
+  gap: 4px !important;
+}
+
+body:has(.sellerdit-topbar) .community-shell .sellerdit-actions > .sellerdit-action-like,
+body:has(.sellerdit-topbar) .community-shell .community-vote-actions > .sellerdit-action-like,
+body:has(.sellerdit-topbar) .community-shell .sellerdit-actions > .sellerdit-action-comment,
+body:has(.sellerdit-topbar) .community-shell .community-vote-actions > .sellerdit-action-comment,
+body:has(.sellerdit-topbar) article.sellerdit-feed-post .sellerdit-actions > .sellerdit-action-like,
+body:has(.sellerdit-topbar) article.sellerdit-feed-post .sellerdit-actions > .sellerdit-action-comment,
+body:has(.sellerdit-topbar) .community-vote-card.sellerdit-feed-post .sellerdit-actions > .sellerdit-action-like,
+body:has(.sellerdit-topbar) .community-vote-card.sellerdit-feed-post .sellerdit-actions > .sellerdit-action-comment {
+  width: auto !important;
+  min-width: 48px !important;
+  max-width: none !important;
+  padding: 0 !important;
+}
+
+body:has(.sellerdit-topbar) .community-shell .sellerdit-actions > .sellerdit-action-like span,
+body:has(.sellerdit-topbar) .community-shell .community-vote-actions > .sellerdit-action-like span,
+body:has(.sellerdit-topbar) .community-shell .sellerdit-actions > .sellerdit-action-comment span,
+body:has(.sellerdit-topbar) .community-shell .community-vote-actions > .sellerdit-action-comment span {
+  min-width: 26px !important;
+  height: 26px !important;
+  display: inline-grid !important;
+  place-items: center !important;
+  margin-left: 0 !important;
+  padding: 0 8px !important;
+  border-radius: 999px !important;
+  background: #f1f3f5 !important;
+  color: #475569 !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  line-height: 1 !important;
+}
+
+body:has(.sellerdit-topbar) .community-shell .sellerdit-actions > .sellerdit-action-share,
+body:has(.sellerdit-topbar) .community-shell .community-vote-actions > .sellerdit-action-share,
+body:has(.sellerdit-topbar) .community-shell .sellerdit-actions > .sellerdit-action-bookmark,
+body:has(.sellerdit-topbar) .community-shell .community-vote-actions > .sellerdit-action-bookmark {
+  width: 30px !important;
+  min-width: 30px !important;
+  max-width: 30px !important;
+  height: 30px !important;
+  padding: 0 !important;
+}
+
+body:has(.sellerdit-topbar) .community-shell .sellerdit-action-share::after {
+  content: none !important;
+}
