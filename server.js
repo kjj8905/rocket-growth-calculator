@@ -1826,7 +1826,7 @@ function renderCommunityHeader(activeKey) {
         <a class="sellerdit-reddit-icon sellerdit-chat-desktop" href="/community?chat=1" aria-label="채팅" title="채팅">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 11.5a8.38 8.38 0 0 1-8.5 8.4 8.5 8.5 0 0 1-3.9-.9L3 21l1.9-5.1A8.38 8.38 0 0 1 4 11.5 8.5 8.5 0 0 1 12.5 3 8.38 8.38 0 0 1 21 11.5Z"/></svg>
         </a>
-        <a class="sellerdit-create-pill sellerdit-create-desktop" href="#community-write" aria-label="게시물 만들기"><span>⊕</span>만들기</a>
+        <a class="sellerdit-create-pill sellerdit-create-desktop" href="#community-write" aria-label="게시물 만들기"><svg class="sellerdit-create-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>만들기</span></a>
         <a class="sellerdit-reddit-icon sellerdit-notification-desktop" href="/api/community/notifications" aria-label="알림" title="알림">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 9a6 6 0 1 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9Z"/><path d="M9.8 21a2.4 2.4 0 0 0 4.4 0"/></svg>
         </a>
@@ -2898,7 +2898,7 @@ function renderDocumentShell({ title, description, canonicalUrl, body, jsonLd, s
     <meta name="twitter:description" content="${escapeHtml(description)}" />
     <meta name="twitter:image" content="${PUBLIC_SITE_URL}/assets/site-flow.svg" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
-    <link rel="stylesheet" href="/styles.css?v=20260625-mobile-topbar-v16" />
+    <link rel="stylesheet" href="/styles.css?v=20260625-brand-create-v17" />
     <meta name="naver-site-verification" content="d2091fad160915c822215f48ce925c90637cf535" />
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-EGL6JRLHH0"></script>
     <script>
