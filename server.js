@@ -3139,6 +3139,13 @@ function buildAuthorNode(name, fallbackUrl, type = "Person") {
   };
 }
 
+function getCommunityAuthorType(name, source) {
+  if (source === "seed" && /팀$/.test(String(name || ""))) {
+    return "Organization";
+  }
+  return "Person";
+}
+
 function buildCommunityPostJsonLd(post, canonicalUrl, comments) {
   const category = COMMUNITY_CATEGORIES[post.category] || COMMUNITY_CATEGORIES["final-margin"];
   const seoName = getThreadPostSeoTitle(post);
@@ -3146,7 +3153,8 @@ function buildCommunityPostJsonLd(post, canonicalUrl, comments) {
   const isQuestion = post.category === "qna";
   const questionAuthorUrl = `${canonicalUrl}#question-author`;
   const acceptedAnswerAuthorUrl = `${canonicalUrl}#accepted-answer-author`;
-  const postAuthorUrl = post.source === "seed" ? `${PUBLIC_SITE_URL}/#organization` : `${canonicalUrl}#post-author`;
+  const postAuthorType = getCommunityAuthorType(post.authorName, post.source);
+  const postAuthorUrl = postAuthorType === "Organization" ? `${PUBLIC_SITE_URL}/#organization` : `${canonicalUrl}#post-author`;
   const mainEntity = isQuestion
     ? {
         "@type": "Question",
@@ -3155,7 +3163,7 @@ function buildCommunityPostJsonLd(post, canonicalUrl, comments) {
         text: seoDescription,
         answerCount: comments.length,
         dateCreated: post.createdAt,
-        author: buildAuthorNode(post.authorName, questionAuthorUrl),
+        author: buildAuthorNode(post.authorName, questionAuthorUrl, getCommunityAuthorType(post.authorName, post.source)),
         acceptedAnswer: comments[0]
           ? {
               "@type": "Answer",
@@ -3197,7 +3205,7 @@ function buildCommunityPostJsonLd(post, canonicalUrl, comments) {
         datePublished: post.createdAt,
         dateModified: post.updatedAt,
         keywords: post.tags.join(", "),
-        author: buildAuthorNode(post.authorName, postAuthorUrl, post.source === "seed" ? "Organization" : "Person"),
+        author: buildAuthorNode(post.authorName, postAuthorUrl, postAuthorType),
         publisher: {
           "@id": `${PUBLIC_SITE_URL}/#organization`,
         },
