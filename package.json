@@ -7,12 +7,17 @@
     "start": "node server.js",
     "dev:design": "PORT=4176 DATABASE_PATH=/tmp/sellerdit-design.sqlite COMMUNITY_TEST_AUTH=true ACCOUNT_FEATURE_ENABLED=true npm start",
     "check": "node --check app.js && node --check server.js && node --check seo-guides.js && node --check community-posts.js && node --check scripts/design-smoke.mjs",
-    "design:smoke": "node scripts/design-smoke.mjs"
+    "design:smoke": "node scripts/design-smoke.mjs",
+    "design:lint": "designmd lint DESIGN.md",
+    "design:tokens": "designmd export --format css-tailwind DESIGN.md > docs/design-tokens.css"
   },
   "dependencies": {
     "express": "^4.19.2"
   },
   "engines": {
     "node": ">=24.0.0"
+  },
+  "devDependencies": {
+    "@google/design.md": "^0.3.0"
   }
 }

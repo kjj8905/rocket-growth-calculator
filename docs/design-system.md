@@ -1,76 +1,102 @@
-# Rocket Growth Calculator Design System
+# Rocket Growth / Sellerdit Design System
 
-Source reference: `C:\Users\kjj89\Downloads\DESIGN.md`
+Source of truth: [`../DESIGN.md`](../DESIGN.md), authored in the Google `DESIGN.md` format.
 
-This project applies the Toss/TDS-inspired parts that fit a seller cost calculator. It does not copy Toss branding, logos, or product claims.
+Tooling source reviewed and installed:
 
-## Visual Direction
+- `https://github.com/google-labs-code/design.md`
+- npm package: `@google/design.md`
+- validation command: `npm run design:lint`
+- token export command: `npm run design:tokens`
 
-- Background stays calm and light: `#f9fafb` page, `#ffffff` panels.
-- Blue is reserved for interactive surfaces: calculator banners, active segment, focus states.
-- Financial values use strong charcoal text and tabular numerals.
-- Shadows are subtle and neutral. Do not use colored shadows or decorative gradients.
+## Current direction
 
-## Tokens
+Sellerdit is a practical Korean seller community: a compact operations board, not a marketing page. The UI should be readable, repeatable, mobile-first, and calm enough for margin/sourcing/logistics decisions.
 
-- Primary: `#3182f6`
-- Primary hover: `#2272eb`
-- Primary weak background: `#e8f3ff`
-- Text strong: `#191f28`
-- Text body: `#4e5968`
-- Text muted: `#6b7684`
-- Border: `#e5e8eb`
-- Surface muted: `#f2f4f6`
-- Success: `#03b26c`
-- Error: `#f04452`
+## Core tokens
+
+- Canvas: `#f6f7f8`
+- Surface: `#ffffff`
+- Soft surface: `#f8fafc`
+- Action surface: `#e9eef2`
+- Count pill: `#f1f3f5`
+- Text strong: `#1a1a1b`
+- Text body: `#334155`
+- Text muted: `#57606a`
+- Rule: `#edeff1`
+- Focus blue: `#2563eb`
+- Active like red: `#e0342b`
 
 ## Typography
 
-- Community pages follow the `WINGCO_1` Reddit-style reference typography: root `html` 16px, `body` 14px / line-height 1.5.
-- Community font stack: `-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif`.
-- Use only 400 for body copy, 600 for emphasis/selected controls, and 700 for headings and financial amounts.
-- Do not use font weights above 700; normalize former 800 usage to 700 to avoid synthetic bold blur.
-- Use `font-variant-numeric: tabular-nums` for all amounts, counts, karma, likes, member counts, stats, and numeric inputs.
-- Enable `-webkit-font-smoothing: antialiased`, `-moz-osx-font-smoothing: grayscale`, and `text-rendering: optimizeLegibility` on `html, body`.
+- Font stack: Pretendard/system Korean sans.
+- Body: 14px / 400 / 1.55.
+- Labels: 12px / 600.
+- Counts: 13px / 500 / tabular numerals.
+- Headings: max 700 weight.
+- Do not use weights above 700.
 
-## Components
+## Layout rules
 
-### Calculator Banner
+- Mobile first: single feed column, 12px edge gutter.
+- Desktop: established Reddit-style shell: left rail 270px, right rail 316px, max shell 1280px.
+- Main feed/detail content uses dividers before card chrome.
+- Post list/detail media and action rows must share a stable x-axis.
+- Comments use indentation only. Thread connector lines are off by default.
 
-- Filled blue button, 16px radius, white 700 text.
-- It is an interactive selector, not decoration.
-- Hover and focus use `#2272eb`.
+## Canonical components
 
-### Segmented Switch
+### Post/action row
 
-- Parent background: `#f2f4f6`.
-- Active segment: white surface with subtle shadow.
-- Inactive text: muted grey.
+The canonical like action is shared by posts and comments:
 
-### Form Panel
+```text
+width: 52px
+height: 30px
+icon: 21-22px
+icon/count gap: 4px
+count pill: 26px wide, neutral grey
+adjacent action gap: 8px
+```
 
-- White surface, 16px radius, neutral level-2 shadow.
-- Section spacing follows 8px base scale.
-- Summary result block uses a muted surface inside the panel.
+### Comments
 
-### Inputs
+- Structure: avatar + author/meta + body + action row.
+- Replies: indentation only.
+- No vertical/horizontal connector lines unless explicitly requested later.
 
-- Box input style.
-- 46px height, 14px radius, soft grey background.
-- Focus border is primary blue with a light blue ring.
-- Disabled/read-only inputs keep stable geometry and use grey surface.
+### Rails
 
-## Layout
+- Rails provide navigation/context, not primary content.
+- Use white surface, subtle border, low visual weight.
 
-- Desktop keeps the user's requested calculator hub: four banners in one row.
-- Tablet collapses to two columns.
-- Mobile collapses to one column.
-- Calculator detail view uses form first, preview second.
+## Implementation mapping
+
+`styles.css` now has a late token bridge section:
+
+```css
+/* Sellerdit design system v14: DESIGN.md token bridge */
+```
+
+It maps the DESIGN.md values to CSS custom properties such as:
+
+```css
+--sd-canvas
+--sd-surface
+--sd-text-strong
+--sd-focus
+--sd-like
+--sd-action-h
+--sd-action-like-w
+--sd-action-row-gap
+```
+
+Future Sellerdit UI edits should prefer these `--sd-*` variables instead of hard-coded one-off values.
 
 ## Rules
 
-- No emojis in UI.
-- Do not use blue as ornament. Blue means tappable, active, or focused.
-- Do not add heavy shadows.
-- Do not introduce additional accent colors unless they have semantic meaning.
-- Keep calculator copy concise and practical.
+- Blue means active, focused, selected, or linked.
+- Red is only for active like/destructive states.
+- No decorative gradients, emoji UI icons, or heavy shadows.
+- Do not add a new visual pattern if the existing post/action/rail/comment pattern covers it.
+- Verify `npm run design:lint`, `npm run check`, and `npm run design:smoke` before committing UI changes.
