@@ -1580,7 +1580,7 @@ function renderCommunityPostPage(post, currentUser = null) {
         ${renderSellerditRightRail("detail", relatedPosts)}
       </section>
     </main>`,
-    jsonLd: buildCommunityPostJsonLd(post, canonicalUrl, comments),
+    jsonLd: buildCommunityPostJsonLd(post, canonicalUrl, displayComments),
     script: renderCommunityScript(post.slug),
   });
 }
@@ -3130,31 +3130,39 @@ function buildCommunityCategoryJsonLd(category, canonicalUrl, posts) {
   };
 }
 
+function buildAuthorNode(name, fallbackUrl, type = "Person") {
+  const normalizedUrl = normalizeSiteUrl(fallbackUrl || `${PUBLIC_SITE_URL}/community`);
+  return {
+    "@type": type,
+    name: String(name || SEO_SITE_BRAND),
+    url: normalizedUrl,
+  };
+}
+
 function buildCommunityPostJsonLd(post, canonicalUrl, comments) {
   const category = COMMUNITY_CATEGORIES[post.category] || COMMUNITY_CATEGORIES["final-margin"];
   const seoName = getThreadPostSeoTitle(post);
   const seoDescription = getThreadSummaryFromText(getThreadDisplayContent(post));
   const isQuestion = post.category === "qna";
+  const questionAuthorUrl = `${canonicalUrl}#question-author`;
+  const acceptedAnswerAuthorUrl = `${canonicalUrl}#accepted-answer-author`;
+  const postAuthorUrl = post.source === "seed" ? `${PUBLIC_SITE_URL}/#organization` : `${canonicalUrl}#post-author`;
   const mainEntity = isQuestion
     ? {
         "@type": "Question",
+        "@id": `${canonicalUrl}#question`,
         name: seoName,
         text: seoDescription,
         answerCount: comments.length,
         dateCreated: post.createdAt,
-        author: {
-          "@type": "Person",
-          name: post.authorName,
-        },
+        author: buildAuthorNode(post.authorName, questionAuthorUrl),
         acceptedAnswer: comments[0]
           ? {
               "@type": "Answer",
+              "@id": `${canonicalUrl}#accepted-answer`,
               text: comments[0].body,
               dateCreated: comments[0].createdAt,
-              author: {
-                "@type": "Person",
-                name: comments[0].authorName,
-              },
+              author: buildAuthorNode(comments[0].authorName, acceptedAnswerAuthorUrl),
             }
           : undefined,
       }
@@ -3167,6 +3175,15 @@ function buildCommunityPostJsonLd(post, canonicalUrl, comments) {
         description: seoDescription,
         url: canonicalUrl,
         inLanguage: "ko-KR",
+        datePublished: post.createdAt,
+        dateModified: post.updatedAt,
+        mainEntityOfPage: canonicalUrl,
+        isPartOf: {
+          "@id": `${PUBLIC_SITE_URL}/#website`,
+        },
+        publisher: {
+          "@id": `${PUBLIC_SITE_URL}/#organization`,
+        },
         mainEntity,
       }
     : {
@@ -3180,10 +3197,7 @@ function buildCommunityPostJsonLd(post, canonicalUrl, comments) {
         datePublished: post.createdAt,
         dateModified: post.updatedAt,
         keywords: post.tags.join(", "),
-        author: {
-          "@type": post.source === "seed" ? "Organization" : "Person",
-          name: post.authorName,
-        },
+        author: buildAuthorNode(post.authorName, postAuthorUrl, post.source === "seed" ? "Organization" : "Person"),
         publisher: {
           "@id": `${PUBLIC_SITE_URL}/#organization`,
         },
@@ -3252,7 +3266,9 @@ function buildOrganizationNode() {
     "@type": "Organization",
     "@id": `${PUBLIC_SITE_URL}/#organization`,
     name: "로켓그로스 계산기",
+    alternateName: SEO_SITE_BRAND,
     url: `${PUBLIC_SITE_URL}/`,
+    description: "중국사입부터 쿠팡 입고, 쿠팡 수수료, 최종 비용과 마진율까지 단계별로 예상 계산하는 한국어 셀러 도구입니다.",
   };
 }
 
