@@ -1704,9 +1704,8 @@ function renderSellerditComment(comment, post, depth = 0, index = 0) {
       <p class="ctext">${escapeHtml(comment.body)}</p>
       <footer class="cactions">
         <button type="button" class="sellerdit-comment-action cv ${comment.likedByMe ? "is-active" : ""}" aria-label="좋아요" data-community-comment-reaction data-comment-id="${commentId}">${renderCommunityActionIcon("like")}<span data-comment-reaction-count>${formatInteger(comment.likesCount || 0)}</span></button>
-        <button type="button" class="sellerdit-comment-action cbtn" data-comment-reply-button data-parent-id="${commentId}">${renderCommunityActionIcon("comment")}<span>답글 달기</span></button>
-        <button type="button" class="sellerdit-comment-action cbtn" data-comment-award>⚭<span>어워드</span></button>
-        <button type="button" class="sellerdit-comment-action cbtn" data-comment-share data-share-url="${commentUrl}">${renderCommunityActionIcon("share")}<span>공유</span></button>
+        <button type="button" class="sellerdit-comment-action cbtn sellerdit-comment-reply" aria-label="답글 달기" data-comment-reply-button data-parent-id="${commentId}">${renderCommunityActionIcon("comment")}</button>
+        <button type="button" class="sellerdit-comment-action cbtn sellerdit-comment-share" aria-label="공유" data-comment-share data-share-url="${commentUrl}">${renderCommunityActionIcon("share")}</button>
         ${comment.canEdit ? `<button type="button" class="sellerdit-comment-action cbtn" data-comment-edit-button data-comment-id="${commentId}">수정</button><button type="button" class="sellerdit-comment-action cbtn" data-comment-delete-button data-comment-id="${commentId}">삭제</button>` : `<button type="button" class="sellerdit-comment-action cbtn is-more" aria-label="더 보기">...</button>`}
       </footer>
       <form class="community-comment-form sellerdit-reply-form" data-comment-edit-form data-comment-id="${commentId}" hidden>
@@ -2898,7 +2897,7 @@ function renderDocumentShell({ title, description, canonicalUrl, body, jsonLd, s
     <meta name="twitter:description" content="${escapeHtml(description)}" />
     <meta name="twitter:image" content="${PUBLIC_SITE_URL}/assets/site-flow.svg" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
-    <link rel="stylesheet" href="/styles.css?v=20260625-brand-create-v17" />
+    <link rel="stylesheet" href="/styles.css?v=20260625-comment-actions-v18" />
     <meta name="naver-site-verification" content="d2091fad160915c822215f48ce925c90637cf535" />
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-EGL6JRLHH0"></script>
     <script>
