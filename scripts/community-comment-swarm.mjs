@@ -165,6 +165,18 @@ async function run() {
     assert(detail.response.status === 200, "detail API failed after swarm");
     assert(detail.data.post.commentsCount === USER_COUNT + Math.ceil(USER_COUNT / 5), `commentsCount mismatch: ${detail.data.post.commentsCount}`);
 
+    const ownerSave = await owner.json("/api/community/reactions", {
+      method: "POST",
+      body: JSON.stringify({ slug, type: "bookmark" }),
+    });
+    assert(ownerSave.response.status === 200 && ownerSave.data.active === true, "owner bookmark failed");
+
+    const savedResponse = await owner.request("/community/saved");
+    const savedHtml = await savedResponse.text();
+    assert(savedResponse.status === 200, "saved page failed");
+    assert(savedHtml.includes("저장한 글"), "saved page title missing");
+    assert(savedHtml.includes(`/community/${slug}`), "saved page does not contain bookmarked post");
+
     const htmlResponse = await owner.request(`/community/${slug}`);
     const html = await htmlResponse.text();
     assert(htmlResponse.status === 200, "detail HTML failed after swarm");

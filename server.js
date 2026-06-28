@@ -620,6 +620,14 @@ app.get(["/community/suppliers", "/community/suppliers/"], (req, res) => {
   res.type("html").send(renderCommunitySupplierDirectoryPage(req.query, req.currentUser));
 });
 
+app.get(["/community/saved", "/community/saved/"], (req, res) => {
+  if (!req.currentUser) {
+    res.redirect(302, `/auth/kakao/start?returnTo=${encodeURIComponent(req.originalUrl)}`);
+    return;
+  }
+  res.type("html").send(renderCommunitySavedPage(req.currentUser));
+});
+
 app.get("/suppliers/:slug", (req, res) => {
   const supplier = getSupplierBySlug(req.params.slug);
   if (!supplier) {
@@ -912,6 +920,33 @@ function renderCommunityFeed(posts, emptyText = "아직 등록된 글이 없습�
   return `<div class="community-vote-list sellerdit-feedpanel" style="border:0!important;border-radius:0!important;background:#fff!important;box-shadow:none!important;overflow:visible!important">${items}</div>`;
 }
 
+function renderCommunitySavedPage(currentUser) {
+  const posts = getSavedCommunityPosts(currentUser.id).map((post) => attachCommunityPostState(post, currentUser));
+  const title = "저장한 글 | 셀러딧";
+  const canonicalUrl = `${PUBLIC_SITE_URL}/community/saved`;
+  return renderDocumentShell({
+    title,
+    description: "셀러딧에서 저장한 커뮤니티 게시글을 모아보는 공간입니다.",
+    canonicalUrl,
+    body: `<main class="community-shell sellerdit-saved-page">
+      ${renderCommunityHeader("saved")}
+      <section class="community-workspace community-reddit-layout sellerdit-with-left-rail">
+        ${renderCommunityLeftRail("saved", currentUser)}
+        <section class="community-feed-panel" aria-labelledby="sellerdit-saved-title">
+          <header class="community-hero sellerdit-feed-hero">
+            <p class="eyebrow">Saved</p>
+            <h1 id="sellerdit-saved-title">저장한 글</h1>
+            <p>북마크한 게시글을 여기서 다시 확인합니다.</p>
+          </header>
+          ${renderCommunityFeed(posts, "아직 저장한 글이 없습니다. 게시글의 북마크 버튼을 누르면 여기에 모입니다.")}
+        </section>
+        ${renderSellerditRightRail("detail", getCommunityPosts({ sort: "hot", limit: 4 }))}
+      </section>
+    </main>`,
+    script: renderCommunityScript(),
+  });
+}
+
 function renderCommunityPinned(notices) {
   if (!notices.length) {
     return "";
@@ -939,6 +974,7 @@ function sellerditIcon(name) {
     calc: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="3" width="12" height="18" rx="2"/><path d="M9 7h6"/><path d="M9 11h.01M12 11h.01M15 11h.01M9 15h.01M12 15h.01M15 15h.01"/></svg>',
     trend: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16l5-5 4 4 7-8"/><path d="M15 7h5v5"/></svg>',
     guide: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4h9v16H8a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3Z"/><path d="M9 8h5"/><path d="M9 12h5"/><path d="M9 16h4"/></svg>',
+    bookmark: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2Z"/></svg>',
   };
   return icons[name] || "";
 }
@@ -948,6 +984,7 @@ function renderCommunityLeftRail(activeKey = "community", currentUser = null) {
     ["home", "/community", "홈", activeKey === "community"],
     ["popular", "/community?sort=hot", "인기", false],
     ["notice", "/community?tag=공지", "공지", false],
+    ["bookmark", "/community/saved", "저장한 글", activeKey === "saved"],
     ["explore", "/community", "둘러보기", false],
     ["create", "#community-write", "커뮤니티 만들기", false],
   ];
@@ -1792,7 +1829,7 @@ function renderSellerditProfilePage(handle, query = {}, currentUser = null) {
                 <div><dt>댓글 카르마</dt><dd>${formatInteger(comments)}</dd></div>
               </dl>
             </div>
-            <div class="sellerdit-profile-actions">${isMe ? `<a class="sellerdit-follow" href="#community-write">글쓰기</a><button class="sellerdit-follow" type="button">설정</button>` : `<button class="sellerdit-follow" type="button" data-community-follow data-follow-handle="${escapeHtml(normalizedHandle)}">팔로우</button>`}</div>
+            <div class="sellerdit-profile-actions">${isMe ? `<a class="sellerdit-follow" href="#community-write">글쓰기</a><a class="sellerdit-follow" href="/community/saved">저장한 글</a><button class="sellerdit-follow" type="button">설정</button>` : `<button class="sellerdit-follow" type="button" data-community-follow data-follow-handle="${escapeHtml(normalizedHandle)}">팔로우</button>`}</div>
             <span class="sellerdit-more">⋯</span>
           </header>
           <nav class="sellerdit-profile-tabs" aria-label="프로필 탭">
@@ -1842,6 +1879,9 @@ function renderCommunityHeader(activeKey) {
         <a class="sellerdit-reddit-icon sellerdit-notification-desktop" href="/api/community/notifications" aria-label="알림" title="알림">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 9a6 6 0 1 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9Z"/><path d="M9.8 21a2.4 2.4 0 0 0 4.4 0"/></svg>
         </a>
+        <a class="sellerdit-reddit-icon sellerdit-saved-desktop" href="/community/saved" aria-label="저장한 글" title="저장한 글">
+          ${renderCommunityActionIcon("bookmark")}
+        </a>
         <a class="sellerdit-avatar-button sellerdit-kakao" href="/auth/kakao/start" data-auth-button aria-label="프로필 또는 로그인">카카오 로그인</a>
         <a class="sellerdit-open-app-pill" href="/auth/kakao/start" data-auth-button aria-label="로그인">로그인</a>
         <span class="sellerdit-mobile-dots" aria-hidden="true">•••</span>
@@ -1860,6 +1900,7 @@ function renderCommunityHeader(activeKey) {
     <a href="/community?sort=hot"><span>⌕</span><em>둘러보기</em></a>
     <a class="is-create" href="#community-write" aria-label="글쓰기"><span>＋</span><em>글쓰기</em></a>
     <a href="/api/community/notifications"><span>♡</span><em>알림</em></a>
+    <a class="${activeKey === "saved" ? "is-active" : ""}" href="/community/saved"><span>▱</span><em>저장</em></a>
     <a href="/auth/kakao/start" data-auth-button-mobile><span>●</span><em>프로필</em></a>
   </nav>`;
 }
@@ -2498,6 +2539,30 @@ function renderCommunityScript(postSlug = "") {
         }, 900);
       }
 
+      var communityToastTimer;
+      function showCommunityToast(title, message, tone) {
+        var toast = document.querySelector("[data-community-toast]");
+        if (!toast) {
+          toast = document.createElement("div");
+          toast.className = "save-toast sellerdit-community-toast";
+          toast.setAttribute("role", "status");
+          toast.setAttribute("aria-live", "polite");
+          toast.setAttribute("data-community-toast", "");
+          toast.innerHTML = "<strong></strong><p></p>";
+          document.body.appendChild(toast);
+        }
+        toast.dataset.tone = tone || "success";
+        var titleNode = toast.querySelector("strong");
+        var messageNode = toast.querySelector("p");
+        if (titleNode) titleNode.textContent = title || "알림";
+        if (messageNode) messageNode.textContent = message || "";
+        toast.classList.add("is-visible");
+        window.clearTimeout(communityToastTimer);
+        communityToastTimer = window.setTimeout(function () {
+          toast.classList.remove("is-visible");
+        }, 1800);
+      }
+
       document.querySelectorAll("[data-community-post-form]").forEach(function (form) {
         form.addEventListener("submit", async function (event) {
           event.preventDefault();
@@ -2595,8 +2660,10 @@ function renderCommunityScript(postSlug = "") {
             document.execCommand("copy");
             input.remove();
             flashActionState(button, "링크 복사 완료");
+            showCommunityToast("URL이 복사되었습니다", "원하는 곳에 바로 붙여넣을 수 있습니다.", "success");
           } catch {
             flashActionState(button, "링크 복사 실패");
+            showCommunityToast("복사하지 못했습니다", "브라우저 권한을 확인해 주세요.", "warning");
           } finally {
             window.setTimeout(function () { setActionBusy(button, false); }, 350);
           }
@@ -2643,8 +2710,10 @@ function renderCommunityScript(postSlug = "") {
             document.execCommand("copy");
             input.remove();
             flashActionState(button, "댓글 링크 복사 완료");
+            showCommunityToast("댓글 URL이 복사되었습니다", "원하는 곳에 바로 붙여넣을 수 있습니다.", "success");
           } catch {
             flashActionState(button, "댓글 링크 복사 실패");
+            showCommunityToast("복사하지 못했습니다", "브라우저 권한을 확인해 주세요.", "warning");
           } finally {
             window.setTimeout(function () { setActionBusy(button, false); }, 350);
           }
@@ -2739,7 +2808,11 @@ function renderCommunityScript(postSlug = "") {
               body: JSON.stringify({ slug: button.dataset.postSlug, type: button.dataset.communityReaction })
             });
             if (response.status === 401) { window.location.href = loginUrl(); return; }
+            var result = await response.json().catch(function () { return {}; });
             if (!response.ok) throw new Error("반응을 저장하지 못했습니다.");
+            if (button.dataset.communityReaction === "bookmark") {
+              showCommunityToast(result.active ? "저장되었습니다" : "저장이 해제되었습니다", result.active ? "저장한 글은 저장한 글 화면에서 다시 볼 수 있습니다." : "저장한 글 목록에서 제거됩니다.", "success");
+            }
           } catch {
             if (countNode && button.dataset.communityReaction === "like") countNode.textContent = String(raw).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
             button.classList.toggle("is-active", beforeActive);
@@ -4681,6 +4754,21 @@ function getCommunityPosts(options = {}) {
        LIMIT ? OFFSET ?`,
     )
     .all(...params, limit, offset)
+    .map(communityPostFromRow);
+}
+
+function getSavedCommunityPosts(userId, limit = 100) {
+  if (!userId) return [];
+  return db
+    .prepare(
+      `SELECT p.*
+       FROM community_reactions r
+       JOIN community_posts p ON p.id = r.post_id
+       WHERE r.user_id = ? AND r.type = 'bookmark' AND p.status = 'published'
+       ORDER BY r.created_at DESC
+       LIMIT ?`,
+    )
+    .all(userId, Math.max(1, Math.min(Number(limit || 100), 100)))
     .map(communityPostFromRow);
 }
 
