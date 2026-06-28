@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">셀러딧</string>
+    <string name="title_activity_main">셀러딧</string>
+    <string name="package_name">site.wingcoupang.sellerdit</string>
+    <string name="custom_url_scheme">site.wingcoupang.sellerdit</string>
+</resources>

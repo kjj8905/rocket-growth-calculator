@@ -1,0 +1,17 @@
+{
+  "appId": "site.wingcoupang.sellerdit",
+  "appName": "셀러딧",
+  "webDir": "capacitor-www",
+  "server": {
+    "url": "https://wingcoupang.site",
+    "cleartext": false,
+    "allowNavigation": ["wingcoupang.site", "www.wingcoupang.site"]
+  },
+  "appendUserAgent": "SellerditApp/1.0",
+  "backgroundColor": "#ffffff",
+  "android": {
+    "allowMixedContent": false,
+    "captureInput": true,
+    "webContentsDebuggingEnabled": false
+  }
+}
