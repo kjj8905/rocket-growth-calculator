@@ -1,0 +1,46 @@
+{
+  "name": "셀러딧 커뮤니티",
+  "short_name": "셀러딧",
+  "description": "쿠팡셀러와 개인셀러를 위한 비용·마진·공급처 커뮤니티입니다.",
+  "id": "/community",
+  "start_url": "/community?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui", "browser"],
+  "background_color": "#f6f7f8",
+  "theme_color": "#ffffff",
+  "orientation": "portrait-primary",
+  "lang": "ko-KR",
+  "dir": "ltr",
+  "categories": ["business", "productivity", "shopping"],
+  "icons": [
+    {
+      "src": "/assets/rocket-favicon.svg?v=20260611",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/assets/site-flow.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "커뮤니티",
+      "short_name": "커뮤니티",
+      "description": "셀러딧 커뮤니티 홈으로 이동",
+      "url": "/community?source=pwa-shortcut",
+      "icons": [{ "src": "/assets/rocket-favicon.svg?v=20260611", "sizes": "any", "type": "image/svg+xml" }]
+    },
+    {
+      "name": "공급처",
+      "short_name": "공급처",
+      "description": "셀러딧 공급처 카테고리로 이동",
+      "url": "/community/suppliers?source=pwa-shortcut",
+      "icons": [{ "src": "/assets/rocket-favicon.svg?v=20260611", "sizes": "any", "type": "image/svg+xml" }]
+    }
+  ]
+}

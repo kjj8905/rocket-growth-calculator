@@ -694,6 +694,16 @@ app.get("/styles.css", (req, res) => {
   res.sendFile(path.join(__dirname, "styles.css"));
 });
 
+app.get("/manifest.webmanifest", (req, res) => {
+  res.type("application/manifest+json").sendFile(path.join(__dirname, "manifest.webmanifest"));
+});
+
+app.get("/service-worker.js", (req, res) => {
+  res.type("application/javascript");
+  res.set("Cache-Control", "no-cache");
+  res.sendFile(path.join(__dirname, "service-worker.js"));
+});
+
 app.use("/assets", express.static(path.join(__dirname, "assets"), {
   fallthrough: false,
   immutable: true,
@@ -2870,6 +2880,25 @@ function formatSeoTitle(title) {
   return `${normalizedTitle} | ${hadCommunitySuffix ? `${SEO_SITE_BRAND} 커뮤니티` : SEO_SITE_BRAND}`;
 }
 
+function renderPwaHeadTags() {
+  return `<link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="theme-color" content="#ffffff" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="셀러딧" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />`;
+}
+
+function renderServiceWorkerRegistration() {
+  return `<script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function () {
+          navigator.serviceWorker.register('/service-worker.js').catch(function () {});
+        });
+      }
+    </script>`;
+}
+
 function renderDocumentShell({ title, description, canonicalUrl, body, jsonLd, script = "" }) {
   const seoTitle = formatSeoTitle(title);
   const jsonLdBlock = jsonLd
@@ -2886,6 +2915,7 @@ function renderDocumentShell({ title, description, canonicalUrl, body, jsonLd, s
     <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1" />
     <link rel="icon" href="/assets/rocket-favicon.svg?v=20260611" type="image/svg+xml" />
     <link rel="shortcut icon" href="/assets/rocket-favicon.svg?v=20260611" />
+    ${renderPwaHeadTags()}
     <link rel="canonical" href="${escapeHtml(canonicalUrl)}" />
     <meta property="og:type" content="article" />
     <meta property="og:locale" content="ko_KR" />
@@ -2918,6 +2948,7 @@ function renderDocumentShell({ title, description, canonicalUrl, body, jsonLd, s
   <body>
     ${body}
     ${script}
+    ${renderServiceWorkerRegistration()}
   </body>
 </html>`;
 }

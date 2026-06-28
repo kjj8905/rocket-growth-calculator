@@ -17,6 +17,12 @@
     <meta name="application-name" content="로켓그로스 계산기" />
     <link rel="icon" href="/assets/rocket-favicon.svg?v=20260611" type="image/svg+xml" />
     <link rel="shortcut icon" href="/assets/rocket-favicon.svg?v=20260611" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="theme-color" content="#ffffff" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="셀러딧" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <link rel="canonical" href="__SITE_URL__/" />
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="ko_KR" />
@@ -841,5 +847,12 @@
     </div>
 
     <script src="./app.js"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function () {
+          navigator.serviceWorker.register('/service-worker.js').catch(function () {});
+        });
+      }
+    </script>
   </body>
 </html>
