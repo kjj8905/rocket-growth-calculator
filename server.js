@@ -809,10 +809,10 @@ function renderCommunityActions(post, options = {}) {
   const commentsHref = options.commentsHref || `/community/${escapeHtml(post.slug)}#comments`;
   const extraActions = options.extraActions || "";
   return `<div class="community-vote-actions sellerdit-actions${options.detail ? " sellerdit-detail-actions" : ""}" aria-label="게시글 작업">
-    <button type="button" class="sellerdit-action sellerdit-action-like ${post.likedByMe ? "is-active" : ""}" aria-label="좋아요" data-community-reaction="like" data-post-slug="${escapeHtml(post.slug)}">${renderCommunityActionIcon("like")}<span data-reaction-count>${formatInteger(post.likesCount || 0)}</span></button>
+    <button type="button" class="sellerdit-action sellerdit-action-like ${post.likedByMe ? "is-active" : ""}" aria-label="좋아요" aria-pressed="${post.likedByMe ? "true" : "false"}" data-community-reaction="like" data-post-slug="${escapeHtml(post.slug)}">${renderCommunityActionIcon("like")}<span data-reaction-count>${formatInteger(post.likesCount || 0)}</span></button>
     <a class="sellerdit-action sellerdit-action-comment" aria-label="댓글" href="${commentsHref}">${renderCommunityActionIcon("comment")}<span>${formatInteger(commentsCount)}</span></a>
     <button type="button" class="sellerdit-action sellerdit-action-share" aria-label="공유" data-community-share data-share-url="/community/${escapeHtml(post.slug)}">${renderCommunityActionIcon("share")}</button>
-    <button type="button" class="sellerdit-action sellerdit-action-bookmark ${post.savedByMe ? "is-active" : ""}" aria-label="${post.savedByMe ? "저장됨" : "저장"}" data-community-reaction="bookmark" data-post-slug="${escapeHtml(post.slug)}">${renderCommunityActionIcon("bookmark")}</button>
+    <button type="button" class="sellerdit-action sellerdit-action-bookmark ${post.savedByMe ? "is-active" : ""}" aria-label="저장" aria-pressed="${post.savedByMe ? "true" : "false"}" data-community-reaction="bookmark" data-post-slug="${escapeHtml(post.slug)}">${renderCommunityActionIcon("bookmark")}</button>
     ${extraActions}
   </div>`;
 }
@@ -1701,7 +1701,7 @@ function renderSellerditComment(comment, post, depth = 0, index = 0) {
   const actionFooter = isSample
     ? `<footer class="cactions"><span class="sellerdit-comment-action cbtn" aria-disabled="true">샘플 댓글</span><button type="button" class="sellerdit-comment-action cbtn sellerdit-comment-share" aria-label="공유" data-comment-share data-share-url="${commentUrl}">${renderCommunityActionIcon("share")}</button></footer>`
     : `<footer class="cactions">
-        <button type="button" class="sellerdit-comment-action cv ${comment.likedByMe ? "is-active" : ""}" aria-label="좋아요" data-community-comment-reaction data-comment-id="${commentId}">${renderCommunityActionIcon("like")}<span data-comment-reaction-count>${formatInteger(comment.likesCount || 0)}</span></button>
+        <button type="button" class="sellerdit-comment-action cv ${comment.likedByMe ? "is-active" : ""}" aria-label="좋아요" aria-pressed="${comment.likedByMe ? "true" : "false"}" data-community-comment-reaction data-comment-id="${commentId}">${renderCommunityActionIcon("like")}<span data-comment-reaction-count>${formatInteger(comment.likesCount || 0)}</span></button>
         <button type="button" class="sellerdit-comment-action cbtn sellerdit-comment-reply" aria-label="답글 달기" data-comment-reply-button data-parent-id="${commentId}">${renderCommunityActionIcon("comment")}</button>
         <button type="button" class="sellerdit-comment-action cbtn sellerdit-comment-share" aria-label="공유" data-comment-share data-share-url="${commentUrl}">${renderCommunityActionIcon("share")}</button>
         ${comment.canEdit ? `<button type="button" class="sellerdit-comment-action cbtn" data-comment-edit-button data-comment-id="${commentId}">수정</button><button type="button" class="sellerdit-comment-action cbtn" data-comment-delete-button data-comment-id="${commentId}">삭제</button>` : `<button type="button" class="sellerdit-comment-action cbtn is-more" aria-label="더 보기">...</button>`}
@@ -2476,6 +2476,27 @@ function renderCommunityScript(postSlug = "") {
         target.dataset.tone = tone || "neutral";
       }
 
+      function setActionBusy(button, busy) {
+        if (!button) return;
+        button.dataset.actionBusy = busy ? "true" : "false";
+        button.toggleAttribute("aria-busy", Boolean(busy));
+      }
+
+      function isActionBusy(button) {
+        return button && button.dataset.actionBusy === "true";
+      }
+
+      function flashActionState(button, label) {
+        if (!button) return;
+        var originalLabel = button.getAttribute("aria-label") || "";
+        button.classList.add("is-feedback");
+        button.setAttribute("aria-label", label || originalLabel);
+        window.setTimeout(function () {
+          button.classList.remove("is-feedback");
+          if (originalLabel) button.setAttribute("aria-label", originalLabel);
+        }, 900);
+      }
+
       document.querySelectorAll("[data-community-post-form]").forEach(function (form) {
         form.addEventListener("submit", async function (event) {
           event.preventDefault();
@@ -2559,8 +2580,9 @@ function renderCommunityScript(postSlug = "") {
 
       document.querySelectorAll("[data-community-share]").forEach(function (button) {
         button.addEventListener("click", function () {
+          if (isActionBusy(button)) return;
+          setActionBusy(button, true);
           var url = new URL(button.dataset.shareUrl || window.location.pathname, window.location.origin).toString();
-          var beforeText = button.textContent;
           try {
             var input = document.createElement("input");
             input.value = url;
@@ -2571,11 +2593,11 @@ function renderCommunityScript(postSlug = "") {
             input.select();
             document.execCommand("copy");
             input.remove();
-            button.textContent = "링크 복사됨";
-            window.setTimeout(function () { button.textContent = beforeText; }, 1400);
+            flashActionState(button, "링크 복사 완료");
           } catch {
-            button.textContent = "링크 복사 실패";
-            window.setTimeout(function () { button.textContent = beforeText; }, 1400);
+            flashActionState(button, "링크 복사 실패");
+          } finally {
+            window.setTimeout(function () { setActionBusy(button, false); }, 350);
           }
         });
       });
@@ -2606,8 +2628,9 @@ function renderCommunityScript(postSlug = "") {
 
       document.querySelectorAll("[data-comment-share]").forEach(function (button) {
         button.addEventListener("click", function () {
+          if (isActionBusy(button)) return;
+          setActionBusy(button, true);
           var url = new URL(button.dataset.shareUrl || window.location.pathname, window.location.origin).toString();
-          var beforeText = button.textContent;
           try {
             var input = document.createElement("input");
             input.value = url;
@@ -2618,11 +2641,11 @@ function renderCommunityScript(postSlug = "") {
             input.select();
             document.execCommand("copy");
             input.remove();
-            button.textContent = "복사됨";
-            window.setTimeout(function () { button.textContent = beforeText; }, 1200);
+            flashActionState(button, "댓글 링크 복사 완료");
           } catch {
-            button.textContent = "실패";
-            window.setTimeout(function () { button.textContent = beforeText; }, 1200);
+            flashActionState(button, "댓글 링크 복사 실패");
+          } finally {
+            window.setTimeout(function () { setActionBusy(button, false); }, 350);
           }
         });
       });
@@ -2673,11 +2696,14 @@ function renderCommunityScript(postSlug = "") {
       });
       document.querySelectorAll("[data-community-comment-reaction]").forEach(function (button) {
         button.addEventListener("click", async function () {
+          if (isActionBusy(button)) return;
+          setActionBusy(button, true);
           var beforeActive = button.classList.contains("is-active");
           var countNode = button.querySelector("[data-comment-reaction-count]");
           var raw = parseInt((countNode?.textContent || "0").replace(/,/g, ""), 10) || 0;
           if (countNode) countNode.textContent = String(Math.max(0, raw + (beforeActive ? -1 : 1))).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
           button.classList.toggle("is-active", !beforeActive);
+          button.setAttribute("aria-pressed", !beforeActive ? "true" : "false");
           try {
             var response = await fetch("/api/community/comment-reactions", { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ commentId: button.dataset.commentId }) });
             if (response.status === 401) { window.location.href = loginUrl(); return; }
@@ -2685,21 +2711,25 @@ function renderCommunityScript(postSlug = "") {
           } catch {
             if (countNode) countNode.textContent = String(raw);
             button.classList.toggle("is-active", beforeActive);
+            button.setAttribute("aria-pressed", beforeActive ? "true" : "false");
+          } finally {
+            setActionBusy(button, false);
           }
         });
       });
 
       document.querySelectorAll("[data-community-reaction]").forEach(function (button) {
         button.addEventListener("click", async function () {
+          if (isActionBusy(button)) return;
+          setActionBusy(button, true);
           var countNode = button.querySelector("[data-reaction-count]");
           var beforeActive = button.classList.contains("is-active");
-          var beforeText = button.textContent;
+          var raw = countNode ? (parseInt((countNode.textContent || "0").replace(/,/g, ""), 10) || 0) : 0;
           if (countNode && button.dataset.communityReaction === "like") {
-            var raw = parseInt((countNode.textContent || "0").replace(/,/g, ""), 10) || 0;
             countNode.textContent = String(Math.max(0, raw + (beforeActive ? -1 : 1))).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
           }
           button.classList.toggle("is-active", !beforeActive);
-          if (button.dataset.communityReaction === "bookmark") button.textContent = !beforeActive ? "🔖 저장됨" : "🔖 저장";
+          button.setAttribute("aria-pressed", !beforeActive ? "true" : "false");
           try {
             var response = await fetch("/api/community/reactions", {
               method: "POST",
@@ -2710,8 +2740,11 @@ function renderCommunityScript(postSlug = "") {
             if (response.status === 401) { window.location.href = loginUrl(); return; }
             if (!response.ok) throw new Error("반응을 저장하지 못했습니다.");
           } catch {
+            if (countNode && button.dataset.communityReaction === "like") countNode.textContent = String(raw).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
             button.classList.toggle("is-active", beforeActive);
-            button.textContent = beforeText;
+            button.setAttribute("aria-pressed", beforeActive ? "true" : "false");
+          } finally {
+            setActionBusy(button, false);
           }
         });
       });
