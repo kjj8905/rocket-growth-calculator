@@ -383,16 +383,16 @@ app.get("/api/community/posts/:slug", (req, res) => {
 });
 
 app.post("/api/community/posts", requireLogin, (req, res) => {
-  const title = normalizeText(req.body?.title, 90);
+  const bodyText = normalizeText(req.body?.body, 5000);
+  const title = normalizeText(req.body?.title, 90) || getThreadSeoTitleFromText(bodyText, 90);
   const category = normalizeCommunityCategory(req.body?.category) || "final-margin";
   const summary = normalizeText(req.body?.summary, 180);
-  const bodyText = normalizeText(req.body?.body, 5000);
   const imageUrl = normalizeUrl(req.body?.imageUrl || req.body?.image_url, 500);
   const postType = imageUrl ? "image" : "text";
   const tags = normalizeTags(req.body?.tags);
 
-  if (!title || !bodyText) {
-    res.status(400).json({ error: "invalid_post", message: "제목과 본문을 입력해 주세요." });
+  if (!bodyText) {
+    res.status(400).json({ error: "invalid_post", message: "본문을 입력해 주세요." });
     return;
   }
 
@@ -511,7 +511,7 @@ app.delete("/api/community/comments/:id", requireLogin, (req, res) => {
   }
 
   deleteCommunityCommentThread(comment.id);
-  updateCommunityCommentCount(comment.post_id);
+  updateCommunityCommentCount(comment.postId);
   res.json({ ok: true, deletedId: comment.id });
 });
 
@@ -1346,7 +1346,7 @@ function renderCommunitySupplierFilterRail() {
   ];
   const renderNavItem = ([icon, href, label, active = false]) => `<a class="sellerdit-lnav-item ${active ? "is-active" : ""}" href="${href}"><span class="sellerdit-lnav-ic">${sellerditIcon(icon)}</span><span>${escapeHtml(label)}</span></a>`;
   const renderFilterItem = ([value, label, count], index) => `<button class="sellerdit-lnav-item sellerdit-supplier-filter-item ${index === 0 ? "is-active" : ""}" type="button" data-supplier-filter="${escapeHtml(value)}"><span>${escapeHtml(label)}</span><em class="sellerdit-lnav-count">${escapeHtml(String(count))}</em></button>`;
-  return `<aside class="community-left-rail sellerdit-left-rail sellerdit-supplier-filter-rail" aria-label="셀러딧 왼쪽 메뉴">
+  return `<aside class="community-left-rail sellerdit-left-rail sellerdit-reddit-left-rail sellerdit-supplier-filter-rail" aria-label="셀러딧 왼쪽 메뉴">
     <nav class="sellerdit-lnav" aria-label="셀러딧 섹션">
       ${topItems.map(renderNavItem).join("")}
       <div class="sellerdit-lnav-sec">바로가기</div>
@@ -2881,7 +2881,7 @@ function renderDocumentShell({ title, description, canonicalUrl, body, jsonLd, s
     <meta name="twitter:description" content="${escapeHtml(description)}" />
     <meta name="twitter:image" content="${PUBLIC_SITE_URL}/assets/site-flow.svg" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
-    <link rel="stylesheet" href="/styles.css?v=20260625-profile-layout-v19" />
+    <link rel="stylesheet" href="/styles.css?v=20260625-supplier-shell-sync-v1" />
     <meta name="naver-site-verification" content="d2091fad160915c822215f48ce925c90637cf535" />
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-EGL6JRLHH0"></script>
     <script>
