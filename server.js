@@ -1089,7 +1089,7 @@ function renderSellerditRecentPostsPanel() {
   const communityName = (post, index) => post.community || ["r/로켓그로스", "r/1688사입", "r/초보셀러"][index] || "r/셀러딧";
   const imageFor = (post, index) => post.image || ["/assets/final-cost-summary.svg", "/assets/china-sourcing.svg", "/assets/coupang-costs.svg"][index] || "";
   return `<section class="sellerdit-recent-posts-panel" aria-label="인기 게시물">
-    <div class="sellerdit-recent-posts-head"><strong>인기 게시물</strong></div>
+    <div class="sellerdit-recent-posts-head"><span style="color:#334155;font-size:13px;font-weight:500;line-height:18px">인기 게시물</span></div>
     <div class="sellerdit-recent-posts-list">
       ${source.slice(0, 3).map((post, index) => {
         const fallback = fallbacks[index] || fallbacks[0];
@@ -1104,8 +1104,8 @@ function renderSellerditRecentPostsPanel() {
         const imageCount = post.imageCount || fallback.imageCount || index + 2;
         return `<a class="sellerdit-recent-post" href="${href}">
           <span class="sellerdit-recent-copy">
-            <span class="sellerdit-recent-meta"><span class="sellerdit-recent-avatar" style="background:${escapeHtml(color)}">${escapeHtml(avatar)}</span><b>${escapeHtml(community)}</b><i>·</i><em>${escapeHtml(elapsed(post.createdAt, index))}</em></span>
-            <strong>${escapeHtml(title)}</strong>
+            <span class="sellerdit-recent-meta"><span class="sellerdit-recent-avatar" style="background:${escapeHtml(color)}">${escapeHtml(avatar)}</span><span style="overflow:hidden;color:#334155;font-size:12px;font-weight:500;text-overflow:ellipsis;white-space:nowrap">${escapeHtml(community)}</span><i>·</i><em>${escapeHtml(elapsed(post.createdAt, index))}</em></span>
+            <span class="sellerdit-recent-title" style="display:-webkit-box;overflow:hidden;color:#334155;font-size:14px;font-weight:500;line-height:20px;-webkit-box-orient:vertical;-webkit-line-clamp:2">${escapeHtml(title)}</span>
             <small>좋아요 ${likes}개 · 댓글 ${comments}개</small>
           </span>
           ${image ? `<span class="sellerdit-recent-thumb"><img src="${escapeHtml(image)}" alt="" loading="lazy" /><em><svg viewBox="0 0 12 12" aria-hidden="true"><rect x="2" y="3" width="7" height="6" rx="1.2"/><path d="M4 2h6v6"/></svg>${formatInteger(imageCount)}</em></span>` : ""}
@@ -1118,22 +1118,6 @@ function renderSellerditRecentPostsPanel() {
 function renderSellerditRightRail(mode = "list", relatedPosts = []) {
   return `<aside class="community-right-rail sellerdit-right-rail">
     ${renderSellerditRecentPostsPanel()}
-    <section class="sellerdit-rail-card sellerdit-board-info" aria-label="게시판 정보">
-      <strong>셀러딧 커뮤니티</strong>
-      <p>쿠팡셀러와 개인셀러가 로켓그로스 비용을 단계별로 묻고 답하는 공간입니다.</p>
-      <dl>
-        <div><dt>게시글</dt><dd>${formatInteger(countCommunityPosts({}))}</dd></div>
-        <div><dt>주제</dt><dd>5단계 비용</dd></div>
-      </dl>
-    </section>
-    <section class="sellerdit-rail-card sellerdit-board-rules" aria-label="게시판 규칙">
-      <strong>규칙</strong>
-      <ol>
-        <li>실제 비용 기준으로 질문하기</li>
-        <li>광고·홍보는 명확히 표시하기</li>
-        <li>공급처 정보는 출처와 함께 공유하기</li>
-      </ol>
-    </section>
   </aside>`;
 }
 
