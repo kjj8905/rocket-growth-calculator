@@ -124,6 +124,10 @@ async function runSmoke() {
     assert(!communityHtml.includes("게시판 규칙"), "community page should not render board rules card");
     await expectStatus("/community/user-q-price-19900-margin");
     await expectStatus("/community/suppliers");
+    await expectStatus("/community/qna");
+    const supplierRedirect = await fetch(`${BASE_URL}/suppliers/month-billion`, { redirect: "manual" });
+    assert([301, 302].includes(supplierRedirect.status), `supplier legacy route expected redirect, got ${supplierRedirect.status}`);
+    assert((supplierRedirect.headers.get("location") || "").startsWith("/community/suppliers"), "supplier redirect location mismatch");
     await expectStatus("/u/%EC%B4%88%EB%B3%B4%EC%85%80%EB%9F%AC%EB%AF%BC%EC%88%98");
     log("public pages OK");
 
@@ -155,6 +159,7 @@ async function runSmoke() {
 
     const detail = await user.json(`/api/community/posts/${post.slug}`);
     assert(detail.response.status === 200, "created post detail API failed");
+    assert(detail.data.post.canEdit === true, "post detail API should include canEdit=true for owner");
 
     const likeOn = await user.json("/api/community/reactions", {
       method: "POST",
@@ -179,6 +184,8 @@ async function runSmoke() {
     });
     assert(commentCreated.response.status === 201, "comment create failed");
     const comment = commentCreated.data.comment;
+    const detailWithComment = await user.json(`/api/community/posts/${post.slug}`);
+    assert(detailWithComment.data.comments[0]?.canEdit === true, "comment detail API should include canEdit=true for owner");
     assert(commentCreated.data.post.commentsCount === 1, "comment count after create should be 1");
 
     const replyCreated = await user.json("/api/community/comments", {

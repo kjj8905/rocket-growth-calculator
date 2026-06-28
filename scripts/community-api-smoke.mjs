@@ -173,6 +173,7 @@ async function main() {
 
   const detail = await request("GET", `/api/community/posts/${encodeURIComponent(post.slug)}`, null, { expectStatus: 200 });
   if (detail.data?.post?.id !== post.id || !Array.isArray(detail.data?.comments)) fail("post detail did not return created post and comments array");
+  if (detail.data?.post?.canEdit !== true) fail("post detail did not include owner canEdit state");
   log("OK fetched post detail");
 
   const list = await request("GET", `/api/community/search?q=${encodeURIComponent(title)}`, null, { expectStatus: 200 });
@@ -189,6 +190,9 @@ async function main() {
   const comment = commentResponse.data?.comment;
   if (!comment?.id || commentResponse.data?.post?.commentsCount !== 1) fail("comment creation did not return expected count");
   log(`OK created comment ${comment.id}`);
+
+  const detailAfterComment = await request("GET", `/api/community/posts/${encodeURIComponent(post.slug)}`, null, { expectStatus: 200 });
+  if (detailAfterComment.data?.comments?.[0]?.canEdit !== true) fail("comment detail did not include owner canEdit state");
 
   const replyResponse = await request("POST", "/api/community/comments", { postId: post.id, parentId: comment.id, body: `스모크 답글 ${runId}` }, { expectStatus: 201 });
   const reply = replyResponse.data?.comment;

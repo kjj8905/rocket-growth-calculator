@@ -302,7 +302,7 @@ app.get("/api/community/posts", (req, res) => {
   const category = normalizeCommunityCategory(req.query.category || req.query.cat);
   const sort = COMMUNITY_SORTS[req.query.sort] ? String(req.query.sort) : "hot";
   const search = String(req.query.q || "").trim().slice(0, 80);
-  const posts = getCommunityPosts({ category, sort, search, limit: 50 });
+  const posts = attachCommunityPostsState(getCommunityPosts({ category, sort, search, limit: 50 }), req.currentUser);
   res.json({ posts });
 });
 
@@ -379,7 +379,7 @@ app.get("/api/community/posts/:slug", (req, res) => {
     res.status(404).json({ error: "post_not_found", message: "게시글을 찾지 못했습니다." });
     return;
   }
-  res.json({ post: attachCommunityPostState(post, req.currentUser), comments: getCommunityCommentTree(post.id) });
+  res.json({ post: attachCommunityPostState(post, req.currentUser), comments: attachCommunityCommentsState(getCommunityCommentTree(post.id), req.currentUser) });
 });
 
 app.post("/api/community/posts", requireLogin, (req, res) => {
@@ -618,6 +618,15 @@ app.get(["/mvp", "/mvp/:variant"], (req, res) => {
 
 app.get(["/community/suppliers", "/community/suppliers/"], (req, res) => {
   res.type("html").send(renderCommunitySupplierDirectoryPage(req.query, req.currentUser));
+});
+
+app.get("/suppliers/:slug", (req, res) => {
+  const supplier = getSupplierBySlug(req.params.slug);
+  if (!supplier) {
+    res.redirect(302, "/community/suppliers");
+    return;
+  }
+  res.redirect(302, `/community/suppliers?source=${encodeURIComponent(supplier.slug)}`);
 });
 app.get("/community/:category(china-sourcing|china-korea-logistics|korea-coupang-inbound|coupang-selling-cost|final-margin|qna)", (req, res) => {
   res.type("html").send(renderCommunityCategoryPage(req.params.category, req.query, req.currentUser));
@@ -1394,7 +1403,7 @@ function renderCommunitySupplierDirectoryPage(query = {}, currentUser = null) {
   });
 }
 
-function renderCommunityAiAnswerPage(query = {}) {
+function renderCommunityAiAnswerPage(query = {}, currentUser = null) {
   const search = String(query.q || "").trim().slice(0, 80);
   const qnaPosts = getCommunityPosts({ category: "qna", notice: false, sort: "hot", limit: 8 });
   const title = "셀러딧 AI 답변";
@@ -1454,7 +1463,7 @@ function renderCommunityAiAnswerPage(query = {}) {
 
 function renderCommunityCategoryPage(categorySlug, query = {}, currentUser = null) {
   if (categorySlug === "qna") {
-    return renderCommunityAiAnswerPage(query);
+    return renderCommunityAiAnswerPage(query, currentUser);
   }
   const category = COMMUNITY_CATEGORIES[categorySlug] || COMMUNITY_CATEGORIES["final-margin"];
   const basePath = `/community/${category.slug}`;
@@ -1535,7 +1544,7 @@ function renderCommunityPostPage(post, currentUser = null) {
               <time datetime="${escapeHtml(post.createdAt)}">${escapeHtml(formatRelativeDate(post.createdAt) || "")}</time>
               <span class="sellerdit-dot sellerdit-detail-views-dot">·</span>
               <span class="sellerdit-detail-views">조회 ${formatInteger(post.views)}</span>
-              <button class="sellerdit-follow" type="button">팔로우</button>
+              <button class="sellerdit-follow" type="button" data-community-follow data-follow-handle="${escapeHtml(makeCommunityHandle(post.authorName))}">팔로우</button>
               <span class="sellerdit-more">⋯</span>
             </div>
             <div class="sellerdit-thread-body is-detail">${escapeHtml(threadContent)}</div>
@@ -1575,6 +1584,7 @@ function getSampleCommunityComments(post) {
   return [
     {
       id: "sample-comment-1",
+      isSample: true,
       authorName: "마진체크러",
       body: "사입가만 보면 안 되고, 쿠팡 수수료와 입고 작업비까지 한 번에 빼서 봐야 합니다. 특히 판매가 2만원 이하 상품은 500원 차이도 마진에 크게 들어옵니다.",
       createdAt: new Date(now - 1000 * 60 * 44).toISOString(),
@@ -1583,6 +1593,7 @@ function getSampleCommunityComments(post) {
       replies: [
         {
           id: "sample-reply-1",
+          isSample: true,
           authorName: author,
           body: "맞습니다. 그래서 본문 기준도 비용을 하나로 뭉치지 않고 단계별로 나눠 보는 쪽으로 잡았습니다.",
           createdAt: new Date(now - 1000 * 60 * 31).toISOString(),
@@ -1594,6 +1605,7 @@ function getSampleCommunityComments(post) {
     },
     {
       id: "sample-comment-2",
+      isSample: true,
       authorName: "초보셀러민수",
       body: "저는 처음에 광고비를 월 비용으로만 봤는데, 주문당 비용으로 나누니까 실제 남는 돈이 훨씬 잘 보였습니다.",
       createdAt: new Date(now - 1000 * 60 * 24).toISOString(),
@@ -1675,7 +1687,32 @@ function renderSellerditComment(comment, post, depth = 0, index = 0) {
   const handle = makeCommunityHandle(authorName);
   const commentId = escapeHtml(comment.id || "");
   const commentUrl = `/community/${escapeHtml(post.slug)}#comment-${commentId}`;
-  const body = `<article id="comment-${commentId}" class="sellerdit-comment c ${depth > 0 ? "is-reply" : ""}" data-comment-id="${commentId}">
+  const isSample = Boolean(comment.isSample);
+  const actionFooter = isSample
+    ? `<footer class="cactions"><span class="sellerdit-comment-action cbtn" aria-disabled="true">샘플 댓글</span><button type="button" class="sellerdit-comment-action cbtn sellerdit-comment-share" aria-label="공유" data-comment-share data-share-url="${commentUrl}">${renderCommunityActionIcon("share")}</button></footer>`
+    : `<footer class="cactions">
+        <button type="button" class="sellerdit-comment-action cv ${comment.likedByMe ? "is-active" : ""}" aria-label="좋아요" data-community-comment-reaction data-comment-id="${commentId}">${renderCommunityActionIcon("like")}<span data-comment-reaction-count>${formatInteger(comment.likesCount || 0)}</span></button>
+        <button type="button" class="sellerdit-comment-action cbtn sellerdit-comment-reply" aria-label="답글 달기" data-comment-reply-button data-parent-id="${commentId}">${renderCommunityActionIcon("comment")}</button>
+        <button type="button" class="sellerdit-comment-action cbtn sellerdit-comment-share" aria-label="공유" data-comment-share data-share-url="${commentUrl}">${renderCommunityActionIcon("share")}</button>
+        ${comment.canEdit ? `<button type="button" class="sellerdit-comment-action cbtn" data-comment-edit-button data-comment-id="${commentId}">수정</button><button type="button" class="sellerdit-comment-action cbtn" data-comment-delete-button data-comment-id="${commentId}">삭제</button>` : `<button type="button" class="sellerdit-comment-action cbtn is-more" aria-label="더 보기">...</button>`}
+      </footer>`;
+  const editForm = isSample ? "" : `<form class="community-comment-form sellerdit-reply-form" data-comment-edit-form data-comment-id="${commentId}" hidden>
+        <textarea name="body" rows="2" maxlength="1500">${escapeHtml(comment.body)}</textarea>
+        <div class="sellerdit-reply-actions">
+          <p data-community-message></p>
+          <button type="button" data-comment-edit-cancel>취소</button>
+          <button class="primary-small-button" type="submit">수정 저장</button>
+        </div>
+      </form>`;
+  const replyForm = isSample ? "" : `<form class="community-comment-form sellerdit-reply-form" data-community-comment-form data-post-slug="${escapeHtml(post.slug)}" data-parent-id="${commentId}" hidden>
+        <textarea name="body" rows="2" maxlength="1500" placeholder="${escapeHtml(handle)}님에게 답글 남기기"></textarea>
+        <div class="sellerdit-reply-actions">
+          <p data-community-message></p>
+          <button type="button" data-comment-reply-cancel>취소</button>
+          <button class="primary-small-button" type="submit">답글 등록</button>
+        </div>
+      </form>`;
+  const body = `<article id="comment-${commentId}" class="sellerdit-comment c ${depth > 0 ? "is-reply" : ""} ${isSample ? "is-sample" : ""}" data-comment-id="${commentId}">
     <button type="button" class="sellerdit-comment-collapse" aria-label="댓글 접기" data-comment-collapse>−</button>
     <span class="sellerdit-avatar avatar" style="background:${escapeHtml(getCommunityAuthorColor(authorName))}">${escapeHtml(getCommunityAuthorInitial(authorName))}</span>
     <div class="sellerdit-comment-body body">
@@ -1686,28 +1723,9 @@ function renderSellerditComment(comment, post, depth = 0, index = 0) {
         <time datetime="${escapeHtml(comment.createdAt)}">${escapeHtml(formatDate(comment.createdAt) || "방금 전")}</time>
       </header>
       <p class="ctext">${escapeHtml(comment.body)}</p>
-      <footer class="cactions">
-        <button type="button" class="sellerdit-comment-action cv ${comment.likedByMe ? "is-active" : ""}" aria-label="좋아요" data-community-comment-reaction data-comment-id="${commentId}">${renderCommunityActionIcon("like")}<span data-comment-reaction-count>${formatInteger(comment.likesCount || 0)}</span></button>
-        <button type="button" class="sellerdit-comment-action cbtn sellerdit-comment-reply" aria-label="답글 달기" data-comment-reply-button data-parent-id="${commentId}">${renderCommunityActionIcon("comment")}</button>
-        <button type="button" class="sellerdit-comment-action cbtn sellerdit-comment-share" aria-label="공유" data-comment-share data-share-url="${commentUrl}">${renderCommunityActionIcon("share")}</button>
-        ${comment.canEdit ? `<button type="button" class="sellerdit-comment-action cbtn" data-comment-edit-button data-comment-id="${commentId}">수정</button><button type="button" class="sellerdit-comment-action cbtn" data-comment-delete-button data-comment-id="${commentId}">삭제</button>` : `<button type="button" class="sellerdit-comment-action cbtn is-more" aria-label="더 보기">...</button>`}
-      </footer>
-      <form class="community-comment-form sellerdit-reply-form" data-comment-edit-form data-comment-id="${commentId}" hidden>
-        <textarea name="body" rows="2" maxlength="1500">${escapeHtml(comment.body)}</textarea>
-        <div class="sellerdit-reply-actions">
-          <p data-community-message></p>
-          <button type="button" data-comment-edit-cancel>취소</button>
-          <button class="primary-small-button" type="submit">수정 저장</button>
-        </div>
-      </form>
-      <form class="community-comment-form sellerdit-reply-form" data-community-comment-form data-post-slug="${escapeHtml(post.slug)}" data-parent-id="${commentId}" hidden>
-        <textarea name="body" rows="2" maxlength="1500" placeholder="${escapeHtml(handle)}님에게 답글 남기기"></textarea>
-        <div class="sellerdit-reply-actions">
-          <p data-community-message></p>
-          <button type="button" data-comment-reply-cancel>취소</button>
-          <button class="primary-small-button" type="submit">답글 등록</button>
-        </div>
-      </form>
+      ${actionFooter}
+      ${editForm}
+      ${replyForm}
       ${replies.length ? `<div class="sellerdit-replies reply" data-replies-group>${renderSellerditComments(replies, post, depth + 1)}<button class="more-replies" type="button" aria-expanded="true" data-replies-toggle><span class="plus" aria-hidden="true"></span><span>답글 ${formatInteger(replies.length)}개 접기</span></button></div>` : ""}
     </div>
   </article>`;
@@ -1763,7 +1781,7 @@ function renderSellerditProfilePage(handle, query = {}, currentUser = null) {
                 <div><dt>댓글 카르마</dt><dd>${formatInteger(comments)}</dd></div>
               </dl>
             </div>
-            <div class="sellerdit-profile-actions">${isMe ? `<a class="sellerdit-follow" href="#community-write">글쓰기</a><button class="sellerdit-follow" type="button">설정</button>` : `<button class="sellerdit-follow" type="button">팔로우</button>`}</div>
+            <div class="sellerdit-profile-actions">${isMe ? `<a class="sellerdit-follow" href="#community-write">글쓰기</a><button class="sellerdit-follow" type="button">설정</button>` : `<button class="sellerdit-follow" type="button" data-community-follow data-follow-handle="${escapeHtml(normalizedHandle)}">팔로우</button>`}</div>
             <span class="sellerdit-more">⋯</span>
           </header>
           <nav class="sellerdit-profile-tabs" aria-label="프로필 탭">
@@ -1779,7 +1797,7 @@ function renderSellerditProfilePage(handle, query = {}, currentUser = null) {
             <strong>u/${escapeHtml(normalizedHandle)}</strong>
             <p>🍰 2026년 6월 22일 가입 · 카르마 ${formatInteger(likes + comments)}</p>
             <a href="/community">r/셀러딧으로 돌아가기</a>
-            ${isMe ? "" : `<button class="sellerdit-follow" type="button">팔로우</button>`}
+            ${isMe ? "" : `<button class="sellerdit-follow" type="button" data-community-follow data-follow-handle="${escapeHtml(normalizedHandle)}">팔로우</button>`}
           </section>
           ${renderSellerditFooterLinks()}
         </aside>
