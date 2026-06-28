@@ -1088,8 +1088,8 @@ function renderSellerditRecentPostsPanel() {
   };
   const communityName = (post, index) => post.community || ["r/로켓그로스", "r/1688사입", "r/초보셀러"][index] || "r/셀러딧";
   const imageFor = (post, index) => post.image || ["/assets/final-cost-summary.svg", "/assets/china-sourcing.svg", "/assets/coupang-costs.svg"][index] || "";
-  return `<section class="sellerdit-recent-posts-panel" aria-label="최근 게시물">
-    <div class="sellerdit-recent-posts-head"><strong>최근 게시물</strong><a href="/community">지우기</a></div>
+  return `<section class="sellerdit-recent-posts-panel" aria-label="인기 게시물">
+    <div class="sellerdit-recent-posts-head"><strong>인기 게시물</strong></div>
     <div class="sellerdit-recent-posts-list">
       ${source.slice(0, 3).map((post, index) => {
         const fallback = fallbacks[index] || fallbacks[0];
