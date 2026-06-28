@@ -1528,9 +1528,10 @@ function renderCommunityPostPage(post, currentUser = null) {
   const canonicalUrl = `${PUBLIC_SITE_URL}/community/${post.slug}`;
   post = attachCommunityPostState(post, currentUser);
   const comments = attachCommunityCommentsState(getCommunityCommentTree(post.id), currentUser);
-  const displayComments = comments.length ? comments : getSampleCommunityComments(post);
-  const commentCount = comments.length ? countRenderedComments(comments) : countRenderedComments(displayComments);
+  const displayComments = comments;
+  const commentCount = countRenderedComments(comments);
   const relatedPosts = getCommunityPosts({ category: post.category, limit: 5 }).filter((item) => item.id !== post.id).slice(0, 4);
+
   const category = COMMUNITY_CATEGORIES[post.category] || COMMUNITY_CATEGORIES["final-margin"];
   const threadContent = getThreadDisplayContent(post);
   const seoTitle = getThreadPostSeoTitle(post);
