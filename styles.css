@@ -26680,3 +26680,62 @@ body.sellerdit-home-page .sellerdit-mobile-drawer-overlay { display: none !impor
     padding-right: 0 !important;
   }
 }
+
+
+/* Sellerdit polish pass — home gap, detail type, nav strip, follow sizing — 20260629 */
+body.sellerdit-home-page {
+  padding-top: 0 !important;
+}
+body.sellerdit-home-page .sellerdit-topbar,
+body.sellerdit-home-page header.community-topbar.sellerdit-topbar {
+  top: 0 !important;
+  margin-top: 0 !important;
+}
+body.sellerdit-home-page .sellerdit-home-shell {
+  margin-top: 0 !important;
+}
+html body:has(.sellerdit-topbar) {
+  background: #ffffff !important;
+}
+html body:has(.sellerdit-topbar) .community-shell {
+  background: #ffffff !important;
+}
+html body:has(.sellerdit-topbar) .sellerdit-topbar,
+html body:has(.sellerdit-topbar) header.community-topbar.sellerdit-topbar {
+  border-bottom: 0 !important;
+  box-shadow: none !important;
+}
+html body:has(.sellerdit-topbar) .sellerdit-top-categorybar a,
+html body:has(.sellerdit-topbar) .sellerdit-nav-wordlogo,
+html body:has(.sellerdit-topbar) .sellerdit-nav-wordlogo span {
+  box-shadow: none !important;
+}
+@media (min-width: 1024px) {
+  html body:has(.sellerdit-topbar) .sellerdit-follow,
+  html body:has(.sellerdit-topbar) .community-shell .sellerdit-feed-post .sellerdit-follow,
+  html body:has(.sellerdit-topbar) .community-shell .sellerdit-detail-post .sellerdit-follow {
+    width: auto !important;
+    min-width: 56px !important;
+    height: 24px !important;
+    min-height: 24px !important;
+    padding: 0 10px !important;
+    border-radius: 999px !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    line-height: 24px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+  html body:has(.sellerdit-topbar) .sellerdit-post-meta {
+    align-items: center !important;
+  }
+  html body:has(.sellerdit-topbar) .community-shell .sellerdit-thread-body.is-detail,
+  html body:has(.sellerdit-topbar) .community-shell .is-post-detail .sellerdit-detail-post .sellerdit-thread-body.is-detail {
+    color: #181b1f !important;
+    font-size: 14px !important;
+    line-height: 20.5px !important;
+    font-weight: 400 !important;
+    letter-spacing: -0.01em !important;
+  }
+}
