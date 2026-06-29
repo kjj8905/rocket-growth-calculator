@@ -25806,3 +25806,101 @@ body:has(.sellerdit-topbar) .sellerdit-action-bookmark[aria-pressed="true"] svg 
 .community-post-article.is-hidden-by-user {
   display: none !important;
 }
+
+
+/* Sellerdit rail/top crop regression fix - 20260629 */
+:root { --sellerdit-topbar-height: 56px; }
+body:has(.sellerdit-topbar) { padding-top: var(--sellerdit-topbar-height) !important; }
+body:has(.sellerdit-topbar) .community-shell { padding-top: 0 !important; }
+body.sellerdit-home-page { padding-top: var(--sellerdit-topbar-height) !important; }
+.sellerdit-topbar,
+.sellerdit-home-topbar,
+.sellerdit-reddit-topbar {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  height: var(--sellerdit-topbar-height) !important;
+  z-index: 1200 !important;
+  background: rgba(255,255,255,.96) !important;
+  border-bottom: 1px solid #e5e7eb !important;
+}
+.sellerdit-topbar-inner { height: var(--sellerdit-topbar-height) !important; }
+@media (min-width: 1024px) {
+  body:has(.sellerdit-topbar) .community-workspace.community-reddit-layout,
+  body:has(.sellerdit-topbar) section.community-reddit-layout.sellerdit-with-left-rail {
+    display: grid !important;
+    grid-template-columns: 264px minmax(624px, 700px) 300px !important;
+    gap: 32px !important;
+    width: max-content !important;
+    max-width: calc(100vw - 32px) !important;
+    margin: 24px auto 48px !important;
+    padding: 0 !important;
+    align-items: start !important;
+  }
+  body:has(.sellerdit-topbar) .community-left-rail.sellerdit-left-rail {
+    position: sticky !important;
+    top: calc(var(--sellerdit-topbar-height) + 12px) !important;
+    grid-column: 1 !important;
+    width: 264px !important;
+    max-height: calc(100vh - var(--sellerdit-topbar-height) - 24px) !important;
+    overflow-y: auto !important;
+  }
+  body:has(.sellerdit-topbar) .community-feed-panel {
+    grid-column: 2 !important;
+    width: 100% !important;
+    max-width: 700px !important;
+    min-width: 0 !important;
+    padding-top: 0 !important;
+  }
+  body:has(.sellerdit-topbar) aside.community-right-rail.sellerdit-right-rail,
+  body:has(.sellerdit-topbar) .community-shell aside.sellerdit-right-rail {
+    position: sticky !important;
+    top: calc(var(--sellerdit-topbar-height) + 24px) !important;
+    right: auto !important;
+    left: auto !important;
+    grid-column: 3 !important;
+    width: 300px !important;
+    max-width: 300px !important;
+    min-width: 0 !important;
+    max-height: calc(100vh - var(--sellerdit-topbar-height) - 32px) !important;
+    overflow-y: auto !important;
+    z-index: 10 !important;
+  }
+}
+@media (min-width: 1024px) and (max-width: 1320px) {
+  body:has(.sellerdit-topbar) .community-workspace.community-reddit-layout,
+  body:has(.sellerdit-topbar) section.community-reddit-layout.sellerdit-with-left-rail {
+    grid-template-columns: 232px minmax(560px, 624px) 280px !important;
+    gap: 24px !important;
+  }
+  body:has(.sellerdit-topbar) .community-left-rail.sellerdit-left-rail { width: 232px !important; }
+  body:has(.sellerdit-topbar) .community-feed-panel { max-width: 624px !important; }
+  body:has(.sellerdit-topbar) aside.community-right-rail.sellerdit-right-rail { width: 280px !important; max-width: 280px !important; }
+}
+@media (max-width: 1023px) {
+  body:has(.sellerdit-topbar) { padding-top: 112px !important; }
+  body:has(.sellerdit-topbar) .sellerdit-topbar { height: 112px !important; }
+  body:has(.sellerdit-topbar) .community-workspace.community-reddit-layout,
+  body:has(.sellerdit-topbar) section.community-reddit-layout.sellerdit-with-left-rail {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 12px 80px !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+  body:has(.sellerdit-topbar) .community-feed-panel { max-width: 100% !important; grid-column: 1 !important; }
+  body:has(.sellerdit-topbar) aside.community-right-rail.sellerdit-right-rail { position: static !important; width: auto !important; max-width: none !important; }
+}
+.sellerdit-lnav-item[href*="%EA%B3%B5%EC%A7%80"],
+.sellerdit-lnav-item[href*="tag=%EA%B3%B5%EC%A7%80"],
+.community-pin-badge,
+.community-pinned,
+.sellerdit-notice { display: none !important; }
+.sellerdit-comment-sortbar { display:flex !important; justify-content:flex-end !important; align-items:center !important; padding: 8px 0 !important; }
+.sellerdit-comment .cactions { align-items: center !important; gap: 6px !important; }
+.sellerdit-comment-action.cv { min-width: 42px !important; justify-content: center !important; }
+.sellerdit-home-topbar .community-brand { gap: 8px !important; text-decoration: none !important; }
+.sellerdit-home-topbar nav { display:flex !important; gap: 8px !important; align-items:center !important; }
+.sellerdit-home-topbar nav a,
+.sellerdit-home-topbar nav button { min-height: 36px !important; padding: 0 10px !important; }

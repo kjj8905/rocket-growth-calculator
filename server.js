@@ -786,7 +786,12 @@ function normalizeSiteUrl(value) {
 
 function renderIndexHtml() {
   const filePath = path.join(__dirname, "index.html");
-  return fs.readFileSync(filePath, "utf8").replaceAll("__SITE_URL__", PUBLIC_SITE_URL);
+  return fs.readFileSync(filePath, "utf8")
+    .replaceAll("__SITE_URL__", PUBLIC_SITE_URL)
+    .replace('<link rel="stylesheet" href="./styles.css" />', '<link rel="stylesheet" href="/styles.css?v=20260629-sellerdit-railfix-v1" />')
+    .replace('<button class="community-brand sellerdit-home-brand" type="button" id="home-button" aria-label="홈으로 돌아가기">\n          <span>r/</span> 셀러딧\n        </button>', '<a class="community-brand sellerdit-home-brand" href="/community" aria-label="셀러딧 커뮤니티">\n          <span class="sellerdit-brand-mark">S</span><strong>셀러딧</strong>\n        </a>')
+    .replace('<button class="is-active" type="button" data-category="rocket-growth" aria-current="page">로켓계산기</button>\n          <a href="/trends">검색 트렌드</a>\n          <a href="/community">셀러 커뮤니티</a>\n          <a href="/community/qna">질문답변</a>\n          <a href="/guides">계산 기준</a>', '<button class="is-active" type="button" data-category="rocket-growth" aria-current="page">로켓그로스 계산기</button>\n          <a href="/trends">검색트렌드</a>\n          <a class="sellerdit-nav-wordlogo" href="/community"><span>셀러딧</span></a>')
+    .replace('로켓계산기\n          </button>\n          <a href="/trends">검색 트렌드</a>\n          <a href="/community">셀러 커뮤니티</a>\n          <a href="/community/qna">질문답변</a>\n          <a href="/guides">계산 기준</a>', '로켓그로스 계산기\n          </button>\n          <a href="/trends">검색트렌드</a>\n          <a class="sellerdit-nav-wordlogo" href="/community"><span>셀러딧</span></a>');
 }
 
 function communityQueryString(params = {}) {
@@ -1025,7 +1030,6 @@ function renderCommunityLeftRail(activeKey = "community", currentUser = null) {
   const topItems = [
     ["home", "/community", "홈", activeKey === "community"],
     ["popular", "/community?sort=hot", "인기", false],
-    ["notice", "/community?tag=공지", "공지", false],
     ["bookmark", "/community/saved", "저장한 글", activeKey === "saved"],
     ["create", "#community-write", "+", false],
   ];
@@ -1325,7 +1329,7 @@ function renderCommunityIndexPage(query = {}, currentUser = null) {
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
   const page = Math.min(Math.max(1, Number(query.page) || 1), totalPages);
   const posts = attachCommunityPostsState(getCommunityPosts({ ...feedOptions, limit: pageSize, offset: (page - 1) * pageSize }), currentUser);
-  const notices = !search && !tag && page === 1 ? getCommunityPosts({ notice: true, sort: "new", limit: 3 }) : [];
+  const notices = [];
   const title = "셀러딧 커뮤니티";
   const description =
     "쿠팡셀러와 개인셀러를 위한 로켓그로스 5단계 커뮤니티입니다. 중국사입, 중국→한국 물류, 한국→쿠팡 입고, 쿠팡 소모 비용, 최종 비용을 단계별로 묻고 답합니다.";
@@ -1343,7 +1347,6 @@ function renderCommunityIndexPage(query = {}, currentUser = null) {
         ${renderCommunityLeftRail("community", currentUser)}
         <section class="community-feed-panel" aria-labelledby="community-title">
           <h1 id="community-title" class="sellerdit-visually-hidden">${escapeHtml(heading)}</h1>
-          ${renderCommunityPinned(notices)}
           ${renderCommunityFeed(posts, search ? "검색 결과가 없습니다. 다른 키워드로 찾아보세요." : "아직 등록된 글이 없습니다.")}
           ${renderCommunityPager("/community", page, totalPages, search, sort, tag)}
           ${renderCommunityWritePanel()}
@@ -1414,7 +1417,6 @@ function renderCommunitySupplierFilterRail() {
   const topItems = [
     ["home", "/community", "홈", false],
     ["popular", "/community?sort=hot", "인기", false],
-    ["notice", "/community?tag=공지", "공지", false],
     ["create", "#community-write", "+", false],
   ];
   const quickItems = [
@@ -1431,7 +1433,7 @@ function renderCommunitySupplierFilterRail() {
     ["wholesale", "국내 도매", 2],
     ["logistics", "물류·검수", 1],
   ];
-  const renderNavItem = ([icon, href, label, active = false]) => `<a class="sellerdit-lnav-item ${active ? "is-active" : ""}" href="${href}"><span class="sellerdit-lnav-ic">${sellerditIcon(icon)}</span><span>${escapeHtml(label)}</span></a>`;
+  const renderNavItem = ([icon, href, label, active = false]) => `<a class="sellerdit-lnav-item ${active ? "is-active" : ""} ${icon === "create" ? "is-create-only" : ""}" href="${href}" ${icon === "create" ? 'aria-label="게시물 작성" title="게시물 작성"' : ""}><span class="sellerdit-lnav-ic">${sellerditIcon(icon)}</span><span>${escapeHtml(label)}</span></a>`;
   const renderFilterItem = ([value, label, count], index) => `<button class="sellerdit-lnav-item sellerdit-supplier-filter-item ${index === 0 ? "is-active" : ""}" type="button" data-supplier-filter="${escapeHtml(value)}"><span>${escapeHtml(label)}</span><em class="sellerdit-lnav-count">${escapeHtml(String(count))}</em></button>`;
   return `<aside class="community-left-rail sellerdit-left-rail sellerdit-reddit-left-rail sellerdit-supplier-filter-rail" aria-label="셀러딧 왼쪽 메뉴">
     <nav class="sellerdit-lnav" aria-label="셀러딧 섹션">
@@ -1572,7 +1574,6 @@ function renderCommunityCategoryPage(categorySlug, query = {}, currentUser = nul
         ${renderCommunityLeftRail(category.slug, currentUser)}
         <section class="community-feed-panel" aria-labelledby="community-category-title">
           <h1 id="community-category-title" class="sellerdit-visually-hidden">${escapeHtml(heading)}</h1>
-          ${renderCommunityPinned(notices)}
           ${renderCommunityFeed(posts, search ? "검색 결과가 없습니다. 다른 키워드로 찾아보세요." : "이 게시판에는 아직 글이 없습니다.")}
           ${renderCommunityPager(basePath, page, totalPages, search, sort, "")}
           ${renderCommunityWritePanel(category.slug)}
@@ -1633,14 +1634,14 @@ function renderCommunityPostPage(post, currentUser = null) {
             <form class="community-comment-form sellerdit-composer sellerdit-pill-composer" data-community-comment-form data-post-slug="${escapeHtml(post.slug)}">
               <textarea name="body" rows="1" maxlength="1500" placeholder="대화에 참여해보세요" aria-label="댓글 입력"></textarea>
               <div class="sellerdit-composer-actions">
-                <a class="community-comment-login" href="/auth/kakao/start?returnTo=${encodeURIComponent(`/community/${post.slug}#comments`)}">카카오로 시작하기</a>
+                <a class="community-comment-login" data-comment-login-cta href="/auth/kakao/start?returnTo=${encodeURIComponent(`/community/${post.slug}#comments`)}">로그인 후 댓글 쓰기</a>
                 <p data-community-message></p>
                 <button class="primary-small-button" type="submit">댓글 남기기</button>
               </div>
             </form>
-            <div class="comment-sort sellerdit-comment-sortbar"><span>정렬 기준: <b>좋아요 비율 높은 순 ▾</b></span></div>
+            <div class="comment-sort sellerdit-comment-sortbar"><span>정렬 기준: <b>좋아요 많은 순</b></span></div>
             <div class="community-comment-list sellerdit-comment-tree">
-              ${renderSellerditComments(displayComments, post)}
+              ${renderSellerditComments(sortCommunityCommentsByLikes(displayComments), post)}
             </div>
           </section>
         </section>
@@ -1794,7 +1795,7 @@ function renderSellerditComment(comment, post, depth = 0, index = 0) {
         <a class="sellerdit-author cauthor" href="/u/${escapeHtml(handle)}">${escapeHtml(handle)}</a>
         ${badge ? `<span class="sellerdit-comment-badge cbadge ${isAuthor || badge === "원글 작성자" ? "is-author op" : "top"}">${escapeHtml(badge)}</span>` : ""}
         <span class="sellerdit-dot dot">·</span>
-        <time datetime="${escapeHtml(comment.createdAt)}">${escapeHtml(formatDate(comment.createdAt) || "방금 전")}</time>
+        <time datetime="${escapeHtml(comment.createdAt)}">${escapeHtml(formatRelativeDate(comment.createdAt) || "방금 전")}</time>
       </header>
       <p class="ctext">${escapeHtml(comment.body)}</p>
       ${actionFooter}
@@ -2516,27 +2517,17 @@ function renderCommunityScript(postSlug = "") {
         }
       }
       track("community_view", { page_path: window.location.pathname });
-      function applySellerditFixedRails() {
-        if (!window.matchMedia || !window.matchMedia("(min-width: 1024px)").matches) return;
+      function applySellerditTopbarGuard() {
         var topbar = document.querySelector(".sellerdit-topbar");
-        var rail = document.querySelector(".sellerdit-right-rail");
-        if (topbar) {
-          topbar.style.setProperty("position", "fixed", "important");
-          topbar.style.setProperty("top", "0", "important");
-          topbar.style.setProperty("left", "0", "important");
-          topbar.style.setProperty("right", "0", "important");
-          topbar.style.setProperty("z-index", "1200", "important");
-        }
-        if (rail) {
-          rail.style.setProperty("position", "fixed", "important");
-          rail.style.setProperty("top", "80px", "important");
-          rail.style.setProperty("right", "24px", "important");
-          rail.style.setProperty("width", "300px", "important");
-          rail.style.setProperty("z-index", "900", "important");
-        }
+        if (!topbar) return;
+        topbar.style.setProperty("position", "fixed", "important");
+        topbar.style.setProperty("top", "0", "important");
+        topbar.style.setProperty("left", "0", "important");
+        topbar.style.setProperty("right", "0", "important");
+        topbar.style.setProperty("z-index", "1200", "important");
       }
-      applySellerditFixedRails();
-      window.addEventListener("resize", applySellerditFixedRails);
+      applySellerditTopbarGuard();
+      window.addEventListener("resize", applySellerditTopbarGuard);
       ${postSlug ? `window.setTimeout(function () { track("post_read_60s", { post_slug: ${JSON.stringify(postSlug)} }); }, 60000);` : ""}
 
       function loginUrl() {
@@ -2577,6 +2568,9 @@ function renderCommunityScript(postSlug = "") {
             logoutButton && (logoutButton.hidden = true);
             return;
           }
+          document.querySelectorAll("[data-comment-login-cta]").forEach(function (link) {
+            link.hidden = Boolean(data.authenticated && data.user);
+          });
           if (data.authenticated && data.user) {
             var name = data.user.nickname || "셀러";
             var href = "/u/" + encodeURIComponent(data.user.handle || name);
@@ -3513,7 +3507,7 @@ function renderDocumentShell({ title, description, canonicalUrl, body, jsonLd, s
     <meta name="twitter:description" content="${escapeHtml(description)}" />
     <meta name="twitter:image" content="${PUBLIC_SITE_URL}/assets/site-flow.svg" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
-    <link rel="stylesheet" href="/styles.css?v=20260629-sellerdit-request19-v2" />
+    <link rel="stylesheet" href="/styles.css?v=20260629-sellerdit-railfix-v1" />
     <style>
       .sellerdit-profile-menu-wrap{position:relative!important;display:inline-flex!important;align-items:center!important}.sellerdit-profile-menu{position:absolute!important;top:calc(100% + 10px)!important;right:0!important;min-width:188px!important;padding:8px!important;border:1px solid rgba(15,23,42,.12)!important;border-radius:14px!important;background:#fff!important;box-shadow:0 18px 45px rgba(15,23,42,.18)!important;z-index:1300!important}.sellerdit-profile-menu[hidden]{display:none!important}.sellerdit-profile-menu::before{content:"";position:absolute;top:-6px;right:14px;width:12px;height:12px;background:#fff;border-left:1px solid rgba(15,23,42,.12);border-top:1px solid rgba(15,23,42,.12);transform:rotate(45deg)}.sellerdit-profile-menu a,.sellerdit-profile-menu button{width:100%!important;min-height:38px!important;display:flex!important;align-items:center!important;gap:8px!important;padding:0 12px!important;border:0!important;border-radius:10px!important;background:transparent!important;color:#0f172a!important;font:700 13px/1 Pretendard,system-ui,sans-serif!important;text-align:left!important;text-decoration:none!important;cursor:pointer!important}.sellerdit-profile-menu a:hover,.sellerdit-profile-menu button:hover,.sellerdit-profile-menu a:focus-visible,.sellerdit-profile-menu button:focus-visible{background:#f1f5f9!important;outline:none!important}.sellerdit-profile-menu button{color:#dc2626!important}@media (max-width:767.98px){.sellerdit-profile-menu{position:fixed!important;top:64px!important;right:12px!important;left:auto!important;width:min(220px,calc(100vw - 24px))!important}}
     </style>
@@ -5040,7 +5034,7 @@ function seedCommunityPosts() {
 
   SEED_COMMUNITY_POSTS.forEach((post, index) => {
     const existing = db.prepare("SELECT id FROM community_posts WHERE slug = ?").get(post.slug);
-    const createdAt = post.createdAt || new Date(Date.now() - (SEED_COMMUNITY_POSTS.length - index) * 3600 * 1000).toISOString();
+    const createdAt = post.createdAt || getStableSeedCreatedAt(index);
     const updatedAt = post.updatedAt || createdAt;
     const views = Number.isFinite(Number(post.views)) ? Number(post.views) : Math.max(12, 120 - index * 4);
     const commentsCount = Number.isFinite(Number(post.commentsCount)) ? Number(post.commentsCount) : 0;
@@ -5283,6 +5277,30 @@ function normalizePostSections(sections) {
 function getSeedPostFaq(slug) {
   const seedPost = SEED_COMMUNITY_POSTS.find((post) => post.slug === slug);
   return Array.isArray(seedPost?.faq) ? seedPost.faq : [];
+}
+
+function getStableSeedCreatedAt(index = 0) {
+  const offsets = [
+    12 * 60 * 1000,
+    2 * 60 * 60 * 1000,
+    8 * 60 * 60 * 1000,
+    26 * 60 * 60 * 1000,
+    47 * 60 * 60 * 1000,
+  ];
+  if (index < offsets.length) return new Date(Date.now() - offsets[index]).toISOString();
+  const day = 22 + (index % 3);
+  const hour = 9 + (index % 8);
+  return new Date(Date.UTC(2026, 5, day, hour, 0, 0)).toISOString();
+}
+
+function sortCommunityCommentsByLikes(comments = []) {
+  return [...comments]
+    .map((comment) => ({ ...comment, replies: sortCommunityCommentsByLikes(comment.replies || []) }))
+    .sort((a, b) => {
+      const likeDelta = Number(b.likesCount || 0) - Number(a.likesCount || 0);
+      if (likeDelta) return likeDelta;
+      return new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime();
+    });
 }
 
 const COMMUNITY_SORTS = {
