@@ -835,8 +835,10 @@ function renderCommunityActionIcon(type) {
     like: '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78Z"/></svg>',
     dislike: '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 20 4.5 12.5h4.25V4h6.5v8.5h4.25L12 20Z"/></svg>',
     comment: '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M21 11.5a8.38 8.38 0 0 1-8.5 8.4 8.5 8.5 0 0 1-3.9-.9L3 21l1.9-5.1A8.38 8.38 0 0 1 4 11.5 8.5 8.5 0 0 1 12.5 3 8.38 8.38 0 0 1 21 11.5Z"/></svg>',
-    share: '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7Z"/></svg>',
+    share: '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M8 7.5A3.5 3.5 0 0 1 11.5 4H17a3 3 0 0 1 3 3v5.5A3.5 3.5 0 0 1 16.5 16"/><path d="M6.8 8H13a3 3 0 0 1 3 3v6.2A2.8 2.8 0 0 1 13.2 20H7a3 3 0 0 1-3-3v-6.2A2.8 2.8 0 0 1 6.8 8Z"/></svg>',
     bookmark: '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2Z"/></svg>',
+    browse: '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 12h16"/><path d="M12 4v16"/><path d="m17 7 3 5-3 5"/><path d="m7 7-3 5 3 5"/></svg>',
+    more: '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg>',
   };
   return icons[type] || "";
 }
@@ -865,15 +867,22 @@ function renderCommunityVoteCard(post, index = 0) {
   const authorHandle = makeCommunityHandle(authorName);
   const authorHref = `/u/${encodeURIComponent(authorHandle)}`;
   return `<article class="community-vote-card sellerdit-feed-post${post.isNotice ? " is-notice" : ""}" data-post-id="${escapeHtml(post.id)}">
-    <a class="sellerdit-avatar sellerdit-feed-avatar sellerdit-avatar-link" href="${escapeHtml(authorHref)}" aria-label="u/${escapeHtml(authorHandle)} 프로필" style="background:${escapeHtml(getCommunityAuthorColor(authorName))}">${escapeHtml(getCommunityAuthorInitial(authorName))}</a>
+    <a class="sellerdit-avatar sellerdit-feed-avatar sellerdit-avatar-link" href="${escapeHtml(authorHref)}" aria-label="${escapeHtml(authorHandle)} 프로필" style="background:${escapeHtml(getCommunityAuthorColor(authorName))}">${escapeHtml(getCommunityAuthorInitial(authorName))}</a>
     <div class="sellerdit-feed-content">
       <div class="sellerdit-post-meta">
-        <a class="sellerdit-author" href="${escapeHtml(authorHref)}">u/${escapeHtml(authorHandle)}</a>
+        <a class="sellerdit-author" href="${escapeHtml(authorHref)}">${escapeHtml(authorHandle)}</a>
         <span class="sellerdit-dot">·</span>
         ${dateLabel ? `<time datetime="${escapeHtml(post.createdAt)}">${escapeHtml(dateLabel)}</time>` : ""}
         ${post.isNotice ? `<span class="community-pin-badge">공지</span>` : ""}
         <button class="sellerdit-follow" type="button" data-community-follow data-follow-handle="${escapeHtml(authorHandle)}">팔로우</button>
-        <span class="sellerdit-more">⋯</span>
+        <div class="sellerdit-post-more-wrap">
+          <button class="sellerdit-more" type="button" aria-label="게시글 더보기" aria-expanded="false" data-post-more-toggle data-share-url="/community/${escapeHtml(post.slug)}">⋯</button>
+          <div class="sellerdit-post-more-menu" role="menu" hidden>
+            <button type="button" role="menuitem" data-post-menu-copy data-share-url="/community/${escapeHtml(post.slug)}">URL 복사</button>
+            <button type="button" role="menuitem" data-post-menu-hide>관심없음</button>
+            <button type="button" role="menuitem" data-post-menu-report>신고하기</button>
+          </div>
+        </div>
       </div>
       <a class="sellerdit-thread-body is-feed" href="/community/${escapeHtml(post.slug)}">${escapeHtml(threadContent)}</a>
             <a class="sellerdit-thread-more" href="/community/${escapeHtml(post.slug)}">더 보기</a>
@@ -1018,43 +1027,42 @@ function renderCommunityLeftRail(activeKey = "community", currentUser = null) {
     ["popular", "/community?sort=hot", "인기", false],
     ["notice", "/community?tag=공지", "공지", false],
     ["bookmark", "/community/saved", "저장한 글", activeKey === "saved"],
-    ["explore", "/community", "둘러보기", false],
-    ["create", "#community-write", "커뮤니티 만들기", false],
+    ["create", "#community-write", "+", false],
   ];
   const quickItems = [
     ["calc", "/", "로켓계산기"],
     ["trend", "/trends", "검색 트렌드"],
   ];
-  const renderItem = ([icon, href, label, active = false]) => `<a class="sellerdit-lnav-item ${active ? "is-active" : ""}" href="${href}"><span class="sellerdit-lnav-ic">${sellerditIcon(icon)}</span><span>${escapeHtml(label)}</span></a>`;
+  const renderItem = ([icon, href, label, active = false]) => `<a class="sellerdit-lnav-item ${active ? "is-active" : ""} ${icon === "create" ? "is-create-only" : ""}" href="${href}" ${icon === "create" ? 'aria-label="게시물 작성" title="게시물 작성"' : ""}><span class="sellerdit-lnav-ic">${sellerditIcon(icon)}</span><span>${escapeHtml(label)}</span></a>`;
   const supplierItems = [
+    ["direct1688", "16", "1688 직소싱 파트너"],
     ["yiwu", "🏬", "이우 종합도매"],
     ["gz", "👗", "광저우 패션상가"],
     ["domestic", "📦", "도매꾹 국내도매"],
   ];
-  const recentItems = ["r/로켓그로스", "r/1688사입", "r/초보셀러"];
+  const recentItems = ["물류비계산러", "도매꾹탐색가", "초보셀러민수"];
   return `<aside id="sellerdit-mobile-drawer" class="community-left-rail sellerdit-left-rail sellerdit-reddit-left-rail" aria-label="셀러딧 왼쪽 메뉴" aria-hidden="true">
     <div class="sellerdit-drawer-head"><strong>셀러딧</strong><button type="button" aria-label="메뉴 닫기" data-mobile-drawer-close>×</button></div>
     <nav class="sellerdit-lnav" aria-label="셀러딧 섹션">
       <section class="sellerdit-lnav-section sellerdit-main-nav">
         ${topItems.map(renderItem).join("")}
       </section>
-      <section class="sellerdit-lnav-section sellerdit-supplier-nav" aria-labelledby="sellerdit-supplier-nav-title">
-        <div class="sellerdit-lnav-sec" id="sellerdit-supplier-nav-title"><span>SELLERDIT 공급처</span><span aria-hidden="true">▲</span></div>
-        <a class="sellerdit-supplier-card" href="/community/suppliers" aria-label="추천 공급처 1688 직소싱 파트너">
-          <span class="supplier-card-icon">16</span>
-          <span class="supplier-card-copy"><strong>1688 직소싱 파트너</strong><em>월 거래 1.2만 건</em></span>
-          <span class="badge-new">신규</span>
-        </a>
-        ${supplierItems.map(([theme, icon, label]) => `<a class="sellerdit-lnav-item sellerdit-supplier-row" href="/community/suppliers"><span class="sellerdit-lnav-ic sellerdit-round-ic supplier-thumb is-${escapeHtml(theme)}">${escapeHtml(icon)}</span><span>${escapeHtml(label)}</span></a>`).join("")}
-        <a class="sellerdit-lnav-item sellerdit-more-browse" href="/community/suppliers"><span class="sellerdit-lnav-ic sellerdit-browse-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.8 14.4 9l5.6.6-4.2 3.7 1.2 5.5-5-2.9-5 2.9 1.2-5.5L4 9.6 9.6 9 12 3.8Z"/><path d="M12 8.8v4.8M9.6 11.2h4.8"/></svg></span><span>더 둘러보기</span></a>
+      <section class="sellerdit-lnav-section sellerdit-supplier-nav" aria-labelledby="sellerdit-supplier-nav-title" data-lnav-collapsible>
+        <button class="sellerdit-lnav-sec" id="sellerdit-supplier-nav-title" type="button" data-lnav-toggle aria-expanded="true"><span>SELLERDIT 공급처</span><span aria-hidden="true">⌃</span></button>
+        <div class="sellerdit-lnav-body">
+          ${supplierItems.map(([theme, icon, label]) => `<a class="sellerdit-lnav-item sellerdit-supplier-row" href="/u/${encodeURIComponent(makeCommunityHandle(label))}"><span class="sellerdit-lnav-ic sellerdit-round-ic supplier-thumb is-${escapeHtml(theme)}">${escapeHtml(icon)}</span><span>${escapeHtml(label)}</span></a>`).join("")}
+          <a class="sellerdit-lnav-item sellerdit-more-browse" href="/community/suppliers"><span class="sellerdit-lnav-ic sellerdit-browse-ic">${renderCommunityActionIcon("browse")}</span><span>더 둘러보기</span></a>
+        </div>
       </section>
-      <section class="sellerdit-lnav-section sellerdit-recent-nav" aria-labelledby="sellerdit-recent-nav-title">
-        <div class="sellerdit-lnav-sec" id="sellerdit-recent-nav-title"><span>최근 방문</span><span aria-hidden="true">▲</span></div>
-        ${recentItems.map((name) => `<a class="sellerdit-lnav-item sellerdit-recent-row" href="/community"><span class="sellerdit-lnav-ic sellerdit-recent-avatar">${escapeHtml(name.replace("r/", "").slice(0, 1))}</span><span>${escapeHtml(name)}</span></a>`).join("")}
+      <section class="sellerdit-lnav-section sellerdit-recent-nav" aria-labelledby="sellerdit-recent-nav-title" data-lnav-collapsible>
+        <button class="sellerdit-lnav-sec" id="sellerdit-recent-nav-title" type="button" data-lnav-toggle aria-expanded="true"><span>최근 방문 프로필</span><span aria-hidden="true">⌃</span></button>
+        <div class="sellerdit-lnav-body">
+          ${recentItems.map((name) => `<a class="sellerdit-lnav-item sellerdit-recent-row" href="/u/${encodeURIComponent(makeCommunityHandle(name))}"><span class="sellerdit-lnav-ic sellerdit-recent-avatar">${escapeHtml(name.slice(0, 1))}</span><span>${escapeHtml(name)}</span></a>`).join("")}
+        </div>
       </section>
-      <section class="sellerdit-lnav-section sellerdit-shortcut-nav" aria-labelledby="sellerdit-shortcut-nav-title">
-        <div class="sellerdit-lnav-sec" id="sellerdit-shortcut-nav-title"><span>바로가기</span><span aria-hidden="true">▲</span></div>
-        ${quickItems.map(renderItem).join("")}
+      <section class="sellerdit-lnav-section sellerdit-shortcut-nav" aria-labelledby="sellerdit-shortcut-nav-title" data-lnav-collapsible>
+        <button class="sellerdit-lnav-sec" id="sellerdit-shortcut-nav-title" type="button" data-lnav-toggle aria-expanded="true"><span>바로가기</span><span aria-hidden="true">⌃</span></button>
+        <div class="sellerdit-lnav-body">${quickItems.map(renderItem).join("")}</div>
       </section>
     </nav>
   </aside>`;
@@ -1407,8 +1415,7 @@ function renderCommunitySupplierFilterRail() {
     ["home", "/community", "홈", false],
     ["popular", "/community?sort=hot", "인기", false],
     ["notice", "/community?tag=공지", "공지", false],
-    ["explore", "/community", "둘러보기", false],
-    ["create", "#community-write", "커뮤니티 만들기", false],
+    ["create", "#community-write", "+", false],
   ];
   const quickItems = [
     ["calc", "/", "로켓계산기"],
@@ -1605,14 +1612,14 @@ function renderCommunityPostPage(post, currentUser = null) {
           <article class="community-post-article sellerdit-detail-post" data-community-post="${escapeHtml(post.slug)}">
             <h1 class="sellerdit-visually-hidden">${escapeHtml(getThreadPostSeoTitle(post))}</h1>
             <div class="sellerdit-post-meta">
-              <a class="sellerdit-avatar sellerdit-avatar-link" href="/u/${escapeHtml(makeCommunityHandle(post.authorName))}" aria-label="u/${escapeHtml(makeCommunityHandle(post.authorName))} 프로필" style="background:${escapeHtml(getCommunityAuthorColor(post.authorName))}">${escapeHtml(getCommunityAuthorInitial(post.authorName))}</a>
-              <a class="sellerdit-author" href="/u/${escapeHtml(makeCommunityHandle(post.authorName))}">u/${escapeHtml(makeCommunityHandle(post.authorName))}</a>
+              <a class="sellerdit-avatar sellerdit-avatar-link" href="/u/${escapeHtml(makeCommunityHandle(post.authorName))}" aria-label="${escapeHtml(makeCommunityHandle(post.authorName))} 프로필" style="background:${escapeHtml(getCommunityAuthorColor(post.authorName))}">${escapeHtml(getCommunityAuthorInitial(post.authorName))}</a>
+              <a class="sellerdit-author" href="/u/${escapeHtml(makeCommunityHandle(post.authorName))}">${escapeHtml(makeCommunityHandle(post.authorName))}</a>
               <span class="sellerdit-dot">·</span>
               <time datetime="${escapeHtml(post.createdAt)}">${escapeHtml(formatRelativeDate(post.createdAt) || "")}</time>
               <span class="sellerdit-dot sellerdit-detail-views-dot">·</span>
               <span class="sellerdit-detail-views">조회 ${formatInteger(post.views)}</span>
               <button class="sellerdit-follow" type="button" data-community-follow data-follow-handle="${escapeHtml(makeCommunityHandle(post.authorName))}">팔로우</button>
-              <span class="sellerdit-more">⋯</span>
+              <div class="sellerdit-post-more-wrap"><button class="sellerdit-more" type="button" aria-label="게시글 더보기" aria-expanded="false" data-post-more-toggle data-share-url="/community/${escapeHtml(post.slug)}">⋯</button><div class="sellerdit-post-more-menu" role="menu" hidden><button type="button" role="menuitem" data-post-menu-copy data-share-url="/community/${escapeHtml(post.slug)}">URL 복사</button><button type="button" role="menuitem" data-post-menu-hide>관심없음</button><button type="button" role="menuitem" data-post-menu-report>신고하기</button></div></div>
             </div>
             <div class="sellerdit-thread-body is-detail">${escapeHtml(threadContent)}</div>
             ${renderCommunityDetailMedia(post)}
@@ -1980,8 +1987,8 @@ function renderSellerditProfilePage(handle, query = {}, currentUser = null) {
   const allowedTabs = ["posts", "comments", "saved", "likes", "about"];
   const tab = allowedTabs.includes(String(query.tab || "")) ? String(query.tab) : "posts";
   const visibility = profile.visibility || defaultProfileVisibility();
-  const title = `u/${profile.username} | 셀러딧 프로필`;
-  const description = `셀러딧 사용자 u/${profile.username}의 게시물, 댓글, 저장한 글과 셀러 활동 요약을 확인하는 공개 프로필입니다.`;
+  const title = `${profile.username} | 셀러딧 프로필`;
+  const description = `셀러딧 사용자 ${profile.username}의 게시물, 댓글과 셀러 활동 요약을 확인하는 공개 프로필입니다.`;
   const canonicalUrl = `${PUBLIC_SITE_URL}/u/${encodeURIComponent(profile.username)}`;
   const joinedLabel = visibility.joinDate ? `가입일 ${formatDate(profile.joinedAt) || "2026년 6월 22일"}` : "가입일 비공개";
   const coverStyle = profile.coverImageUrl ? `background-image:linear-gradient(180deg,rgba(15,23,42,.14),rgba(15,23,42,.42)),url('${escapeHtml(profile.coverImageUrl)}')` : `background:${escapeHtml(getCommunityAuthorStyle(profile.nickname))};background-image:linear-gradient(135deg,var(--sellerdit-banner-a),var(--sellerdit-banner-b))`;
@@ -2000,12 +2007,10 @@ function renderSellerditProfilePage(handle, query = {}, currentUser = null) {
             ${renderProfileAvatar(profile)}
             <div class="sellerdit-profile-summary">
               <h1 id="sellerdit-profile-title">${escapeHtml(profile.nickname)}</h1>
-              <p>u/${escapeHtml(profile.username)} · ${escapeHtml(joinedLabel)}${profile.lastActiveAt ? ` · 최근 활동 ${escapeHtml(formatRelativeDate(profile.lastActiveAt) || "방금 전")}` : ""}</p>
+              <p>${escapeHtml(joinedLabel)}${profile.lastActiveAt ? ` · 최근 활동 ${escapeHtml(formatRelativeDate(profile.lastActiveAt) || "방금 전")}` : ""}</p>
               ${profile.bio && visibility.bio ? `<p class="sellerdit-profile-bio">${escapeHtml(profile.bio)}</p>` : ""}
-              ${renderProfileBadges(profile)}
-              ${visibility.stats ? `<dl aria-label="프로필 요약"><div><dt>받은 좋아요</dt><dd>${formatInteger(profile.stats.likes)}</dd></div><div><dt>게시물</dt><dd>${formatInteger(profile.stats.posts)}</dd></div><div><dt>댓글 카르마</dt><dd>${formatInteger(profile.stats.commentKarma)}</dd></div><div><dt>팔로워</dt><dd>${formatInteger(profile.stats.followers)}</dd></div></dl>` : ""}
+              ${visibility.stats ? `<dl aria-label="프로필 요약"><div><dt>받은 좋아요</dt><dd>${formatInteger(profile.stats.likes)}</dd></div><div><dt>게시물</dt><dd>${formatInteger(profile.stats.posts)}</dd></div><div><dt>댓글</dt><dd>${formatInteger(profile.stats.commentKarma)}</dd></div><div><dt>팔로워</dt><dd>${formatInteger(profile.stats.followers)}</dd></div></dl>` : ""}
             </div>
-            <div class="sellerdit-profile-actions">${profile.isMe ? `<a class="sellerdit-follow" href="/community/profile/edit">프로필 편집</a><a class="sellerdit-follow" href="/community/saved">저장한 글</a>` : `<button class="sellerdit-follow" type="button" data-community-follow data-follow-handle="${escapeHtml(profile.username)}">팔로우</button>`}</div>
           </header>
           <nav class="sellerdit-profile-tabs" aria-label="프로필 탭">
             ${[["posts","게시물"],["comments","댓글"],["saved","저장한 글"],["likes","좋아요"],["about","소개"]].map(([key,label]) => `<a class="${tab === key ? "is-active" : ""}" href="/u/${escapeHtml(profile.username)}?tab=${key}">${label}</a>`).join("")}
@@ -2013,11 +2018,11 @@ function renderSellerditProfilePage(handle, query = {}, currentUser = null) {
           ${renderProfileTabContent(tab, stats, profile, currentUser)}
         </section>
         <aside class="community-right-rail sellerdit-right-rail sellerdit-profile-side">
-          <section class="sellerdit-profile-card" style="${escapeHtml(getCommunityAuthorStyle(profile.nickname))}">
+          <section class="sellerdit-profile-card sellerdit-profile-action-card" style="${escapeHtml(getCommunityAuthorStyle(profile.nickname))}">
             ${renderProfileAvatar(profile, "sellerdit-profile-avatar is-small")}
-            <strong>u/${escapeHtml(profile.username)}</strong>
-            <p>${escapeHtml(profile.mainBadge || "신규 회원")} · 카르마 ${formatInteger(profile.stats.likes + profile.stats.commentKarma)}</p>
-            <a href="/community">r/셀러딧으로 돌아가기</a>
+            <strong>${escapeHtml(profile.username)}</strong>
+            <p>${formatInteger(profile.stats.posts)}개 게시물 · 팔로워 ${formatInteger(profile.stats.followers)}</p>
+            <div class="sellerdit-profile-side-note"><span>활동 요약</span><em>최근 작성글과 댓글을 기준으로 공개 정보만 보여줍니다.</em></div>
             ${profile.isMe ? `<a class="sellerdit-follow" href="/community/profile/edit" rel="nofollow">프로필 편집</a>` : `<button class="sellerdit-follow" type="button" data-community-follow data-follow-handle="${escapeHtml(profile.username)}">팔로우</button>`}
           </section>
           ${renderSellerditFooterLinks()}
@@ -2099,12 +2104,11 @@ function renderCommunityHeader(activeKey, currentUser = null) {
       </form>
       <div class="sellerdit-reddit-actions" aria-label="상단 작업">
         <button class="sellerdit-mobile-icon sellerdit-mobile-search-trigger" type="button" aria-label="검색 열기" data-mobile-search-open><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.5 5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11ZM15 15l4 4"/></svg></button>
-        <a class="sellerdit-reddit-icon sellerdit-chat-desktop" href="/community?chat=1" aria-label="채팅" title="채팅"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 11.5a8.38 8.38 0 0 1-8.5 8.4 8.5 8.5 0 0 1-3.9-.9L3 21l1.9-5.1A8.38 8.38 0 0 1 4 11.5 8.5 8.5 0 0 1 12.5 3 8.38 8.38 0 0 1 21 11.5Z"/></svg></a>
-        <a class="sellerdit-create-pill sellerdit-create-desktop" href="#community-write" aria-label="게시물 만들기"><svg class="sellerdit-create-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>만들기</span></a>
+        <a class="sellerdit-create-pill sellerdit-create-desktop" href="#community-write" aria-label="게시물 작성" title="게시물 작성"><svg class="sellerdit-create-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span class="sellerdit-create-hint">게시물 작성</span></a>
         <a class="sellerdit-reddit-icon sellerdit-notification-desktop" href="/api/community/notifications" rel="nofollow" aria-label="알림" title="알림"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 9a6 6 0 1 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9Z"/><path d="M9.8 21a2.4 2.4 0 0 0 4.4 0"/></svg></a>
         <a class="sellerdit-reddit-icon sellerdit-saved-desktop" href="/community/saved" rel="nofollow" aria-label="저장한 글" title="저장한 글">${renderCommunityActionIcon("bookmark")}</a>
         <div class="sellerdit-profile-menu-wrap" data-profile-menu-wrap>
-          <a class="sellerdit-avatar-button sellerdit-kakao" href="${profileHref}" data-auth-button data-profile-menu-trigger aria-label="프로필 메뉴" aria-haspopup="menu" aria-expanded="false" aria-controls="sellerdit-profile-menu">${avatarMarkup}<span>${meProfile ? `${escapeHtml(meProfile.nickname)}님` : "카카오 로그인"}</span></a>
+          <a class="sellerdit-avatar-button sellerdit-kakao" href="${profileHref}" data-auth-button data-profile-menu-trigger aria-label="프로필 메뉴" aria-haspopup="menu" aria-expanded="false" aria-controls="sellerdit-profile-menu">${avatarMarkup}<span>${meProfile ? `${escapeHtml(meProfile.nickname)}님` : "로그인"}</span></a>
           <div class="sellerdit-profile-menu" id="sellerdit-profile-menu" role="menu" data-profile-menu ${meProfile ? "" : "hidden"}>
             <a role="menuitem" href="${profileHref}" data-profile-menu-my>내 프로필</a>
             <a role="menuitem" href="/community/profile/edit" rel="nofollow">프로필 편집</a>
@@ -2127,8 +2131,7 @@ function renderCommunityHeader(activeKey, currentUser = null) {
   <div class="sellerdit-mobile-drawer-overlay" data-mobile-drawer-close hidden></div>
   <nav class="sellerdit-bottom-tab" aria-label="셀러딧 하단 탭">
     <a class="${activeKey === "community" ? "is-active" : ""}" href="/community"><span>⌂</span><em>홈</em></a>
-    <a href="/community?sort=hot"><span>⌕</span><em>둘러보기</em></a>
-    <a class="is-create" href="#community-write" aria-label="글쓰기"><span>＋</span><em>글쓰기</em></a>
+    <a class="is-create" href="#community-write" aria-label="게시물 작성"><span>＋</span><em>작성</em></a>
     <a href="/api/community/notifications" rel="nofollow"><span>♡</span><em>알림</em></a>
     <a class="${activeKey === "saved" ? "is-active" : ""}" href="/community/saved" rel="nofollow"><span>▱</span><em>저장</em></a>
     <a href="${profileHref}" data-auth-button-mobile><span>●</span><em>프로필</em></a>
@@ -2245,7 +2248,7 @@ function renderCommunityCollapsedPostPanel(title, posts) {
 
 function renderCommunityPostCard(post, mode = "default") {
   const isCompact = mode === "compact";
-  const dateLabel = formatDate(post.createdAt);
+  const dateLabel = formatRelativeDate(post.createdAt);
   return `<a class="community-post-card ${isCompact ? "is-compact" : ""}" href="/community/${post.slug}">
     <div class="community-post-main">
       <span class="community-post-title">${escapeHtml(getThreadPostSeoTitle(post, 100))}</span>
@@ -2257,45 +2260,40 @@ function renderCommunityPostCard(post, mode = "default") {
   </a>`;
 }
 
-function renderCommunityWritePanel(defaultCategory = "final-margin") {
-  const stageOptions = COMMUNITY_STAGE_SLUGS.map((slug) => COMMUNITY_CATEGORIES[slug]);
-  const boardOptions = COMMUNITY_BOARD_SLUGS.map((slug) => COMMUNITY_CATEGORIES[slug]);
+function renderCommunityWritePanel(defaultCategory = "qna") {
+  const postTypes = [
+    ["qna", "셀러 여러분께 질문드려요"],
+    ["free", "자유롭게 말해요"],
+    ["notice", "소식공유해요"],
+  ];
+  const communityTags = ["1688 직소싱", "이우 종합도매", "광저우 패션상가", "도매꾹 국내도매", "물류비", "초보셀러"];
 
   return `<div id="community-write" class="community-write-modal" data-community-write-modal hidden>
     <div class="community-write-backdrop" data-community-write-close></div>
     <section class="community-write-panel" role="dialog" aria-modal="true" aria-labelledby="community-write-title">
       <header class="community-write-modal-head">
-        <div><span>글쓰기</span><strong id="community-write-title">질문 남기기</strong></div>
+        <div><span>글쓰기</span><strong id="community-write-title">게시물 작성</strong></div>
         <button type="button" aria-label="닫기" data-community-write-close>×</button>
       </header>
       <form data-community-post-form>
-        <label>
-          <span>분류</span>
-          <select name="category">
-            <optgroup label="로켓그로스 5단계">
-              ${stageOptions
-                .map((category) => `<option value="${category.slug}" ${category.slug === defaultCategory ? "selected" : ""}>${escapeHtml(category.label)}</option>`)
-                .join("")}
-            </optgroup>
-            <optgroup label="커뮤니티 게시판">
-              ${boardOptions
-                .map((category) => `<option value="${category.slug}" ${category.slug === defaultCategory ? "selected" : ""}>${escapeHtml(category.label)}</option>`)
-                .join("")}
-            </optgroup>
-          </select>
-        </label>
+        <fieldset class="sellerdit-write-type-grid">
+          <legend>분류</legend>
+          ${postTypes.map(([value, label], index) => `<label><input type="radio" name="postType" value="${value}" ${index === 0 ? "checked" : ""}><span>${escapeHtml(label)}</span></label>`).join("")}
+        </fieldset>
+        <input type="hidden" name="category" value="qna" />
         <label>
           <span>본문</span>
           <textarea name="body" rows="7" maxlength="5000" placeholder="셀러들과 나누고 싶은 이야기나 질문을 적어보세요" required></textarea>
         </label>
-        <label>
-          <span>이미지 URL</span>
-          <input name="imageUrl" maxlength="500" placeholder="선택: https://..." />
+        <label class="sellerdit-file-label">
+          <span>첨부파일</span>
+          <input name="attachment" type="file" accept="image/png,image/jpeg,image/webp,.pdf,.txt,.csv" data-community-attachment />
+          <em>이미지는 미리보기로 등록되고, 그 외 파일은 다음 단계에서 저장소 연동 후 본문에 붙입니다.</em>
         </label>
-        <label>
-          <span>태그</span>
-          <input name="tags" placeholder="로켓그로스, 중국사입, LCL" />
-        </label>
+        <fieldset class="sellerdit-write-tag-grid">
+          <legend>태그 커뮤니티 <small>최대 3개</small></legend>
+          ${communityTags.map((tag) => `<label><input type="checkbox" name="tags" value="${escapeHtml(tag)}"><span>${escapeHtml(tag)}</span></label>`).join("")}
+        </fieldset>
         <div class="community-write-submit-row">
           <p data-community-message></p>
           <button type="button" data-community-write-close>취소</button>
@@ -2518,6 +2516,27 @@ function renderCommunityScript(postSlug = "") {
         }
       }
       track("community_view", { page_path: window.location.pathname });
+      function applySellerditFixedRails() {
+        if (!window.matchMedia || !window.matchMedia("(min-width: 1024px)").matches) return;
+        var topbar = document.querySelector(".sellerdit-topbar");
+        var rail = document.querySelector(".sellerdit-right-rail");
+        if (topbar) {
+          topbar.style.setProperty("position", "fixed", "important");
+          topbar.style.setProperty("top", "0", "important");
+          topbar.style.setProperty("left", "0", "important");
+          topbar.style.setProperty("right", "0", "important");
+          topbar.style.setProperty("z-index", "1200", "important");
+        }
+        if (rail) {
+          rail.style.setProperty("position", "fixed", "important");
+          rail.style.setProperty("top", "80px", "important");
+          rail.style.setProperty("right", "24px", "important");
+          rail.style.setProperty("width", "300px", "important");
+          rail.style.setProperty("z-index", "900", "important");
+        }
+      }
+      applySellerditFixedRails();
+      window.addEventListener("resize", applySellerditFixedRails);
       ${postSlug ? `window.setTimeout(function () { track("post_read_60s", { post_slug: ${JSON.stringify(postSlug)} }); }, 60000);` : ""}
 
       function loginUrl() {
@@ -2676,8 +2695,9 @@ function renderCommunityScript(postSlug = "") {
         var form = writeModal.querySelector("[data-community-post-form]");
         if (!form) return;
         form.dataset.editPostId = button.dataset.postId || "";
-        form.querySelector("select[name='category']").value = button.dataset.postCategory || "final-margin";
-                form.querySelector("textarea[name='body']").value = button.dataset.postBody || "";
+        var categoryInput = form.querySelector("[name='category']");
+        if (categoryInput) categoryInput.value = button.dataset.postCategory || "qna";
+        form.querySelector("textarea[name='body']").value = button.dataset.postBody || "";
         var tags = form.querySelector("input[name='tags']");
         if (tags) tags.value = button.dataset.postTags || "";
         var submit = form.querySelector("button[type='submit']");
@@ -2838,16 +2858,100 @@ function renderCommunityScript(postSlug = "") {
         }, 1800);
       }
 
+      function copyTextToClipboard(url, successTitle) {
+        try {
+          var input = document.createElement("input");
+          input.value = url;
+          input.setAttribute("readonly", "readonly");
+          input.style.position = "fixed";
+          input.style.left = "-9999px";
+          document.body.appendChild(input);
+          input.select();
+          document.execCommand("copy");
+          input.remove();
+          showCommunityToast(successTitle || "URL이 복사되었습니다", "원하는 곳에 바로 붙여넣을 수 있습니다.", "success");
+          return true;
+        } catch {
+          showCommunityToast("복사하지 못했습니다", "브라우저 권한을 확인해 주세요.", "warning");
+          return false;
+        }
+      }
+
+      document.querySelectorAll("[data-lnav-toggle]").forEach(function (button) {
+        button.addEventListener("click", function () {
+          var section = button.closest("[data-lnav-collapsible]");
+          var body = section && section.querySelector(".sellerdit-lnav-body");
+          var nextOpen = !(section && section.classList.contains("is-collapsed"));
+          if (!section || !body) return;
+          section.classList.toggle("is-collapsed", nextOpen);
+          body.hidden = nextOpen;
+          button.setAttribute("aria-expanded", nextOpen ? "false" : "true");
+          var arrow = button.querySelector("span:last-child");
+          if (arrow) arrow.textContent = nextOpen ? "⌄" : "⌃";
+        });
+      });
+
+      document.querySelectorAll("[data-post-more-toggle]").forEach(function (button) {
+        button.addEventListener("click", function (event) {
+          event.stopPropagation();
+          var wrap = button.closest(".sellerdit-post-more-wrap");
+          var menu = wrap && wrap.querySelector(".sellerdit-post-more-menu");
+          if (!menu) return;
+          document.querySelectorAll(".sellerdit-post-more-menu").forEach(function (other) { if (other !== menu) other.hidden = true; });
+          var open = menu.hidden;
+          menu.hidden = !open;
+          button.setAttribute("aria-expanded", open ? "true" : "false");
+        });
+      });
+      document.addEventListener("click", function (event) {
+        if (event.target.closest(".sellerdit-post-more-wrap")) return;
+        document.querySelectorAll(".sellerdit-post-more-menu").forEach(function (menu) { menu.hidden = true; });
+      });
+      document.querySelectorAll("[data-post-menu-copy]").forEach(function (button) {
+        button.addEventListener("click", function () {
+          var url = new URL(button.dataset.shareUrl || window.location.pathname, window.location.origin).toString();
+          copyTextToClipboard(url, "게시글 URL이 복사되었습니다");
+          var menu = button.closest(".sellerdit-post-more-menu");
+          if (menu) menu.hidden = true;
+        });
+      });
+      document.querySelectorAll("[data-post-menu-hide]").forEach(function (button) {
+        button.addEventListener("click", function () {
+          var card = button.closest(".sellerdit-feed-post, .sellerdit-detail-post, .community-vote-card, .community-post-article");
+          if (card) {
+            card.classList.add("is-hidden-by-user");
+            card.style.setProperty("display", "none", "important");
+          }
+          showCommunityToast("피드에서 숨겼습니다", "새로고침하면 다시 볼 수 있습니다.", "success");
+        });
+      });
+      document.querySelectorAll("[data-post-menu-report]").forEach(function (button) {
+        button.addEventListener("click", function () {
+          showCommunityToast("신고 접수 준비 중", "운영자 검토 기능으로 연결할 예정입니다.", "warning");
+          var menu = button.closest(".sellerdit-post-more-menu");
+          if (menu) menu.hidden = true;
+        });
+      });
+
       document.querySelectorAll("[data-community-post-form]").forEach(function (form) {
         form.addEventListener("submit", async function (event) {
           event.preventDefault();
           var data = new FormData(form);
+          var selectedTags = Array.from(form.querySelectorAll('input[name="tags"]:checked')).map(function (input) { return input.value; });
+          if (selectedTags.length > 3) { setMessage(form, "태그 커뮤니티는 최대 3개까지 선택할 수 있습니다.", "warning"); return; }
+          var postType = data.get("postType") || "qna";
+          var typeLabel = postType === "free" ? "자유롭게 말해요" : postType === "notice" ? "소식공유해요" : "셀러 여러분께 질문드려요";
+          var attachment = form.querySelector("[data-community-attachment]");
           var payload = {
-            category: data.get("category"),
+            category: "qna",
             body: data.get("body"),
-            imageUrl: data.get("imageUrl"),
-            tags: String(data.get("tags") || "").split(",").map(function (tag) { return tag.trim(); }).filter(Boolean)
+            postType: postType,
+            tags: [typeLabel].concat(selectedTags).slice(0, 4)
           };
+          if (attachment && attachment.files && attachment.files[0] && attachment.files[0].type.indexOf("image/") === 0) {
+            try { payload.imageUrl = await fileToDataUrl(attachment.files[0]); }
+            catch (error) { setMessage(form, error.message || "첨부파일을 확인해 주세요.", "warning"); return; }
+          }
           try {
             var editPostId = form.dataset.editPostId || "";
             var response = await fetch(editPostId ? "/api/community/posts/" + encodeURIComponent(editPostId) : "/api/community/posts", {
@@ -3409,7 +3513,7 @@ function renderDocumentShell({ title, description, canonicalUrl, body, jsonLd, s
     <meta name="twitter:description" content="${escapeHtml(description)}" />
     <meta name="twitter:image" content="${PUBLIC_SITE_URL}/assets/site-flow.svg" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
-    <link rel="stylesheet" href="/styles.css?v=20260629-sellerdit-flow-header-seo-v1" />
+    <link rel="stylesheet" href="/styles.css?v=20260629-sellerdit-request19-v2" />
     <style>
       .sellerdit-profile-menu-wrap{position:relative!important;display:inline-flex!important;align-items:center!important}.sellerdit-profile-menu{position:absolute!important;top:calc(100% + 10px)!important;right:0!important;min-width:188px!important;padding:8px!important;border:1px solid rgba(15,23,42,.12)!important;border-radius:14px!important;background:#fff!important;box-shadow:0 18px 45px rgba(15,23,42,.18)!important;z-index:1300!important}.sellerdit-profile-menu[hidden]{display:none!important}.sellerdit-profile-menu::before{content:"";position:absolute;top:-6px;right:14px;width:12px;height:12px;background:#fff;border-left:1px solid rgba(15,23,42,.12);border-top:1px solid rgba(15,23,42,.12);transform:rotate(45deg)}.sellerdit-profile-menu a,.sellerdit-profile-menu button{width:100%!important;min-height:38px!important;display:flex!important;align-items:center!important;gap:8px!important;padding:0 12px!important;border:0!important;border-radius:10px!important;background:transparent!important;color:#0f172a!important;font:700 13px/1 Pretendard,system-ui,sans-serif!important;text-align:left!important;text-decoration:none!important;cursor:pointer!important}.sellerdit-profile-menu a:hover,.sellerdit-profile-menu button:hover,.sellerdit-profile-menu a:focus-visible,.sellerdit-profile-menu button:focus-visible{background:#f1f5f9!important;outline:none!important}.sellerdit-profile-menu button{color:#dc2626!important}@media (max-width:767.98px){.sellerdit-profile-menu{position:fixed!important;top:64px!important;right:12px!important;left:auto!important;width:min(220px,calc(100vw - 24px))!important}}
     </style>
@@ -3597,7 +3701,7 @@ function buildSellerditProfileJsonLd(profile, description, canonicalUrl) {
       {
         "@type": "ProfilePage",
         "@id": `${canonicalUrl}#webpage`,
-        name: `u/${profile.username} | 셀러딧 프로필`,
+        name: `${profile.username} | 셀러딧 프로필`,
         description,
         url: canonicalUrl,
         inLanguage: "ko-KR",
@@ -3608,7 +3712,7 @@ function buildSellerditProfileJsonLd(profile, description, canonicalUrl) {
         "@type": "Person",
         "@id": `${canonicalUrl}#person`,
         name,
-        alternateName: `u/${profile.username}`,
+        alternateName: profile.username,
         description: profile.bio || description,
         url: canonicalUrl,
       },
@@ -5442,7 +5546,8 @@ function formatRelativeDate(value) {
   const hours = Math.floor(minutes / 60);
   if (hours < 24) return `${hours}시간 전`;
   const days = Math.floor(hours / 24);
-  return `${Math.max(1, days)}일 전`;
+  if (days <= 2) return `${Math.max(1, days)}일 전`;
+  return formatDate(value);
 }
 
 function getDateString(offsetDays = 0) {
