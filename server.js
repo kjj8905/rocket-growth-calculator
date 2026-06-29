@@ -806,7 +806,7 @@ function renderIndexHtml() {
   const filePath = path.join(__dirname, "index.html");
   let html = fs.readFileSync(filePath, "utf8")
     .replaceAll("__SITE_URL__", PUBLIC_SITE_URL)
-    .replace('<link rel="stylesheet" href="./styles.css" />', '<link rel="stylesheet" href="/styles.css?v=20260629-sellerdit-functional-v7" />');
+    .replace('<link rel="stylesheet" href="./styles.css" />', '<link rel="stylesheet" href="/styles.css?v=20260630-sellerdit-profile-type-v9" />');
   const headerStart = html.indexOf('<header class="community-topbar sellerdit-topbar sellerdit-home-topbar">');
   const headerEnd = html.indexOf('</header>', headerStart);
   if (headerStart !== -1 && headerEnd !== -1) {
@@ -915,7 +915,7 @@ function renderCommunityVoteCard(post, index = 0) {
           </div>
         </div>
       </div>
-      <a class="sellerdit-thread-body is-feed" href="/community/${escapeHtml(post.slug)}">${escapeHtml(threadContent)}</a>
+      <a class="sellerdit-thread-body is-feed" style="font-size:16px!important;line-height:1.6!important;" href="/community/${escapeHtml(post.slug)}">${escapeHtml(threadContent)}</a>
             <a class="sellerdit-thread-more" href="/community/${escapeHtml(post.slug)}">더 보기</a>
       ${renderCommunityFeedMedia(post, index)}
       ${renderCommunityActions(post, { extraActions: primaryActions })}
@@ -1139,7 +1139,7 @@ function renderCommunityPromotedPost() {
         <span class="ad-tag">홍보 광고</span>
         <span class="sellerdit-more">⋯</span>
       </div>
-      <a class="sellerdit-thread-body is-feed" href="https://www.1688.com/" rel="nofollow noopener" target="_blank">1688 대량 사입 단가, 물류비까지 같이 비교해 보세요
+      <a class="sellerdit-thread-body is-feed" style="font-size:16px!important;line-height:1.6!important;" href="https://www.1688.com/" rel="nofollow noopener" target="_blank">1688 대량 사입 단가, 물류비까지 같이 비교해 보세요
 
 상품 단가만 보지 말고 배송대행, 통관, 입고 비용까지 함께 확인하는 셀러용 체크 포인트입니다.</a>
       <a class="sellerdit-promoted-cta" href="https://www.1688.com/" rel="nofollow noopener" target="_blank">더 알아보기</a>
@@ -1693,7 +1693,7 @@ function renderCommunityPostPage(post, currentUser = null) {
               <button class="sellerdit-follow ${post.followedByMe ? "is-active" : ""}" type="button" data-community-follow data-follow-handle="${escapeHtml(getCommunityAuthorHandle(post))}">${post.followedByMe ? "팔로잉" : "팔로우"}</button>
               <div class="sellerdit-post-more-wrap"><button class="sellerdit-more" type="button" aria-label="게시글 더보기" aria-expanded="false" data-post-more-toggle data-share-url="/community/${escapeHtml(post.slug)}">⋯</button><div class="sellerdit-post-more-menu" role="menu" hidden><button type="button" role="menuitem" data-post-menu-copy data-share-url="/community/${escapeHtml(post.slug)}">URL 복사</button><button type="button" role="menuitem" data-post-menu-hide>관심없음</button><button type="button" role="menuitem" data-post-menu-report>신고하기</button></div></div>
             </div>
-            <div class="sellerdit-thread-body is-detail">${escapeHtml(threadContent)}</div>
+            <div class="sellerdit-thread-body is-detail" style="font-size:16px!important;line-height:1.6!important;">${escapeHtml(threadContent)}</div>
             ${renderCommunityDetailMedia(post)}
             ${renderCommunityActions(post, { commentsCount: commentCount, commentsHref: "#comments", detail: true, extraActions: post.canEdit ? `<button type="button" class="sellerdit-action" data-community-edit-post data-post-id="${escapeHtml(post.id)}" data-post-body="${escapeHtml(threadContent)}" data-post-category="${escapeHtml(post.category)}" data-post-tags="${escapeHtml((post.tags || []).join(", "))}">수정</button><button type="button" class="sellerdit-action" data-community-delete-post data-post-id="${escapeHtml(post.id)}">삭제</button>` : "" })}
           </article>
@@ -3700,7 +3700,7 @@ function renderDocumentShell({ title, description, canonicalUrl, body, jsonLd, s
     <meta name="twitter:description" content="${escapeHtml(description)}" />
     <meta name="twitter:image" content="${PUBLIC_SITE_URL}/assets/site-flow.svg" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
-    <link rel="stylesheet" href="/styles.css?v=20260629-sellerdit-functional-v7" />
+    <link rel="stylesheet" href="/styles.css?v=20260630-sellerdit-profile-type-v9" />
     <style>
       .sellerdit-profile-menu-wrap{position:relative!important;display:inline-flex!important;align-items:center!important}.sellerdit-profile-menu{position:absolute!important;top:calc(100% + 10px)!important;right:0!important;min-width:188px!important;padding:8px!important;border:1px solid rgba(15,23,42,.12)!important;border-radius:14px!important;background:#fff!important;box-shadow:0 18px 45px rgba(15,23,42,.18)!important;z-index:1300!important}.sellerdit-profile-menu[hidden]{display:none!important}.sellerdit-profile-menu::before{content:"";position:absolute;top:-6px;right:14px;width:12px;height:12px;background:#fff;border-left:1px solid rgba(15,23,42,.12);border-top:1px solid rgba(15,23,42,.12);transform:rotate(45deg)}.sellerdit-profile-menu a,.sellerdit-profile-menu button{width:100%!important;min-height:38px!important;display:flex!important;align-items:center!important;gap:8px!important;padding:0 12px!important;border:0!important;border-radius:10px!important;background:transparent!important;color:#0f172a!important;font:700 13px/1 Pretendard,system-ui,sans-serif!important;text-align:left!important;text-decoration:none!important;cursor:pointer!important}.sellerdit-profile-menu a:hover,.sellerdit-profile-menu button:hover,.sellerdit-profile-menu a:focus-visible,.sellerdit-profile-menu button:focus-visible{background:#f1f5f9!important;outline:none!important}.sellerdit-profile-menu button{color:#dc2626!important}@media (max-width:767.98px){.sellerdit-profile-menu{position:fixed!important;top:64px!important;right:12px!important;left:auto!important;width:min(220px,calc(100vw - 24px))!important}}
     </style>
