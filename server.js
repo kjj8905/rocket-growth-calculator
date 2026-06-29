@@ -786,12 +786,15 @@ function normalizeSiteUrl(value) {
 
 function renderIndexHtml() {
   const filePath = path.join(__dirname, "index.html");
-  return fs.readFileSync(filePath, "utf8")
+  let html = fs.readFileSync(filePath, "utf8")
     .replaceAll("__SITE_URL__", PUBLIC_SITE_URL)
-    .replace('<link rel="stylesheet" href="./styles.css" />', '<link rel="stylesheet" href="/styles.css?v=20260629-sellerdit-follow-og-v1" />')
-    .replace('<button class="community-brand sellerdit-home-brand" type="button" id="home-button" aria-label="홈으로 돌아가기">\n          <span>r/</span> 셀러딧\n        </button>', '<a class="community-brand sellerdit-home-brand" href="/community" aria-label="셀러딧 커뮤니티">\n          <span class="sellerdit-brand-mark">S</span><strong>셀러딧</strong>\n        </a>')
-    .replace('<button class="is-active" type="button" data-category="rocket-growth" aria-current="page">로켓계산기</button>\n          <a href="/trends">검색 트렌드</a>\n          <a href="/community">셀러 커뮤니티</a>\n          <a href="/community/qna">질문답변</a>\n          <a href="/guides">계산 기준</a>', '<button class="is-active" type="button" data-category="rocket-growth" aria-current="page">로켓그로스 계산기</button>\n          <a href="/trends">검색트렌드</a>\n          <a class="sellerdit-nav-wordlogo" href="/community"><span>셀러딧</span></a>')
-    .replace('로켓계산기\n          </button>\n          <a href="/trends">검색 트렌드</a>\n          <a href="/community">셀러 커뮤니티</a>\n          <a href="/community/qna">질문답변</a>\n          <a href="/guides">계산 기준</a>', '로켓그로스 계산기\n          </button>\n          <a href="/trends">검색트렌드</a>\n          <a class="sellerdit-nav-wordlogo" href="/community"><span>셀러딧</span></a>');
+    .replace('<link rel="stylesheet" href="./styles.css" />', '<link rel="stylesheet" href="/styles.css?v=20260629-sellerdit-unified-header-v1" />');
+  const headerStart = html.indexOf('<header class="community-topbar sellerdit-topbar sellerdit-home-topbar">');
+  const headerEnd = html.indexOf('</header>', headerStart);
+  if (headerStart !== -1 && headerEnd !== -1) {
+    html = `${html.slice(0, headerStart)}${renderCommunityHeader("home")}${html.slice(headerEnd + '</header>'.length)}`;
+  }
+  return html;
 }
 
 function communityQueryString(params = {}) {
@@ -3507,7 +3510,7 @@ function renderDocumentShell({ title, description, canonicalUrl, body, jsonLd, s
     <meta name="twitter:description" content="${escapeHtml(description)}" />
     <meta name="twitter:image" content="${PUBLIC_SITE_URL}/assets/site-flow.svg" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
-    <link rel="stylesheet" href="/styles.css?v=20260629-sellerdit-follow-og-v1" />
+    <link rel="stylesheet" href="/styles.css?v=20260629-sellerdit-unified-header-v1" />
     <style>
       .sellerdit-profile-menu-wrap{position:relative!important;display:inline-flex!important;align-items:center!important}.sellerdit-profile-menu{position:absolute!important;top:calc(100% + 10px)!important;right:0!important;min-width:188px!important;padding:8px!important;border:1px solid rgba(15,23,42,.12)!important;border-radius:14px!important;background:#fff!important;box-shadow:0 18px 45px rgba(15,23,42,.18)!important;z-index:1300!important}.sellerdit-profile-menu[hidden]{display:none!important}.sellerdit-profile-menu::before{content:"";position:absolute;top:-6px;right:14px;width:12px;height:12px;background:#fff;border-left:1px solid rgba(15,23,42,.12);border-top:1px solid rgba(15,23,42,.12);transform:rotate(45deg)}.sellerdit-profile-menu a,.sellerdit-profile-menu button{width:100%!important;min-height:38px!important;display:flex!important;align-items:center!important;gap:8px!important;padding:0 12px!important;border:0!important;border-radius:10px!important;background:transparent!important;color:#0f172a!important;font:700 13px/1 Pretendard,system-ui,sans-serif!important;text-align:left!important;text-decoration:none!important;cursor:pointer!important}.sellerdit-profile-menu a:hover,.sellerdit-profile-menu button:hover,.sellerdit-profile-menu a:focus-visible,.sellerdit-profile-menu button:focus-visible{background:#f1f5f9!important;outline:none!important}.sellerdit-profile-menu button{color:#dc2626!important}@media (max-width:767.98px){.sellerdit-profile-menu{position:fixed!important;top:64px!important;right:12px!important;left:auto!important;width:min(220px,calc(100vw - 24px))!important}}
     </style>

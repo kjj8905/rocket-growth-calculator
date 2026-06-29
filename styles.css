@@ -26483,3 +26483,67 @@ body:has(.sellerdit-topbar) .community-shell .sellerdit-feed-post .sellerdit-pos
     padding: 0 10px !important;
   }
 }
+
+
+/* Sellerdit unified header + follow-right correction - 20260629 */
+.sellerdit-topbar,
+.community-topbar.sellerdit-topbar,
+.sellerdit-reddit-topbar,
+.sellerdit-home-topbar {
+  border-bottom: 0 !important;
+  box-shadow: none !important;
+}
+.community-shell,
+body:has(.sellerdit-topbar) .community-shell {
+  border-top: 0 !important;
+  box-shadow: none !important;
+}
+.community-shell .sellerdit-feed-post .sellerdit-post-meta,
+body:has(.sellerdit-topbar) .community-shell .sellerdit-feed-post .sellerdit-post-meta {
+  display: flex !important;
+  align-items: center !important;
+  gap: 7px !important;
+  min-width: 0 !important;
+}
+.community-shell .sellerdit-feed-post .sellerdit-follow,
+body:has(.sellerdit-topbar) .community-shell .sellerdit-feed-post .sellerdit-follow {
+  margin-left: auto !important;
+  margin-right: 8px !important;
+  flex: 0 0 auto !important;
+  order: 20 !important;
+  position: static !important;
+  transform: none !important;
+}
+.community-shell .sellerdit-feed-post .sellerdit-post-more-wrap,
+body:has(.sellerdit-topbar) .community-shell .sellerdit-feed-post .sellerdit-post-more-wrap {
+  margin-left: 0 !important;
+  flex: 0 0 auto !important;
+  order: 21 !important;
+}
+body.sellerdit-home-page .sellerdit-bottom-tab { display: none !important; }
+body.sellerdit-home-page .sellerdit-mobile-drawer-overlay { display: none !important; }
+@media (min-width: 1024px) {
+  html body.sellerdit-home-page:has(.sellerdit-topbar) .sellerdit-topbar,
+  html body:has(.trend-page):has(.sellerdit-topbar) .sellerdit-topbar,
+  html body:has(.community-shell):has(.sellerdit-topbar) .sellerdit-topbar {
+    border-bottom: 0 !important;
+  }
+  html body.sellerdit-home-page:has(.sellerdit-topbar) .sellerdit-reddit-actions,
+  html body:has(.trend-page):has(.sellerdit-topbar) .sellerdit-reddit-actions,
+  html body:has(.community-shell):has(.sellerdit-topbar) .sellerdit-reddit-actions {
+    display: inline-flex !important;
+  }
+}
+
+
+/* Sellerdit remove mobile header divider final override - 20260629 */
+@media (max-width: 1023.98px) {
+  html body.sellerdit-home-page:has(.sellerdit-topbar) header.community-topbar.sellerdit-topbar,
+  html body:has(.trend-page):has(.sellerdit-topbar) header.community-topbar.sellerdit-topbar,
+  html body:has(.community-shell):has(.sellerdit-topbar) header.community-topbar.sellerdit-topbar,
+  html body:has(.sellerdit-topbar) header.sellerdit-reddit-topbar {
+    border: 0 !important;
+    border-bottom: 0 !important;
+    box-shadow: none !important;
+  }
+}
