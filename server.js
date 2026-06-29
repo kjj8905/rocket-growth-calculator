@@ -1201,7 +1201,7 @@ function renderSellerditRecentPostsPanel() {
 }
 
 function renderSellerditRightRail(mode = "list", relatedPosts = []) {
-  return `<aside class="community-right-rail sellerdit-right-rail">
+  return `<aside class="community-right-rail sellerdit-right-rail" style="position:fixed!important;top:72px!important;right:max(16px,calc((100vw - 1280px)/2))!important;width:338px!important;max-width:338px!important;max-height:calc(100vh - 88px)!important;overflow-y:auto!important;z-index:80!important;">
     ${renderSellerditRecentPostsPanel()}
   </aside>`;
 }
@@ -2092,7 +2092,7 @@ function renderCommunityHeader(activeKey, currentUser = null) {
     ? (meProfile.avatarUrl ? `<span class="sellerdit-top-avatar has-image"><img src="${escapeHtml(meProfile.avatarUrl)}" alt="" loading="lazy"></span>` : `<span class="sellerdit-top-avatar" style="background:${escapeHtml(getCommunityAuthorColor(meProfile.nickname))}">${escapeHtml(getCommunityAuthorInitial(meProfile.nickname))}</span>`)
     : `<span class="sellerdit-top-avatar">S</span>`;
   const categoryBar = `<nav class="sellerdit-top-categorybar" aria-label="상단 카테고리"><a href="/community">셀러커뮤니티</a><a href="/community/suppliers">공급처</a><a href="/trends">검색 트렌드</a><a href="/guides">가이드</a><a href="/community/saved">저장한 글</a></nav>`;
-  return `<header class="community-topbar sellerdit-topbar sellerdit-reddit-topbar" data-active-section="${escapeHtml(activeKey || "community")}">
+  return `<header class="community-topbar sellerdit-topbar sellerdit-reddit-topbar" style="position:fixed!important;top:0!important;left:0!important;right:0!important;z-index:1200!important;" data-active-section="${escapeHtml(activeKey || "community")}">
     <div class="sellerdit-topbar-inner">
       <button class="sellerdit-mobile-icon topbar-hamburger" type="button" aria-label="왼쪽 메뉴 토글" aria-controls="sellerdit-mobile-drawer" aria-expanded="false" data-mobile-drawer-open>
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
@@ -3361,7 +3361,10 @@ function renderDocumentShell({ title, description, canonicalUrl, body, jsonLd, s
     <meta name="twitter:description" content="${escapeHtml(description)}" />
     <meta name="twitter:image" content="${PUBLIC_SITE_URL}/assets/site-flow.svg" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
-    <link rel="stylesheet" href="/styles.css?v=20260625-supplier-shell-sync-v1" />
+    <link rel="stylesheet" href="/styles.css?v=20260629-sellerdit-topbar-sticky-toast-v3" />
+    <style>
+      .save-toast,.sellerdit-community-toast{top:calc(72px + env(safe-area-inset-top,0px))!important;right:auto!important;bottom:auto!important;left:50%!important;width:min(420px,calc(100vw - 32px))!important;transform:translate(-50%,-12px) scale(.98)!important}.save-toast.is-visible,.sellerdit-community-toast.is-visible{transform:translate(-50%,0) scale(1)!important}@media (min-width:1024px){body:has(.sellerdit-topbar) .community-topbar.sellerdit-topbar,body:has(.sellerdit-topbar) .sellerdit-topbar{position:fixed!important;top:0!important;left:0!important;right:0!important;z-index:1200!important}body:has(.sellerdit-topbar) .community-topbar.sellerdit-reddit-topbar>.sellerdit-topbar-inner,body:has(.sellerdit-topbar) .sellerdit-topbar-inner{display:flex!important;align-items:center!important;gap:10px!important;min-width:0!important;overflow:hidden!important}body:has(.sellerdit-topbar) .community-brand{flex:0 0 auto!important;min-width:112px!important;max-width:148px!important}body:has(.sellerdit-topbar) .community-global-search{flex:1 1 360px!important;min-width:260px!important;max-width:520px!important}body:has(.sellerdit-topbar) .sellerdit-top-categorybar{display:none!important}body:has(.sellerdit-topbar) .sellerdit-reddit-actions{flex:0 0 auto!important;min-width:124px!important;max-width:180px!important;justify-content:flex-end!important;gap:4px!important;margin-left:auto!important;overflow:hidden!important}body:has(.sellerdit-topbar) .sellerdit-create-desktop,body:has(.sellerdit-topbar) .sellerdit-open-app-pill,body:has(.sellerdit-topbar) .sellerdit-saved-desktop{display:none!important}body:has(.sellerdit-topbar) .sellerdit-chat-desktop,body:has(.sellerdit-topbar) .sellerdit-notification-desktop{width:36px!important;min-width:36px!important;height:36px!important}body:has(.sellerdit-topbar) .sellerdit-avatar-button,body:has(.sellerdit-topbar) .sellerdit-kakao{width:36px!important;min-width:36px!important;height:36px!important;padding:0!important;border-radius:50%!important;overflow:hidden!important}body:has(.sellerdit-topbar) .sellerdit-avatar-button>span:not(.sellerdit-top-avatar){display:none!important}body:has(.sellerdit-topbar) .sellerdit-avatar-button::before,body:has(.sellerdit-topbar) .sellerdit-kakao::before{content:none!important}body:has(.sellerdit-topbar) .sellerdit-avatar-button .sellerdit-top-avatar{width:36px!important;height:36px!important;min-width:36px!important}body:has(.sellerdit-topbar) .community-right-rail,body:has(.sellerdit-topbar) .sellerdit-right-rail{position:fixed!important;top:72px!important;right:max(16px,calc((100vw - 1280px)/2))!important;width:338px!important;max-width:338px!important;max-height:calc(100vh - 88px)!important;overflow-y:auto!important;z-index:80!important}}@media (max-width:1399.98px){body:has(.sellerdit-topbar) .community-right-rail,body:has(.sellerdit-topbar) .sellerdit-right-rail{display:none!important}}@media (max-width:767.98px){.save-toast,.sellerdit-community-toast{top:calc(68px + env(safe-area-inset-top,0px))!important;right:auto!important;bottom:auto!important;left:50%!important;width:min(360px,calc(100vw - 24px))!important}}
+    </style>
     <meta name="naver-site-verification" content="d2091fad160915c822215f48ce925c90637cf535" />
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-EGL6JRLHH0"></script>
     <script>
