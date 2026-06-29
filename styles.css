@@ -26449,3 +26449,37 @@ html body:has(.sellerdit-topbar) main.community-shell .sellerdit-detail-post .se
     margin-left: auto !important;
   }
 }
+
+
+/* Sellerdit post follow/meta rollback + home OG CSS version - 20260629 */
+.community-shell .sellerdit-post-meta,
+body:has(.sellerdit-topbar) .community-shell .sellerdit-post-meta {
+  display: flex !important;
+  align-items: center !important;
+  gap: 7px !important;
+  min-width: 0 !important;
+}
+.community-shell .sellerdit-feed-post .sellerdit-follow,
+body:has(.sellerdit-topbar) .community-shell .sellerdit-feed-post .sellerdit-follow {
+  margin-left: 6px !important;
+  margin-right: 0 !important;
+  flex: 0 0 auto !important;
+  align-self: center !important;
+  min-height: 26px !important;
+  padding: 0 12px !important;
+  position: static !important;
+  transform: none !important;
+}
+.community-shell .sellerdit-feed-post .sellerdit-post-more-wrap,
+body:has(.sellerdit-topbar) .community-shell .sellerdit-feed-post .sellerdit-post-more-wrap {
+  margin-left: auto !important;
+  flex: 0 0 auto !important;
+  position: relative !important;
+}
+@media (max-width: 640px) {
+  .community-shell .sellerdit-feed-post .sellerdit-follow,
+  body:has(.sellerdit-topbar) .community-shell .sellerdit-feed-post .sellerdit-follow {
+    margin-left: 4px !important;
+    padding: 0 10px !important;
+  }
+}
