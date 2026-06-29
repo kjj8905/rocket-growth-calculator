@@ -23344,3 +23344,10 @@ body:has(.sellerdit-profile-layout) .community-shell .sellerdit-profile-feed-lis
     max-width: 240px !important;
   }
 }
+
+
+/* Sellerdit UIUX detail guard: post detail keeps the bottom tab hidden. */
+body:has(.is-post-detail) .sellerdit-bottom-tab,
+body.community-write-open:has(.sellerdit-topbar) .sellerdit-bottom-tab {
+  display: none !important;
+}
