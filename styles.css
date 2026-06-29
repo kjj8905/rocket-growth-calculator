@@ -27014,3 +27014,10 @@ body:has(.sellerdit-topbar) .sellerdit-avatar-button.sellerdit-login-link {
     transform: translateY(-32px) !important;
   }
 }
+
+
+/* Sellerdit functional pass v6: keep raised mobile create icon from stealing neighboring tab taps. */
+body:has(.sellerdit-topbar) .sellerdit-bottom-tab a > span,
+body:has(.sellerdit-topbar) .sellerdit-bottom-tab a > em {
+  pointer-events: none !important;
+}

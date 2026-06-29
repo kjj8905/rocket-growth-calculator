@@ -193,7 +193,7 @@ app.post("/dev/auth/virtual-user", (req, res) => {
     maxAgeMs: SESSION_TTL_MS,
     path: "/",
   });
-  res.json({ ok: true, user: { id: user.id, nickname: user.nickname, handle: makeCommunityHandle(nickname), role: user.role || requestedRole } });
+  res.json({ ok: true, user: { id: user.id, nickname: user.nickname, handle: user.handle || makeCommunityHandle(nickname), role: user.role || requestedRole } });
 });
 
 app.get("/api/community/profile", requireLogin, (req, res) => {
@@ -788,7 +788,7 @@ function renderIndexHtml() {
   const filePath = path.join(__dirname, "index.html");
   let html = fs.readFileSync(filePath, "utf8")
     .replaceAll("__SITE_URL__", PUBLIC_SITE_URL)
-    .replace('<link rel="stylesheet" href="./styles.css" />', '<link rel="stylesheet" href="/styles.css?v=20260629-sellerdit-functional-v5" />');
+    .replace('<link rel="stylesheet" href="./styles.css" />', '<link rel="stylesheet" href="/styles.css?v=20260629-sellerdit-functional-v6" />');
   const headerStart = html.indexOf('<header class="community-topbar sellerdit-topbar sellerdit-home-topbar">');
   const headerEnd = html.indexOf('</header>', headerStart);
   if (headerStart !== -1 && headerEnd !== -1) {
@@ -1249,6 +1249,18 @@ function makeCommunityHandle(name) {
     .replace(/\s+/g, "")
     .replace(/[^\w가-힣]/g, "")
     .slice(0, 18) || "seller";
+}
+
+function resolveUniqueCommunityHandle(name, userId = null) {
+  const base = makeCommunityHandle(name);
+  let handle = base;
+  let suffix = 2;
+  while (true) {
+    const existing = db.prepare("SELECT id FROM users WHERE handle = ? AND (? IS NULL OR id != ?)").get(handle, userId, userId);
+    if (!existing) return handle;
+    const suffixText = String(suffix++);
+    handle = `${base.slice(0, Math.max(1, 18 - suffixText.length))}${suffixText}`;
+  }
 }
 
 function getCommunityAuthorColor(name) {
@@ -1924,8 +1936,9 @@ function saveCurrentUserProfile(currentUser, body) {
   const avatarUrl = saveProfileImageData(body.avatarDataUrl, "avatar", existingProfile.avatar_url || "");
   const coverImageUrl = saveProfileImageData(body.coverDataUrl, "cover", existingProfile.cover_image_url || "");
   const now = new Date().toISOString();
+  const handle = resolveUniqueCommunityHandle(nickname, currentUser.id);
   db.prepare("UPDATE users SET nickname = ?, display_name = ?, handle = ?, avatar_color = COALESCE(avatar_color, ?), updated_at = ? WHERE id = ?")
-    .run(nickname, nickname, makeCommunityHandle(nickname), getCommunityAuthorColor(nickname), now, currentUser.id);
+    .run(nickname, nickname, handle, getCommunityAuthorColor(nickname), now, currentUser.id);
   db.prepare(`UPDATE user_profiles SET avatar_url = ?, cover_image_url = ?, bio = ?, seller_type = ?, interests_json = ?, sales_channels_json = ?, external_links_json = ?, badges_json = ?, main_badge = ?, visibility_json = ?, last_active_at = ?, updated_at = ? WHERE user_id = ?`)
     .run(avatarUrl, coverImageUrl, bio, sellerType, JSON.stringify(interests), JSON.stringify(salesChannels), JSON.stringify(externalLinks), JSON.stringify(badges), mainBadge, JSON.stringify(visibility), now, now, currentUser.id);
   return { user: db.prepare("SELECT * FROM users WHERE id = ?").get(currentUser.id) };
@@ -2146,7 +2159,7 @@ function renderCommunityHeader(activeKey, currentUser = null) {
   <nav class="sellerdit-bottom-tab" aria-label="셀러딧 하단 탭">
     <a class="${activeKey === "community" ? "is-active" : ""}" href="/community"><span>⌂</span><em>홈</em></a>
     <a class="is-create" href="#community-write" aria-label="게시물 작성"><span>＋</span><em>작성</em></a>
-    <a href="/api/community/notifications" rel="nofollow"><span>♡</span><em>알림</em></a>
+    <a href="#sellerdit-notifications" role="button" data-notification-button aria-label="알림" aria-expanded="false" aria-controls="sellerdit-notification-panel"><span>♡</span><em>알림</em></a>
     <a class="${activeKey === "saved" ? "is-active" : ""}" href="/community/saved" rel="nofollow"><span>▱</span><em>저장</em></a>
     <a href="${profileHref}" data-auth-button-mobile><span>●</span><em>프로필</em></a>
   </nav>`;
@@ -2649,7 +2662,8 @@ function renderCommunityScript(postSlug = "") {
       });
 
 
-      var notificationButton = document.querySelector("[data-notification-button]");
+      var notificationButtons = Array.prototype.slice.call(document.querySelectorAll("[data-notification-button]"));
+      var notificationButton = notificationButtons[0] || null;
       var notificationPanel = document.querySelector("[data-notification-panel]");
       function notificationEscape(value) {
         return String(value || "").replace(/[&<>"']/g, function (char) {
@@ -2671,7 +2685,7 @@ function renderCommunityScript(postSlug = "") {
         if (!notificationButton || !notificationPanel) return;
         var willOpen = notificationPanel.hidden;
         notificationPanel.hidden = !willOpen;
-        notificationButton.setAttribute("aria-expanded", willOpen ? "true" : "false");
+        notificationButtons.forEach(function (button) { button.setAttribute("aria-expanded", willOpen ? "true" : "false"); });
         if (!willOpen) return;
         notificationPanel.innerHTML = "<strong>알림</strong><p>알림을 불러오는 중입니다.</p>";
         if (!communityAuthState.authenticated) {
@@ -2691,16 +2705,18 @@ function renderCommunityScript(postSlug = "") {
           notificationPanel.innerHTML = "<strong>알림</strong><p>알림을 불러오지 못했습니다.</p>";
         }
       }
-      notificationButton && notificationButton.addEventListener("click", function (event) {
-        event.preventDefault();
-        event.stopPropagation();
-        toggleNotifications();
+      notificationButtons.forEach(function (button) {
+        button.addEventListener("click", function (event) {
+          event.preventDefault();
+          event.stopPropagation();
+          toggleNotifications();
+        });
       });
       document.addEventListener("click", function (event) {
         if (!notificationPanel || notificationPanel.hidden) return;
         if (event.target.closest("[data-notification-wrap]")) return;
         notificationPanel.hidden = true;
-        notificationButton && notificationButton.setAttribute("aria-expanded", "false");
+        notificationButtons.forEach(function (button) { button.setAttribute("aria-expanded", "false"); });
       });
 
       async function logoutCommunityUser() {
@@ -2748,7 +2764,10 @@ function renderCommunityScript(postSlug = "") {
 
       var writeModal = document.querySelector("[data-community-write-modal]");
       function openWriteModal() {
-        if (!writeModal) return;
+        if (!writeModal) {
+          window.location.href = "/community#community-write";
+          return;
+        }
         writeModal.hidden = false;
         document.body.classList.add("community-write-open");
         var firstInput = writeModal.querySelector("textarea[name='body'], select");
@@ -2786,6 +2805,9 @@ function renderCommunityScript(postSlug = "") {
           openWriteModal();
         });
       });
+      if (window.location.hash === "#community-write") {
+        window.setTimeout(openWriteModal, 0);
+      }
       document.querySelectorAll("[data-community-edit-post]").forEach(function (button) {
         button.addEventListener("click", function () { openEditModal(button); });
       });
@@ -3589,7 +3611,7 @@ function renderDocumentShell({ title, description, canonicalUrl, body, jsonLd, s
     <meta name="twitter:description" content="${escapeHtml(description)}" />
     <meta name="twitter:image" content="${PUBLIC_SITE_URL}/assets/site-flow.svg" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
-    <link rel="stylesheet" href="/styles.css?v=20260629-sellerdit-functional-v5" />
+    <link rel="stylesheet" href="/styles.css?v=20260629-sellerdit-functional-v6" />
     <style>
       .sellerdit-profile-menu-wrap{position:relative!important;display:inline-flex!important;align-items:center!important}.sellerdit-profile-menu{position:absolute!important;top:calc(100% + 10px)!important;right:0!important;min-width:188px!important;padding:8px!important;border:1px solid rgba(15,23,42,.12)!important;border-radius:14px!important;background:#fff!important;box-shadow:0 18px 45px rgba(15,23,42,.18)!important;z-index:1300!important}.sellerdit-profile-menu[hidden]{display:none!important}.sellerdit-profile-menu::before{content:"";position:absolute;top:-6px;right:14px;width:12px;height:12px;background:#fff;border-left:1px solid rgba(15,23,42,.12);border-top:1px solid rgba(15,23,42,.12);transform:rotate(45deg)}.sellerdit-profile-menu a,.sellerdit-profile-menu button{width:100%!important;min-height:38px!important;display:flex!important;align-items:center!important;gap:8px!important;padding:0 12px!important;border:0!important;border-radius:10px!important;background:transparent!important;color:#0f172a!important;font:700 13px/1 Pretendard,system-ui,sans-serif!important;text-align:left!important;text-decoration:none!important;cursor:pointer!important}.sellerdit-profile-menu a:hover,.sellerdit-profile-menu button:hover,.sellerdit-profile-menu a:focus-visible,.sellerdit-profile-menu button:focus-visible{background:#f1f5f9!important;outline:none!important}.sellerdit-profile-menu button{color:#dc2626!important}@media (max-width:767.98px){.sellerdit-profile-menu{position:fixed!important;top:64px!important;right:12px!important;left:auto!important;width:min(220px,calc(100vw - 24px))!important}}
     </style>
