@@ -788,7 +788,7 @@ function renderIndexHtml() {
   const filePath = path.join(__dirname, "index.html");
   let html = fs.readFileSync(filePath, "utf8")
     .replaceAll("__SITE_URL__", PUBLIC_SITE_URL)
-    .replace('<link rel="stylesheet" href="./styles.css" />', '<link rel="stylesheet" href="/styles.css?v=20260629-sellerdit-unified-header-v1" />');
+    .replace('<link rel="stylesheet" href="./styles.css" />', '<link rel="stylesheet" href="/styles.css?v=20260629-sellerdit-uiux-fix-v2" />');
   const headerStart = html.indexOf('<header class="community-topbar sellerdit-topbar sellerdit-home-topbar">');
   const headerEnd = html.indexOf('</header>', headerStart);
   if (headerStart !== -1 && headerEnd !== -1) {
@@ -803,11 +803,12 @@ function communityQueryString(params = {}) {
   if (params.q) parts.push(`q=${encodeURIComponent(params.q)}`);
   if (params.tag) parts.push(`tag=${encodeURIComponent(params.tag)}`);
   if (params.cat) parts.push(`cat=${encodeURIComponent(params.cat)}`);
+  if (params.view && params.view !== "list") parts.push(`view=${encodeURIComponent(params.view)}`);
   if (params.page && Number(params.page) > 1) parts.push(`page=${Number(params.page)}`);
   return parts.length ? `?${parts.join("&")}` : "";
 }
 
-function renderCommunitySortBar(basePath, activeSort, search, tag, cat = "") {
+function renderCommunitySortBar(basePath, activeSort, search, tag, cat = "", view = "list") {
   const links = [
     { key: "hot", label: "인기" },
     { key: "new", label: "최신" },
@@ -823,16 +824,20 @@ function renderCommunitySortBar(basePath, activeSort, search, tag, cat = "") {
     <nav class="community-sort" aria-label="정렬 기준">
       <span class="sellerdit-sort-links sellerdit-filter-links">
         ${links.map((item) => {
-          const href = `${basePath}${communityQueryString({ sort: item.key, q: search, tag, cat })}`;
+          const href = `${basePath}${communityQueryString({ sort: item.key, q: search, tag, cat, view })}`;
           return `<a class="${item.key === activeSort ? "is-active" : ""}" href="${escapeHtml(href)}">${escapeHtml(item.label)}</a>`;
         }).join("")}
       </span>
       ${basePath === "/community" ? `<span class="sellerdit-sort-links sellerdit-cat-links">
         ${categoryLinks.map((item) => {
-          const href = `${basePath}${communityQueryString({ sort: activeSort, q: search, tag, cat: item.key })}`;
+          const href = `${basePath}${communityQueryString({ sort: activeSort, q: search, tag, cat: item.key, view })}`;
           const isActive = (cat || "") === item.key;
           return `<a class="${isActive ? "is-active" : ""}" href="${escapeHtml(href)}">${escapeHtml(item.label)}</a>`;
         }).join("")}
+      </span>` : ""}
+      ${basePath === "/community" ? `<span class="sellerdit-sort-links sellerdit-view-links" aria-label="보기 방식">
+        <a class="${view === "list" ? "is-active" : ""}" href="${escapeHtml(`${basePath}${communityQueryString({ sort: activeSort, q: search, tag, cat, view: "list" })}`)}">목록</a>
+        <a class="${view === "card" ? "is-active" : ""}" href="${escapeHtml(`${basePath}${communityQueryString({ sort: activeSort, q: search, tag, cat, view: "card" })}`)}">카드</a>
       </span>` : ""}
     </nav>
   </div>`;
@@ -1300,11 +1305,11 @@ function getCommunityGuideHref(categorySlug) {
   return routes[categorySlug] || "/guides";
 }
 
-function renderCommunityPager(basePath, page, totalPages, search, sort, tag) {
+function renderCommunityPager(basePath, page, totalPages, search, sort, tag, view = "list") {
   if (totalPages <= 1) {
     return "";
   }
-  const href = (target) => `${escapeHtml(basePath + communityQueryString({ sort, q: search, tag, page: target }))}`;
+  const href = (target) => `${escapeHtml(basePath + communityQueryString({ sort, q: search, tag, view, page: target }))}`;
   const items = [];
   if (page > 1) {
     items.push(`<a class="community-pager-edge" href="${href(page - 1)}" rel="prev">이전</a>`);
@@ -1325,6 +1330,7 @@ function renderCommunityIndexPage(query = {}, currentUser = null) {
   const sort = COMMUNITY_SORTS[query.sort] ? String(query.sort) : "hot";
   const search = String(query.q || "").trim().slice(0, 60);
   const tag = String(query.tag || "").trim().slice(0, 40);
+  const view = query.view === "card" ? "card" : "list";
   const pageSize = 12;
   const category = normalizeCommunityCategory(query.cat || query.category);
   const feedOptions = { notice: false, sort, search, tag, category };
@@ -1350,8 +1356,9 @@ function renderCommunityIndexPage(query = {}, currentUser = null) {
         ${renderCommunityLeftRail("community", currentUser)}
         <section class="community-feed-panel" aria-labelledby="community-title">
           <h1 id="community-title" class="sellerdit-visually-hidden">${escapeHtml(heading)}</h1>
-          ${renderCommunityFeed(posts, search ? "검색 결과가 없습니다. 다른 키워드로 찾아보세요." : "아직 등록된 글이 없습니다.")}
-          ${renderCommunityPager("/community", page, totalPages, search, sort, tag)}
+          ${renderCommunitySortBar("/community", sort, search, tag, category || "", view)}
+          <div class="sellerdit-feed-view sellerdit-feed-view-${escapeHtml(view)}">${renderCommunityFeed(posts, search ? "검색 결과가 없습니다. 다른 키워드로 찾아보세요." : "아직 등록된 글이 없습니다.")}</div>
+          ${renderCommunityPager("/community", page, totalPages, search, sort, tag, view)}
           ${renderCommunityWritePanel()}
         </section>
         ${renderSellerditRightRail("list")}
@@ -1611,9 +1618,9 @@ function renderCommunityPostPage(post, currentUser = null) {
       ${renderCommunityHeader(post.category, currentUser)}
       <section class="community-workspace community-reddit-layout sellerdit-with-left-rail is-post-detail">
         ${renderCommunityLeftRail("community", currentUser)}
-        <section class="community-detail-main">
+        <section class="community-detail-main" style="width:706px!important;min-width:706px!important;max-width:706px!important;">
           <div class="sellerdit-mobile-detailbar"><a href="/community" aria-label="목록으로 돌아가기">←</a></div>
-          <article class="community-post-article sellerdit-detail-post" data-community-post="${escapeHtml(post.slug)}">
+          <article class="community-post-article sellerdit-detail-post" style="width:700px!important;max-width:700px!important;" data-community-post="${escapeHtml(post.slug)}">
             <h1 class="sellerdit-visually-hidden">${escapeHtml(getThreadPostSeoTitle(post))}</h1>
             <div class="sellerdit-post-meta">
               <a class="sellerdit-avatar sellerdit-avatar-link" href="/u/${escapeHtml(makeCommunityHandle(post.authorName))}" aria-label="${escapeHtml(makeCommunityHandle(post.authorName))} 프로필" style="background:${escapeHtml(getCommunityAuthorColor(post.authorName))}">${escapeHtml(getCommunityAuthorInitial(post.authorName))}</a>
@@ -2003,7 +2010,7 @@ function renderSellerditProfilePage(handle, query = {}, currentUser = null) {
     canonicalUrl,
     body: `<main class="community-shell sellerdit-profile-page">
       ${renderCommunityHeader("community", currentUser)}
-      <section class="community-workspace community-reddit-layout sellerdit-profile-layout sellerdit-with-left-rail">
+      <section class="community-workspace community-reddit-layout sellerdit-profile-layout sellerdit-with-left-rail" style="width:1016px!important;min-width:1016px!important;max-width:1016px!important;grid-template-columns:700px 304px!important;gap:12px!important;padding-left:0!important;padding-right:0!important;">
         ${renderCommunityLeftRail("community", currentUser)}
         <section class="community-feed-panel sellerdit-profile-main" aria-labelledby="sellerdit-profile-title">
           <header class="sellerdit-profile-header is-v2" style="${coverStyle}">
@@ -3510,7 +3517,7 @@ function renderDocumentShell({ title, description, canonicalUrl, body, jsonLd, s
     <meta name="twitter:description" content="${escapeHtml(description)}" />
     <meta name="twitter:image" content="${PUBLIC_SITE_URL}/assets/site-flow.svg" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
-    <link rel="stylesheet" href="/styles.css?v=20260629-sellerdit-unified-header-v1" />
+    <link rel="stylesheet" href="/styles.css?v=20260629-sellerdit-uiux-fix-v2" />
     <style>
       .sellerdit-profile-menu-wrap{position:relative!important;display:inline-flex!important;align-items:center!important}.sellerdit-profile-menu{position:absolute!important;top:calc(100% + 10px)!important;right:0!important;min-width:188px!important;padding:8px!important;border:1px solid rgba(15,23,42,.12)!important;border-radius:14px!important;background:#fff!important;box-shadow:0 18px 45px rgba(15,23,42,.18)!important;z-index:1300!important}.sellerdit-profile-menu[hidden]{display:none!important}.sellerdit-profile-menu::before{content:"";position:absolute;top:-6px;right:14px;width:12px;height:12px;background:#fff;border-left:1px solid rgba(15,23,42,.12);border-top:1px solid rgba(15,23,42,.12);transform:rotate(45deg)}.sellerdit-profile-menu a,.sellerdit-profile-menu button{width:100%!important;min-height:38px!important;display:flex!important;align-items:center!important;gap:8px!important;padding:0 12px!important;border:0!important;border-radius:10px!important;background:transparent!important;color:#0f172a!important;font:700 13px/1 Pretendard,system-ui,sans-serif!important;text-align:left!important;text-decoration:none!important;cursor:pointer!important}.sellerdit-profile-menu a:hover,.sellerdit-profile-menu button:hover,.sellerdit-profile-menu a:focus-visible,.sellerdit-profile-menu button:focus-visible{background:#f1f5f9!important;outline:none!important}.sellerdit-profile-menu button{color:#dc2626!important}@media (max-width:767.98px){.sellerdit-profile-menu{position:fixed!important;top:64px!important;right:12px!important;left:auto!important;width:min(220px,calc(100vw - 24px))!important}}
     </style>

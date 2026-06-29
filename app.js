@@ -5061,6 +5061,10 @@ function renderLoginStatus() {
     accountSavedCount.hidden = !currentUser;
   }
 
+  if (!loginStatus || !accountStatusDescription || !loginButton) {
+    return;
+  }
+
   if (!isAuthReady) {
     loginStatus.textContent = "계정 상태 확인 중";
     accountStatusDescription.textContent = "계산기는 바로 사용할 수 있습니다.";
@@ -5581,7 +5585,7 @@ savedCompareToggle?.addEventListener("click", () => {
   savedPageSection?.classList.toggle("is-compare-mode", !pressed);
 });
 
-loginButton.addEventListener("click", async () => {
+loginButton?.addEventListener("click", async () => {
   await handleLoginButtonClick();
 });
 
@@ -5701,7 +5705,7 @@ function showHome(scrollTarget = bannerGrid) {
   scrollTarget.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
-homeButton.addEventListener("click", () => {
+homeButton?.addEventListener("click", () => {
   showHome(introSection);
 });
 
