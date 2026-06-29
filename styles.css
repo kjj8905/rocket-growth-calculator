@@ -19070,7 +19070,7 @@ body:has(.sellerdit-topbar) .community-shell {
   }
 
   body:has(.sellerdit-topbar) .sellerdit-bottom-tab {
-    display: none !important;
+    display: grid !important;
   }
 
   body:has(.sellerdit-topbar) .community-reddit-layout,
