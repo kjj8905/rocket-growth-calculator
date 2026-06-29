@@ -25904,3 +25904,54 @@ body.sellerdit-home-page { padding-top: var(--sellerdit-topbar-height) !importan
 .sellerdit-home-topbar nav { display:flex !important; gap: 8px !important; align-items:center !important; }
 .sellerdit-home-topbar nav a,
 .sellerdit-home-topbar nav button { min-height: 36px !important; padding: 0 10px !important; }
+
+
+/* Sellerdit home/trends gap and font rollback - 20260629 */
+body.sellerdit-home-page { padding-top: 0 !important; }
+body.sellerdit-home-page .sellerdit-home-topbar { position: sticky !important; }
+body.sellerdit-home-page .sellerdit-home-shell { margin-top: 0 !important; padding-top: 18px !important; }
+body.sellerdit-home-page .sellerdit-header-dots { display: none !important; }
+body:has(.trend-page) { padding-top: 0 !important; }
+body:has(.trend-page) .sellerdit-topbar { position: sticky !important; }
+body:has(.trend-page) .trend-page { margin-top: 0 !important; padding-top: 18px !important; }
+body:has(.sellerdit-topbar) .community-shell .sellerdit-thread-body {
+  font-size: 14px !important;
+  line-height: 1.46 !important;
+  letter-spacing: -0.01em !important;
+}
+body:has(.sellerdit-topbar) .community-shell .sellerdit-thread-more {
+  font-size: 13px !important;
+  line-height: 19px !important;
+}
+body:has(.sellerdit-topbar) .community-shell .sellerdit-post-meta,
+body:has(.sellerdit-topbar) .community-shell .sellerdit-post-meta time,
+body:has(.sellerdit-topbar) .community-shell .sellerdit-author {
+  font-size: 12px !important;
+}
+body:has(.sellerdit-topbar) .sellerdit-popular-content span,
+body:has(.sellerdit-topbar) .sellerdit-killer-content a,
+body:has(.sellerdit-topbar) .sellerdit-recent-title {
+  font-size: 12.5px !important;
+  line-height: 1.36 !important;
+  font-weight: 600 !important;
+}
+body:has(.sellerdit-topbar) .sellerdit-popular-content em,
+body:has(.sellerdit-topbar) .sellerdit-recent-meta,
+body:has(.sellerdit-topbar) .sellerdit-recent-copy small {
+  font-size: 11.5px !important;
+}
+
+/* Sellerdit feed font hard rollback - 20260629 */
+html body:has(.sellerdit-topbar) main.community-shell .community-feed-panel .sellerdit-feed-post .sellerdit-feed-content .sellerdit-thread-body,
+html body:has(.sellerdit-topbar) main.community-shell .community-feed-panel .sellerdit-feed-post .sellerdit-thread-body.is-feed,
+html body:has(.sellerdit-topbar) main.community-shell .sellerdit-feedpanel .sellerdit-feed-post .sellerdit-thread-body.is-feed,
+html body:has(.sellerdit-topbar) main.community-shell .sellerdit-qna-list .sellerdit-feed-post .sellerdit-thread-body.is-feed {
+  font-size: 14px !important;
+  line-height: 20.5px !important;
+  font-weight: 400 !important;
+}
+html body:has(.sellerdit-topbar) main.community-shell .sellerdit-detail-post .sellerdit-thread-body.is-detail {
+  font-size: 15px !important;
+  line-height: 23px !important;
+}
+
