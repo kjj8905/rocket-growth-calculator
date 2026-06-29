@@ -2109,7 +2109,15 @@ function renderCommunityHeader(activeKey, currentUser = null) {
         <a class="sellerdit-create-pill sellerdit-create-desktop" href="#community-write" aria-label="게시물 만들기"><svg class="sellerdit-create-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>만들기</span></a>
         <a class="sellerdit-reddit-icon sellerdit-notification-desktop" href="/api/community/notifications" aria-label="알림" title="알림"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 9a6 6 0 1 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9Z"/><path d="M9.8 21a2.4 2.4 0 0 0 4.4 0"/></svg></a>
         <a class="sellerdit-reddit-icon sellerdit-saved-desktop" href="/community/saved" aria-label="저장한 글" title="저장한 글">${renderCommunityActionIcon("bookmark")}</a>
-        <a class="sellerdit-avatar-button sellerdit-kakao" href="${profileHref}" data-auth-button aria-label="프로필 또는 로그인">${avatarMarkup}<span>${meProfile ? `${escapeHtml(meProfile.nickname)}님` : "카카오 로그인"}</span></a>
+        <div class="sellerdit-profile-menu-wrap" data-profile-menu-wrap>
+          <a class="sellerdit-avatar-button sellerdit-kakao" href="${profileHref}" data-auth-button data-profile-menu-trigger aria-label="프로필 메뉴" aria-haspopup="menu" aria-expanded="false" aria-controls="sellerdit-profile-menu">${avatarMarkup}<span>${meProfile ? `${escapeHtml(meProfile.nickname)}님` : "카카오 로그인"}</span></a>
+          <div class="sellerdit-profile-menu" id="sellerdit-profile-menu" role="menu" data-profile-menu ${meProfile ? "" : "hidden"}>
+            <a role="menuitem" href="${profileHref}" data-profile-menu-my>내 프로필</a>
+            <a role="menuitem" href="/community/profile/edit">프로필 편집</a>
+            <a role="menuitem" href="/community/saved">저장한 글</a>
+            <button role="menuitem" type="button" data-profile-menu-logout>로그아웃</button>
+          </div>
+        </div>
         <a class="sellerdit-open-app-pill" href="${profileHref}" data-auth-button aria-label="프로필">${meProfile ? "프로필" : "로그인"}</a>
         <span class="sellerdit-mobile-dots" aria-hidden="true">•••</span>
         <button class="sellerdit-logout" type="button" data-auth-logout ${meProfile ? "" : "hidden"}>로그아웃</button>
@@ -2522,6 +2530,21 @@ function renderCommunityScript(postSlug = "") {
         return "/auth/kakao/start?returnTo=" + encodeURIComponent(window.location.pathname + window.location.search + window.location.hash);
       }
 
+      var profileMenuTrigger = document.querySelector("[data-profile-menu-trigger]");
+      var profileMenu = document.querySelector("[data-profile-menu]");
+      var profileMenuMy = document.querySelector("[data-profile-menu-my]");
+      var profileMenuAuthed = Boolean(profileMenu && !profileMenu.hidden);
+      function setProfileMenu(open) {
+        if (!profileMenu || !profileMenuTrigger) return;
+        if (!profileMenuAuthed) {
+          profileMenu.hidden = true;
+          profileMenuTrigger.setAttribute("aria-expanded", "false");
+          return;
+        }
+        profileMenu.hidden = !open;
+        profileMenuTrigger.setAttribute("aria-expanded", open ? "true" : "false");
+      }
+
       async function refreshCommunityAuth() {
         var loginButtons = Array.prototype.slice.call(document.querySelectorAll("[data-auth-button]"));
         var mobileAuthButton = document.querySelector("[data-auth-button-mobile]");
@@ -2553,10 +2576,15 @@ function renderCommunityScript(postSlug = "") {
               else button.textContent = button.classList.contains("sellerdit-open-app-pill") ? "프로필" : name + "님";
             });
             if (mobileAuthButton) mobileAuthButton.href = href;
+            if (profileMenuMy) profileMenuMy.href = href;
+            profileMenuAuthed = true;
+            setProfileMenu(false);
             logoutButton && (logoutButton.hidden = false);
           } else {
             loginButtons.forEach(function (button) { button.href = loginUrl(); });
             if (mobileAuthButton) mobileAuthButton.href = loginUrl();
+            profileMenuAuthed = false;
+            setProfileMenu(false);
             logoutButton && (logoutButton.hidden = true);
           }
         } catch (error) {
@@ -2565,15 +2593,33 @@ function renderCommunityScript(postSlug = "") {
         }
       }
 
-      document.querySelector("[data-auth-button]")?.addEventListener("click", function (event) {
-        if (this.getAttribute("href") === "/auth/kakao/start") {
-          this.setAttribute("href", loginUrl());
-        }
+      document.querySelectorAll("[data-auth-button]").forEach(function (button) {
+        button.addEventListener("click", function (event) {
+          if (button.hasAttribute("data-profile-menu-trigger") && profileMenuAuthed) {
+            event.preventDefault();
+            setProfileMenu(profileMenu ? profileMenu.hidden : true);
+            return;
+          }
+          if (button.getAttribute("href") === "/auth/kakao/start") {
+            button.setAttribute("href", loginUrl());
+          }
+        });
+      });
+      document.addEventListener("click", function (event) {
+        if (!profileMenu || !profileMenuTrigger || profileMenu.hidden) return;
+        if (event.target.closest("[data-profile-menu-wrap]")) return;
+        setProfileMenu(false);
+      });
+      document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape") setProfileMenu(false);
       });
 
-      document.querySelector("[data-auth-logout]")?.addEventListener("click", async function () {
+      async function logoutCommunityUser() {
         await fetch("/auth/logout", { method: "POST", credentials: "same-origin" });
         window.location.href = window.location.pathname + "?logout=success";
+      }
+      document.querySelectorAll("[data-auth-logout], [data-profile-menu-logout]").forEach(function (button) {
+        button.addEventListener("click", logoutCommunityUser);
       });
 
       var drawer = document.querySelector("#sellerdit-mobile-drawer");
@@ -3364,6 +3410,7 @@ function renderDocumentShell({ title, description, canonicalUrl, body, jsonLd, s
     <link rel="stylesheet" href="/styles.css?v=20260629-sellerdit-topbar-sticky-toast-v3" />
     <style>
       .save-toast,.sellerdit-community-toast{top:calc(72px + env(safe-area-inset-top,0px))!important;right:auto!important;bottom:auto!important;left:50%!important;width:min(420px,calc(100vw - 32px))!important;transform:translate(-50%,-12px) scale(.98)!important}.save-toast.is-visible,.sellerdit-community-toast.is-visible{transform:translate(-50%,0) scale(1)!important}@media (min-width:1024px){body:has(.sellerdit-topbar) .community-topbar.sellerdit-topbar,body:has(.sellerdit-topbar) .sellerdit-topbar{position:fixed!important;top:0!important;left:0!important;right:0!important;z-index:1200!important}body:has(.sellerdit-topbar) .community-topbar.sellerdit-reddit-topbar>.sellerdit-topbar-inner,body:has(.sellerdit-topbar) .sellerdit-topbar-inner{display:flex!important;align-items:center!important;gap:10px!important;min-width:0!important;overflow:hidden!important}body:has(.sellerdit-topbar) .community-brand{flex:0 0 auto!important;min-width:112px!important;max-width:148px!important}body:has(.sellerdit-topbar) .community-global-search{flex:1 1 360px!important;min-width:260px!important;max-width:520px!important}body:has(.sellerdit-topbar) .sellerdit-top-categorybar{display:none!important}body:has(.sellerdit-topbar) .sellerdit-reddit-actions{flex:0 0 auto!important;min-width:124px!important;max-width:180px!important;justify-content:flex-end!important;gap:4px!important;margin-left:auto!important;overflow:hidden!important}body:has(.sellerdit-topbar) .sellerdit-create-desktop,body:has(.sellerdit-topbar) .sellerdit-open-app-pill,body:has(.sellerdit-topbar) .sellerdit-saved-desktop{display:none!important}body:has(.sellerdit-topbar) .sellerdit-chat-desktop,body:has(.sellerdit-topbar) .sellerdit-notification-desktop{width:36px!important;min-width:36px!important;height:36px!important}body:has(.sellerdit-topbar) .sellerdit-avatar-button,body:has(.sellerdit-topbar) .sellerdit-kakao{width:36px!important;min-width:36px!important;height:36px!important;padding:0!important;border-radius:50%!important;overflow:hidden!important}body:has(.sellerdit-topbar) .sellerdit-avatar-button>span:not(.sellerdit-top-avatar){display:none!important}body:has(.sellerdit-topbar) .sellerdit-avatar-button::before,body:has(.sellerdit-topbar) .sellerdit-kakao::before{content:none!important}body:has(.sellerdit-topbar) .sellerdit-avatar-button .sellerdit-top-avatar{width:36px!important;height:36px!important;min-width:36px!important}body:has(.sellerdit-topbar) .community-right-rail,body:has(.sellerdit-topbar) .sellerdit-right-rail{position:fixed!important;top:72px!important;right:max(16px,calc((100vw - 1280px)/2))!important;width:338px!important;max-width:338px!important;max-height:calc(100vh - 88px)!important;overflow-y:auto!important;z-index:80!important}}@media (max-width:1399.98px){body:has(.sellerdit-topbar) .community-right-rail,body:has(.sellerdit-topbar) .sellerdit-right-rail{display:none!important}}@media (max-width:767.98px){.save-toast,.sellerdit-community-toast{top:calc(68px + env(safe-area-inset-top,0px))!important;right:auto!important;bottom:auto!important;left:50%!important;width:min(360px,calc(100vw - 24px))!important}}
+      .sellerdit-profile-menu-wrap{position:relative!important;display:inline-flex!important;align-items:center!important}.sellerdit-profile-menu{position:absolute!important;top:calc(100% + 10px)!important;right:0!important;min-width:188px!important;padding:8px!important;border:1px solid rgba(15,23,42,.12)!important;border-radius:14px!important;background:#fff!important;box-shadow:0 18px 45px rgba(15,23,42,.18)!important;z-index:1300!important}.sellerdit-profile-menu[hidden]{display:none!important}.sellerdit-profile-menu::before{content:"";position:absolute;top:-6px;right:14px;width:12px;height:12px;background:#fff;border-left:1px solid rgba(15,23,42,.12);border-top:1px solid rgba(15,23,42,.12);transform:rotate(45deg)}.sellerdit-profile-menu a,.sellerdit-profile-menu button{width:100%!important;min-height:38px!important;display:flex!important;align-items:center!important;gap:8px!important;padding:0 12px!important;border:0!important;border-radius:10px!important;background:transparent!important;color:#0f172a!important;font:700 13px/1 Pretendard,system-ui,sans-serif!important;text-align:left!important;text-decoration:none!important;cursor:pointer!important}.sellerdit-profile-menu a:hover,.sellerdit-profile-menu button:hover,.sellerdit-profile-menu a:focus-visible,.sellerdit-profile-menu button:focus-visible{background:#f1f5f9!important;outline:none!important}.sellerdit-profile-menu button{color:#dc2626!important}@media (max-width:767.98px){.sellerdit-profile-menu{position:fixed!important;top:64px!important;right:12px!important;left:auto!important;width:min(220px,calc(100vw - 24px))!important}}
     </style>
     <meta name="naver-site-verification" content="d2091fad160915c822215f48ce925c90637cf535" />
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-EGL6JRLHH0"></script>
