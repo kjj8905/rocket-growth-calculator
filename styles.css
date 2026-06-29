@@ -24042,3 +24042,489 @@ header.sellerdit-topbar.sellerdit-reddit-topbar .sellerdit-mobile-search-trigger
   }
 }
 
+/* Sellerdit final UIUX guard: topbar categories/search, no feed masthead, stable mobile, centered notifications. */
+body:has(.sellerdit-topbar) .save-toast,
+body:has(.sellerdit-topbar) .sellerdit-community-toast {
+  left: 50% !important;
+  right: auto !important;
+  top: 50% !important;
+  bottom: auto !important;
+  transform: translate(-50%, calc(-50% + 12px)) scale(.98) !important;
+  z-index: 10020 !important;
+  width: min(380px, calc(100vw - 32px)) !important;
+  text-align: left !important;
+}
+
+body:has(.sellerdit-topbar) .save-toast.is-visible,
+body:has(.sellerdit-topbar) .sellerdit-community-toast.is-visible {
+  transform: translate(-50%, -50%) scale(1) !important;
+}
+
+@media (min-width: 1024px) {
+  body:has(.sellerdit-topbar) header.sellerdit-topbar.sellerdit-reddit-topbar,
+  body:has(.sellerdit-topbar) .community-topbar.sellerdit-topbar {
+    height: 56px !important;
+    min-height: 56px !important;
+    overflow: visible !important;
+  }
+
+  body:has(.sellerdit-topbar) header.sellerdit-topbar.sellerdit-reddit-topbar > .sellerdit-topbar-inner,
+  body:has(.sellerdit-topbar) .community-topbar.sellerdit-topbar > .sellerdit-topbar-inner {
+    position: relative !important;
+    display: grid !important;
+    grid-template-columns: 120px minmax(250px, 380px) minmax(0, 1fr) auto !important;
+    grid-template-rows: 56px !important;
+    align-items: center !important;
+    column-gap: 12px !important;
+    width: 100vw !important;
+    max-width: none !important;
+    height: 56px !important;
+    min-height: 56px !important;
+    padding: 0 14px !important;
+    margin: 0 !important;
+    overflow: visible !important;
+    box-sizing: border-box !important;
+  }
+
+  body:has(.sellerdit-topbar) header.sellerdit-topbar.sellerdit-reddit-topbar .community-brand {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+    position: static !important;
+    transform: none !important;
+    width: auto !important;
+    min-width: 0 !important;
+    justify-self: start !important;
+    z-index: 2 !important;
+  }
+
+  body:has(.sellerdit-topbar) header.sellerdit-topbar.sellerdit-reddit-topbar .sellerdit-top-categorybar {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+    position: static !important;
+    transform: none !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 8px !important;
+    width: auto !important;
+    max-width: 380px !important;
+    height: 56px !important;
+    min-height: 56px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: hidden !important;
+    white-space: nowrap !important;
+    z-index: 2 !important;
+  }
+
+  body:has(.sellerdit-topbar) header.sellerdit-topbar.sellerdit-reddit-topbar .sellerdit-top-categorybar a {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex: 0 0 auto !important;
+    height: 32px !important;
+    min-height: 32px !important;
+    padding: 0 10px !important;
+    border: 0 !important;
+    border-radius: 999px !important;
+    background: transparent !important;
+    color: #475569 !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    line-height: 32px !important;
+    text-decoration: none !important;
+  }
+
+  body:has(.sellerdit-topbar) header.sellerdit-topbar.sellerdit-reddit-topbar .sellerdit-top-categorybar a:hover {
+    background: #eef4ff !important;
+    color: #2563eb !important;
+  }
+
+  body:has(.sellerdit-topbar) header.sellerdit-topbar.sellerdit-reddit-topbar .community-global-search.sellerdit-reddit-search {
+    grid-column: 3 !important;
+    grid-row: 1 !important;
+    position: absolute !important;
+    left: 50% !important;
+    top: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    display: flex !important;
+    align-items: center !important;
+    width: min(520px, calc(100vw - 760px)) !important;
+    min-width: 320px !important;
+    max-width: 520px !important;
+    height: 38px !important;
+    min-height: 38px !important;
+    margin: 0 !important;
+    padding: 0 16px !important;
+    border: 0 !important;
+    border-radius: 999px !important;
+    background: #eef3f6 !important;
+    box-shadow: none !important;
+    z-index: 1 !important;
+  }
+
+  body:has(.sellerdit-topbar) header.sellerdit-topbar.sellerdit-reddit-topbar .sellerdit-reddit-actions {
+    grid-column: 4 !important;
+    grid-row: 1 !important;
+    position: static !important;
+    transform: none !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-self: end !important;
+    justify-content: flex-end !important;
+    gap: 12px !important;
+    width: auto !important;
+    min-width: 220px !important;
+    height: 56px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    z-index: 3 !important;
+  }
+
+  /* Remove the large desktop masthead area that was reintroduced while restoring hidden controls. */
+  body:has(.sellerdit-topbar) .community-feed-head,
+  body:has(.sellerdit-topbar) .community-shell .community-reddit-layout .community-feed-head,
+  body:has(.sellerdit-topbar) .community-shell .community-reddit-layout.sellerdit-with-left-rail:not(.sellerdit-ai-layout) .community-feed-head {
+    display: none !important;
+  }
+}
+
+@media (max-width: 1023.98px) {
+  body:has(.sellerdit-topbar) header.sellerdit-topbar.sellerdit-reddit-topbar,
+  body:has(.sellerdit-topbar) .community-topbar.sellerdit-topbar {
+    height: 112px !important;
+    min-height: 112px !important;
+    max-height: 112px !important;
+    overflow: visible !important;
+  }
+
+  body:has(.sellerdit-topbar):has(.is-post-detail) header.sellerdit-topbar.sellerdit-reddit-topbar,
+  body:has(.sellerdit-topbar):has(.is-post-detail) .community-topbar.sellerdit-topbar {
+    height: 56px !important;
+    min-height: 56px !important;
+    max-height: 56px !important;
+  }
+
+  body:has(.sellerdit-topbar) header.sellerdit-topbar.sellerdit-reddit-topbar > .sellerdit-topbar-inner {
+    display: grid !important;
+    grid-template-columns: 40px minmax(0, 1fr) auto !important;
+    grid-template-rows: 56px 56px !important;
+    width: 100vw !important;
+    max-width: 100vw !important;
+    height: 112px !important;
+    min-height: 112px !important;
+    padding: 0 12px !important;
+    gap: 0 10px !important;
+    align-items: center !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+  }
+
+  body:has(.sellerdit-topbar):has(.is-post-detail) header.sellerdit-topbar.sellerdit-reddit-topbar > .sellerdit-topbar-inner {
+    grid-template-rows: 56px !important;
+    height: 56px !important;
+    min-height: 56px !important;
+  }
+
+  body:has(.sellerdit-topbar) header.sellerdit-topbar.sellerdit-reddit-topbar .topbar-hamburger {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+    display: inline-grid !important;
+    width: 40px !important;
+    height: 40px !important;
+    min-width: 40px !important;
+    place-items: center !important;
+  }
+
+  body:has(.sellerdit-topbar) header.sellerdit-topbar.sellerdit-reddit-topbar .community-brand {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+    position: static !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-self: start !important;
+    width: auto !important;
+    height: 40px !important;
+    min-width: 0 !important;
+    max-width: 160px !important;
+    margin: 0 !important;
+    transform: none !important;
+    overflow: hidden !important;
+  }
+
+  body:has(.sellerdit-topbar) header.sellerdit-topbar.sellerdit-reddit-topbar .community-brand strong {
+    display: block !important;
+    font-size: 20px !important;
+    font-weight: 800 !important;
+    line-height: 1 !important;
+    letter-spacing: -0.04em !important;
+  }
+
+  body:has(.sellerdit-topbar) header.sellerdit-topbar.sellerdit-reddit-topbar .sellerdit-reddit-actions {
+    grid-column: 3 !important;
+    grid-row: 1 !important;
+    position: static !important;
+    transform: none !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    gap: 8px !important;
+    width: auto !important;
+    height: 40px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  body:has(.sellerdit-topbar) .sellerdit-open-app-pill {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-width: 58px !important;
+    height: 32px !important;
+    padding: 0 12px !important;
+    border-radius: 999px !important;
+    background: #2563eb !important;
+    color: #fff !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    line-height: 32px !important;
+    text-decoration: none !important;
+    white-space: nowrap !important;
+  }
+
+  body:has(.sellerdit-topbar) header.sellerdit-topbar.sellerdit-reddit-topbar .community-global-search.sellerdit-reddit-search {
+    grid-column: 1 / -1 !important;
+    grid-row: 2 !important;
+    position: static !important;
+    transform: none !important;
+    display: flex !important;
+    align-items: center !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 42px !important;
+    min-height: 42px !important;
+    margin: 0 !important;
+    padding: 0 14px !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 999px !important;
+    background: #f8fafc !important;
+    box-shadow: none !important;
+    box-sizing: border-box !important;
+  }
+
+  body:has(.sellerdit-topbar):has(.is-post-detail) header.sellerdit-topbar.sellerdit-reddit-topbar .community-global-search.sellerdit-reddit-search {
+    display: none !important;
+  }
+
+  body:has(.sellerdit-topbar) header.sellerdit-topbar.sellerdit-reddit-topbar .sellerdit-top-categorybar,
+  body:has(.sellerdit-topbar) header.sellerdit-topbar.sellerdit-reddit-topbar .sellerdit-mobile-filterbar {
+    display: none !important;
+  }
+
+  body:has(.sellerdit-topbar) .community-feed-head,
+  body:has(.sellerdit-topbar) .community-toolbar,
+  body:has(.sellerdit-topbar) .sellerdit-sortbar {
+    display: none !important;
+  }
+
+  body:has(.sellerdit-topbar) .community-shell {
+    padding-top: 0 !important;
+  }
+
+  body:has(.sellerdit-topbar) .community-shell .sellerdit-feedpanel .sellerdit-feed-post,
+  body:has(.sellerdit-topbar) .community-shell .sellerdit-qna-list .sellerdit-feed-post,
+  body:has(.sellerdit-topbar) .community-detail-main .sellerdit-detail-post {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+  }
+
+  body:has(.sellerdit-topbar) .sellerdit-post-meta {
+    display: flex !important;
+    align-items: center !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    gap: 6px !important;
+    font-size: 12px !important;
+    line-height: 18px !important;
+    overflow: hidden !important;
+  }
+
+  body:has(.sellerdit-topbar) .sellerdit-author {
+    min-width: 0 !important;
+    max-width: 42vw !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+  }
+
+  body:has(.sellerdit-topbar) .sellerdit-follow {
+    flex: 0 0 auto !important;
+    min-width: 50px !important;
+    width: auto !important;
+    max-width: 58px !important;
+    height: 26px !important;
+    min-height: 26px !important;
+    padding: 0 9px !important;
+    border-radius: 999px !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    line-height: 24px !important;
+    white-space: nowrap !important;
+  }
+
+  body:has(.sellerdit-topbar) .sellerdit-thread-body,
+  body:has(.sellerdit-topbar) .sellerdit-thread-body.is-feed,
+  body:has(.sellerdit-topbar) .sellerdit-thread-body.is-detail {
+    min-width: 0 !important;
+    max-width: 100% !important;
+    overflow-wrap: anywhere !important;
+    word-break: keep-all !important;
+  }
+}
+
+/* Sellerdit final UIUX guard pass 2: fix measured QA failures. */
+@media (min-width: 1024px) {
+  body:has(.sellerdit-topbar) header.sellerdit-topbar.sellerdit-reddit-topbar .community-global-search.sellerdit-reddit-search {
+    grid-column: 1 / -1 !important;
+    justify-self: center !important;
+    position: absolute !important;
+    left: 50% !important;
+    top: 50% !important;
+    transform: translate(-50%, -50%) !important;
+  }
+
+  body:has(.sellerdit-topbar) header.sellerdit-topbar.sellerdit-reddit-topbar .sellerdit-avatar-button.sellerdit-kakao span:not(.sellerdit-top-avatar) {
+    display: none !important;
+  }
+
+  body:has(.sellerdit-topbar) header.sellerdit-topbar.sellerdit-reddit-topbar .sellerdit-avatar-button.sellerdit-kakao {
+    width: 32px !important;
+    min-width: 32px !important;
+    max-width: 32px !important;
+    overflow: hidden !important;
+  }
+}
+
+@media (max-width: 1023.98px) {
+  body:has(.sellerdit-topbar) main.community-shell .community-feed-head,
+  body:has(.sellerdit-topbar) main.community-shell .community-reddit-layout .community-feed-head,
+  body:has(.sellerdit-topbar) main.community-shell .community-reddit-layout:not(.sellerdit-ai-layout) .community-feed-head,
+  body:has(.sellerdit-topbar) main.community-shell .community-reddit-layout.sellerdit-with-left-rail:not(.sellerdit-ai-layout) .community-feed-head,
+  body:has(.sellerdit-topbar) .community-shell .community-feed-head,
+  body:has(.sellerdit-topbar) .community-shell .community-reddit-layout .community-feed-head,
+  body:has(.sellerdit-topbar) .community-shell .community-reddit-layout:not(.sellerdit-ai-layout) .community-feed-head,
+  body:has(.sellerdit-topbar) .community-shell .community-reddit-layout.sellerdit-with-left-rail:not(.sellerdit-ai-layout) .community-feed-head {
+    display: none !important;
+    height: 0 !important;
+    min-height: 0 !important;
+    max-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+  }
+
+  body:has(.sellerdit-topbar) .community-shell .sellerdit-feedpanel,
+  body:has(.sellerdit-topbar) .community-shell .community-feed-panel,
+  body:has(.sellerdit-topbar) .community-shell .community-vote-list {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    overflow-x: hidden !important;
+    box-sizing: border-box !important;
+  }
+
+  body:has(.sellerdit-topbar) .community-shell .sellerdit-feedpanel > article.sellerdit-feed-post,
+  body:has(.sellerdit-topbar) .community-shell .community-feed-panel > article.sellerdit-feed-post,
+  body:has(.sellerdit-topbar) .community-shell article.community-vote-card.sellerdit-feed-post {
+    position: relative !important;
+    left: 0 !important;
+    right: auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    transform: none !important;
+    box-sizing: border-box !important;
+  }
+
+  body:has(.sellerdit-topbar) .community-detail-main .sellerdit-follow,
+  body:has(.sellerdit-topbar) .community-detail-main .sellerdit-detail-post .sellerdit-follow,
+  body:has(.sellerdit-topbar) article.sellerdit-detail-post .sellerdit-follow,
+  body:has(.sellerdit-topbar) .is-post-detail .sellerdit-follow {
+    flex: 0 0 auto !important;
+    min-width: 50px !important;
+    width: auto !important;
+    max-width: 58px !important;
+    height: 26px !important;
+    min-height: 26px !important;
+    padding: 0 9px !important;
+    font-size: 11px !important;
+    line-height: 24px !important;
+    font-weight: 700 !important;
+  }
+}
+
+/* Sellerdit final UIUX guard pass 3: exact mobile detail follow specificity. */
+@media (max-width: 1023.98px) {
+  body:has(.sellerdit-topbar):has(.is-post-detail) .community-shell .sellerdit-detail-post .sellerdit-follow,
+  body:has(.sellerdit-topbar):has(.is-post-detail) .community-shell .community-detail-main .sellerdit-detail-post .sellerdit-follow,
+  body:has(.sellerdit-topbar):has(.is-post-detail) main.community-shell section.community-detail-main article.sellerdit-detail-post .sellerdit-follow {
+    flex: 0 0 auto !important;
+    min-width: 50px !important;
+    width: 50px !important;
+    max-width: 50px !important;
+    height: 26px !important;
+    min-height: 26px !important;
+    max-height: 26px !important;
+    padding: 0 !important;
+    font-size: 11px !important;
+    line-height: 24px !important;
+    font-weight: 700 !important;
+    text-align: center !important;
+  }
+}
+
+/* Sellerdit final UIUX guard pass 4: compact desktop top categories so centered search never collides. */
+@media (min-width: 1024px) {
+  body:has(.sellerdit-topbar) header.sellerdit-topbar.sellerdit-reddit-topbar > .sellerdit-topbar-inner,
+  body:has(.sellerdit-topbar) .community-topbar.sellerdit-topbar > .sellerdit-topbar-inner {
+    grid-template-columns: 120px 220px minmax(0, 1fr) auto !important;
+  }
+
+  body:has(.sellerdit-topbar) header.sellerdit-topbar.sellerdit-reddit-topbar .sellerdit-top-categorybar {
+    width: 220px !important;
+    max-width: 220px !important;
+    gap: 2px !important;
+  }
+
+  body:has(.sellerdit-topbar) header.sellerdit-topbar.sellerdit-reddit-topbar .sellerdit-top-categorybar a {
+    height: 30px !important;
+    min-height: 30px !important;
+    padding: 0 5px !important;
+    font-size: 12px !important;
+    line-height: 30px !important;
+    letter-spacing: -0.03em !important;
+  }
+
+  body:has(.sellerdit-topbar) header.sellerdit-topbar.sellerdit-reddit-topbar .community-global-search.sellerdit-reddit-search {
+    width: min(520px, calc(100vw - 720px)) !important;
+  }
+}
+
+/* Sellerdit final UIUX guard pass 5: 1024px desktop boundary no topbar collision. */
+@media (min-width: 1024px) and (max-width: 1100px) {
+  body:has(.sellerdit-topbar) header.sellerdit-topbar.sellerdit-reddit-topbar .community-global-search.sellerdit-reddit-search {
+    width: 280px !important;
+    min-width: 280px !important;
+    max-width: 280px !important;
+  }
+}
+
