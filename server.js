@@ -788,7 +788,7 @@ function renderIndexHtml() {
   const filePath = path.join(__dirname, "index.html");
   return fs.readFileSync(filePath, "utf8")
     .replaceAll("__SITE_URL__", PUBLIC_SITE_URL)
-    .replace('<link rel="stylesheet" href="./styles.css" />', '<link rel="stylesheet" href="/styles.css?v=20260629-sellerdit-railfix-v1" />')
+    .replace('<link rel="stylesheet" href="./styles.css" />', '<link rel="stylesheet" href="/styles.css?v=20260629-sellerdit-railfix-v2" />')
     .replace('<button class="community-brand sellerdit-home-brand" type="button" id="home-button" aria-label="홈으로 돌아가기">\n          <span>r/</span> 셀러딧\n        </button>', '<a class="community-brand sellerdit-home-brand" href="/community" aria-label="셀러딧 커뮤니티">\n          <span class="sellerdit-brand-mark">S</span><strong>셀러딧</strong>\n        </a>')
     .replace('<button class="is-active" type="button" data-category="rocket-growth" aria-current="page">로켓계산기</button>\n          <a href="/trends">검색 트렌드</a>\n          <a href="/community">셀러 커뮤니티</a>\n          <a href="/community/qna">질문답변</a>\n          <a href="/guides">계산 기준</a>', '<button class="is-active" type="button" data-category="rocket-growth" aria-current="page">로켓그로스 계산기</button>\n          <a href="/trends">검색트렌드</a>\n          <a class="sellerdit-nav-wordlogo" href="/community"><span>셀러딧</span></a>')
     .replace('로켓계산기\n          </button>\n          <a href="/trends">검색 트렌드</a>\n          <a href="/community">셀러 커뮤니티</a>\n          <a href="/community/qna">질문답변</a>\n          <a href="/guides">계산 기준</a>', '로켓그로스 계산기\n          </button>\n          <a href="/trends">검색트렌드</a>\n          <a class="sellerdit-nav-wordlogo" href="/community"><span>셀러딧</span></a>');
@@ -3507,7 +3507,7 @@ function renderDocumentShell({ title, description, canonicalUrl, body, jsonLd, s
     <meta name="twitter:description" content="${escapeHtml(description)}" />
     <meta name="twitter:image" content="${PUBLIC_SITE_URL}/assets/site-flow.svg" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
-    <link rel="stylesheet" href="/styles.css?v=20260629-sellerdit-railfix-v1" />
+    <link rel="stylesheet" href="/styles.css?v=20260629-sellerdit-railfix-v2" />
     <style>
       .sellerdit-profile-menu-wrap{position:relative!important;display:inline-flex!important;align-items:center!important}.sellerdit-profile-menu{position:absolute!important;top:calc(100% + 10px)!important;right:0!important;min-width:188px!important;padding:8px!important;border:1px solid rgba(15,23,42,.12)!important;border-radius:14px!important;background:#fff!important;box-shadow:0 18px 45px rgba(15,23,42,.18)!important;z-index:1300!important}.sellerdit-profile-menu[hidden]{display:none!important}.sellerdit-profile-menu::before{content:"";position:absolute;top:-6px;right:14px;width:12px;height:12px;background:#fff;border-left:1px solid rgba(15,23,42,.12);border-top:1px solid rgba(15,23,42,.12);transform:rotate(45deg)}.sellerdit-profile-menu a,.sellerdit-profile-menu button{width:100%!important;min-height:38px!important;display:flex!important;align-items:center!important;gap:8px!important;padding:0 12px!important;border:0!important;border-radius:10px!important;background:transparent!important;color:#0f172a!important;font:700 13px/1 Pretendard,system-ui,sans-serif!important;text-align:left!important;text-decoration:none!important;cursor:pointer!important}.sellerdit-profile-menu a:hover,.sellerdit-profile-menu button:hover,.sellerdit-profile-menu a:focus-visible,.sellerdit-profile-menu button:focus-visible{background:#f1f5f9!important;outline:none!important}.sellerdit-profile-menu button{color:#dc2626!important}@media (max-width:767.98px){.sellerdit-profile-menu{position:fixed!important;top:64px!important;right:12px!important;left:auto!important;width:min(220px,calc(100vw - 24px))!important}}
     </style>
@@ -4995,8 +4995,6 @@ function ensureColumn(tableName, columnName, definition) {
 }
 
 function seedTodayVirtualSellers() {
-  const today = new Date();
-  const base = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 9, 0, 0);
   const sellers = [
     { name: "로켓입문정재", type: "로켓그로스셀러", interests: ["로켓그로스", "쿠팡판매"], channel: ["쿠팡"], slug: "today-rocket-growth-inbound-check", category: "korea-coupang-inbound", title: "오늘 입고 예약 전에 박스 수량을 다시 맞춰봤습니다", body: "로켓그로스 입고 전에 박스 수량, 바코드, 납품 단가를 다시 확인했습니다. 초보 셀러 기준으로는 입고 전 체크리스트가 따로 있으면 실수가 줄어듭니다." },
     { name: "1688원가노트", type: "도매셀러", interests: ["1688사입", "상품소싱"], channel: ["1688", "쿠팡"], slug: "today-1688-sourcing-cost-note", category: "china-sourcing", title: "1688 단가 볼 때 배송대행비를 같이 넣어야 하네요", body: "상품 단가만 보면 괜찮아 보여도 배송대행비와 검수비를 넣으면 마진이 달라집니다. 오늘 견적 받은 상품은 옵션별 단가 차이가 커서 계산표를 다시 나눴습니다." },
@@ -5010,9 +5008,13 @@ function seedTodayVirtualSellers() {
     const profile = ensureUserProfile(user);
     db.prepare(`UPDATE user_profiles SET bio = ?, seller_type = ?, interests_json = ?, sales_channels_json = ?, badges_json = ?, main_badge = ?, updated_at = ? WHERE user_id = ?`)
       .run(`${seller.type}로 오늘의 셀러 운영 기록을 공유합니다.`, seller.type, JSON.stringify(seller.interests), JSON.stringify(seller.channel), JSON.stringify(["신규 회원", "활동 셀러", seller.interests[0] === "1688사입" ? "1688 사입 관심 셀러" : "로켓그로스 관심 셀러"]), "활동 셀러", new Date().toISOString(), user.id);
-    const createdAt = new Date(base.getTime() + index * 55 * 60 * 1000).toISOString();
+    const createdAt = getStableTodaySellerCreatedAt(index);
     const existing = db.prepare("SELECT id FROM community_posts WHERE slug = ?").get(seller.slug);
-    if (existing) return;
+    if (existing) {
+      db.prepare("UPDATE community_posts SET category = ?, title = ?, summary = ?, body_json = ?, tags_json = ?, author_user_id = ?, author_name = ?, views = ?, likes_count = ?, source = 'user', created_at = ?, updated_at = ? WHERE slug = ?")
+        .run(seller.category, seller.title, seller.body.slice(0, 110), JSON.stringify([{ heading: "본문", body: [seller.body] }]), JSON.stringify(["오늘업데이트", ...seller.interests]), user.id, seller.name, 42 + index * 8, index + 3, createdAt, createdAt, seller.slug);
+      return;
+    }
     insertPost.run(`today-${seller.slug}`, seller.slug, seller.category, seller.title, seller.body.slice(0, 110), JSON.stringify([{ heading: "본문", body: [seller.body] }]), JSON.stringify(["오늘업데이트", ...seller.interests]), user.id, seller.name, 42 + index * 8, index + 3, createdAt, createdAt);
   });
 }
@@ -5277,6 +5279,17 @@ function normalizePostSections(sections) {
 function getSeedPostFaq(slug) {
   const seedPost = SEED_COMMUNITY_POSTS.find((post) => post.slug === slug);
   return Array.isArray(seedPost?.faq) ? seedPost.faq : [];
+}
+
+function getStableTodaySellerCreatedAt(index = 0) {
+  const offsets = [
+    7 * 60 * 60 * 1000,
+    5 * 60 * 60 * 1000,
+    3 * 60 * 60 * 1000,
+    26 * 60 * 60 * 1000,
+    90 * 60 * 1000,
+  ];
+  return new Date(Date.now() - (offsets[index] || (index + 2) * 60 * 60 * 1000)).toISOString();
 }
 
 function getStableSeedCreatedAt(index = 0) {

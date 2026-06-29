@@ -25808,7 +25808,7 @@ body:has(.sellerdit-topbar) .sellerdit-action-bookmark[aria-pressed="true"] svg 
 }
 
 
-/* Sellerdit rail/top crop regression fix - 20260629 */
+/* Sellerdit rail/top crop regression fix - 20260629 v2 */
 :root { --sellerdit-topbar-height: 56px; }
 body:has(.sellerdit-topbar) { padding-top: var(--sellerdit-topbar-height) !important; }
 body:has(.sellerdit-topbar) .community-shell { padding-top: 0 !important; }
