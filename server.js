@@ -2091,7 +2091,7 @@ function renderCommunityHeader(activeKey, currentUser = null) {
   const avatarMarkup = meProfile
     ? (meProfile.avatarUrl ? `<span class="sellerdit-top-avatar has-image"><img src="${escapeHtml(meProfile.avatarUrl)}" alt="" loading="lazy"></span>` : `<span class="sellerdit-top-avatar" style="background:${escapeHtml(getCommunityAuthorColor(meProfile.nickname))}">${escapeHtml(getCommunityAuthorInitial(meProfile.nickname))}</span>`)
     : `<span class="sellerdit-top-avatar">S</span>`;
-  const categoryBar = `<nav class="sellerdit-top-categorybar" aria-label="상단 카테고리"><a href="/">로켓그로스 계산기</a><a href="/trends">검색트렌드</a><a href="/community">커뮤니티</a></nav>`;
+  const categoryBar = `<nav class="sellerdit-top-categorybar" aria-label="상단 카테고리"><a href="/">로켓그로스 계산기</a><a href="/trends">검색트렌드</a><a class="sellerdit-nav-wordlogo" href="/community" aria-label="셀러딧 커뮤니티"><span>셀러딧</span></a></nav>`;
   return `<header class="community-topbar sellerdit-topbar sellerdit-reddit-topbar" data-active-section="${escapeHtml(activeKey || "community")}">
     <div class="sellerdit-topbar-inner">
       <button class="sellerdit-mobile-icon topbar-hamburger" type="button" aria-label="왼쪽 메뉴 토글" aria-controls="sellerdit-mobile-drawer" aria-expanded="false" data-mobile-drawer-open>
@@ -3407,7 +3407,7 @@ function renderDocumentShell({ title, description, canonicalUrl, body, jsonLd, s
     <meta name="twitter:description" content="${escapeHtml(description)}" />
     <meta name="twitter:image" content="${PUBLIC_SITE_URL}/assets/site-flow.svg" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
-    <link rel="stylesheet" href="/styles.css?v=20260629-sellerdit-final-uiux-v1" />
+    <link rel="stylesheet" href="/styles.css?v=20260629-sellerdit-right-wordlogo-v1" />
     <style>
       .sellerdit-profile-menu-wrap{position:relative!important;display:inline-flex!important;align-items:center!important}.sellerdit-profile-menu{position:absolute!important;top:calc(100% + 10px)!important;right:0!important;min-width:188px!important;padding:8px!important;border:1px solid rgba(15,23,42,.12)!important;border-radius:14px!important;background:#fff!important;box-shadow:0 18px 45px rgba(15,23,42,.18)!important;z-index:1300!important}.sellerdit-profile-menu[hidden]{display:none!important}.sellerdit-profile-menu::before{content:"";position:absolute;top:-6px;right:14px;width:12px;height:12px;background:#fff;border-left:1px solid rgba(15,23,42,.12);border-top:1px solid rgba(15,23,42,.12);transform:rotate(45deg)}.sellerdit-profile-menu a,.sellerdit-profile-menu button{width:100%!important;min-height:38px!important;display:flex!important;align-items:center!important;gap:8px!important;padding:0 12px!important;border:0!important;border-radius:10px!important;background:transparent!important;color:#0f172a!important;font:700 13px/1 Pretendard,system-ui,sans-serif!important;text-align:left!important;text-decoration:none!important;cursor:pointer!important}.sellerdit-profile-menu a:hover,.sellerdit-profile-menu button:hover,.sellerdit-profile-menu a:focus-visible,.sellerdit-profile-menu button:focus-visible{background:#f1f5f9!important;outline:none!important}.sellerdit-profile-menu button{color:#dc2626!important}@media (max-width:767.98px){.sellerdit-profile-menu{position:fixed!important;top:64px!important;right:12px!important;left:auto!important;width:min(220px,calc(100vw - 24px))!important}}
     </style>
