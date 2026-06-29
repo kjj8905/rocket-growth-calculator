@@ -17810,7 +17810,7 @@ body:has(.sellerdit-topbar) .sellerdit-left-rail {
   z-index: 1100 !important;
   width: min(280px, 85vw) !important;
   max-height: none !important;
-  display: block !important;
+  display: none !important;
   padding: calc(12px + env(safe-area-inset-top, 0px)) 12px calc(24px + env(safe-area-inset-bottom, 0px)) !important;
   overflow-y: auto !important;
   border-right: 1px solid #e7e9ec !important;
@@ -17822,6 +17822,7 @@ body:has(.sellerdit-topbar) .sellerdit-left-rail {
 
 body.sellerdit-drawer-open:has(.sellerdit-topbar) .community-left-rail,
 body.sellerdit-drawer-open:has(.sellerdit-topbar) .sellerdit-left-rail {
+  display: block !important;
   transform: translateX(0) !important;
 }
 
