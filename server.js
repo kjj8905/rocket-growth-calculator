@@ -118,7 +118,7 @@ app.get("/auth/kakao/start", (req, res) => {
   const url = new URL("https://kauth.kakao.com/oauth/authorize");
   url.searchParams.set("response_type", "code");
   url.searchParams.set("client_id", KAKAO_REST_API_KEY);
-  url.searchParams.set("redirect_uri", KAKAO_REDIRECT_URI);
+  url.searchParams.set("redirect_uri", getKakaoRedirectUri(req));
   url.searchParams.set("state", state);
 
   res.redirect(url.toString());
@@ -351,7 +351,17 @@ app.post("/api/community/memberships", requireLogin, (req, res) => {
 });
 
 app.get("/api/community/notifications", requireLogin, (req, res) => {
-  const rows = db.prepare("SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT 30").all(req.currentUser.id);
+  const rows = db.prepare(`SELECT n.*, p.slug AS post_slug, p.title AS post_title
+    FROM notifications n
+    LEFT JOIN community_posts p ON p.id = n.post_id
+    WHERE n.user_id = ?
+    ORDER BY n.created_at DESC
+    LIMIT 30`).all(req.currentUser.id);
+  const now = new Date().toISOString();
+  rows.filter((row) => !row.read_at).forEach((row) => { row.read_at = now; });
+  if (rows.length) {
+    db.prepare(`UPDATE notifications SET read_at = COALESCE(read_at, ?) WHERE user_id = ? AND id IN (${rows.map(() => "?").join(",")})`).run(now, req.currentUser.id, ...rows.map((row) => row.id));
+  }
   res.json({ notifications: rows.map(notificationFromRow) });
 });
 
@@ -610,6 +620,14 @@ app.get("/saved", (req, res) => {
   res.type("html").send(renderIndexHtml());
 });
 
+app.get("/privacy", (req, res) => {
+  res.type("html").send(renderLegalPage("privacy"));
+});
+
+app.get("/terms", (req, res) => {
+  res.type("html").send(renderLegalPage("terms"));
+});
+
 app.get(["/community", "/community/"], (req, res) => {
   res.type("html").send(renderCommunityIndexPage(req.query, req.currentUser));
 });
@@ -788,7 +806,7 @@ function renderIndexHtml() {
   const filePath = path.join(__dirname, "index.html");
   let html = fs.readFileSync(filePath, "utf8")
     .replaceAll("__SITE_URL__", PUBLIC_SITE_URL)
-    .replace('<link rel="stylesheet" href="./styles.css" />', '<link rel="stylesheet" href="/styles.css?v=20260629-sellerdit-functional-v6" />');
+    .replace('<link rel="stylesheet" href="./styles.css" />', '<link rel="stylesheet" href="/styles.css?v=20260629-sellerdit-functional-v7" />');
   const headerStart = html.indexOf('<header class="community-topbar sellerdit-topbar sellerdit-home-topbar">');
   const headerEnd = html.indexOf('</header>', headerStart);
   if (headerStart !== -1 && headerEnd !== -1) {
@@ -877,7 +895,7 @@ function renderCommunityVoteCard(post, index = 0) {
     ? `<button type="button" class="sellerdit-action" data-community-edit-post data-post-id="${escapeHtml(post.id)}" data-post-body="${escapeHtml(threadContent)}" data-post-category="${escapeHtml(post.category)}" data-post-tags="${escapeHtml((post.tags || []).join(", "))}">수정</button>
       <button type="button" class="sellerdit-action" data-community-delete-post data-post-id="${escapeHtml(post.id)}">삭제</button>`
     : "";
-  const authorHandle = makeCommunityHandle(authorName);
+  const authorHandle = getCommunityAuthorHandle(post);
   const authorHref = `/u/${encodeURIComponent(authorHandle)}`;
   return `<article class="community-vote-card sellerdit-feed-post${post.isNotice ? " is-notice" : ""}" data-post-id="${escapeHtml(post.id)}">
     <a class="sellerdit-avatar sellerdit-feed-avatar sellerdit-avatar-link" href="${escapeHtml(authorHref)}" aria-label="${escapeHtml(authorHandle)} 프로필" style="background:${escapeHtml(getCommunityAuthorColor(authorName))}">${escapeHtml(getCommunityAuthorInitial(authorName))}</a>
@@ -887,7 +905,7 @@ function renderCommunityVoteCard(post, index = 0) {
         <span class="sellerdit-dot">·</span>
         ${dateLabel ? `<time datetime="${escapeHtml(post.createdAt)}">${escapeHtml(dateLabel)}</time>` : ""}
         ${post.isNotice ? `<span class="community-pin-badge">공지</span>` : ""}
-        <button class="sellerdit-follow" type="button" data-community-follow data-follow-handle="${escapeHtml(authorHandle)}">팔로우</button>
+        <button class="sellerdit-follow ${post.followedByMe ? "is-active" : ""}" type="button" data-community-follow data-follow-handle="${escapeHtml(authorHandle)}">${post.followedByMe ? "팔로잉" : "팔로우"}</button>
         <div class="sellerdit-post-more-wrap">
           <button class="sellerdit-more" type="button" aria-label="게시글 더보기" aria-expanded="false" data-post-more-toggle data-share-url="/community/${escapeHtml(post.slug)}">⋯</button>
           <div class="sellerdit-post-more-menu" role="menu" hidden>
@@ -1263,6 +1281,28 @@ function resolveUniqueCommunityHandle(name, userId = null) {
   }
 }
 
+function getUserById(userId) {
+  if (!userId) return null;
+  return db.prepare("SELECT * FROM users WHERE id = ?").get(userId) || null;
+}
+
+function getCommunityAuthorHandle(entity) {
+  if (entity?.authorUserId || entity?.userId) {
+    const user = getUserById(entity.authorUserId || entity.userId);
+    if (user?.handle) return makeCommunityHandle(user.handle);
+    if (user?.display_name || user?.nickname) return makeCommunityHandle(user.display_name || user.nickname);
+  }
+  return makeCommunityHandle(entity?.authorName || "seller");
+}
+
+function getCommunityAuthorDisplayName(entity) {
+  if (entity?.authorUserId || entity?.userId) {
+    const user = getUserById(entity.authorUserId || entity.userId);
+    if (user?.display_name || user?.nickname) return user.display_name || user.nickname;
+  }
+  return entity?.authorName || "셀러";
+}
+
 function getCommunityAuthorColor(name) {
   return getCommunityAuthorPalette(name).avatar;
 }
@@ -1351,6 +1391,7 @@ function renderCommunityIndexPage(query = {}, currentUser = null) {
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
   const page = Math.min(Math.max(1, Number(query.page) || 1), totalPages);
   const posts = attachCommunityPostsState(getCommunityPosts({ ...feedOptions, limit: pageSize, offset: (page - 1) * pageSize }), currentUser);
+  const popularPosts = attachCommunityPostsState(getCommunityPosts({ notice: false, sort: "hot", limit: 6 }), currentUser);
   const notices = [];
   const title = "셀러딧 커뮤니티";
   const description =
@@ -1401,9 +1442,11 @@ function getCommunitySupplierTiles(currentUser = null) {
     type: "supplier",
     initial: getCommunityAuthorInitial(supplier.name),
     name: supplier.name,
+    slug: supplier.slug,
     category: supplier.category,
     filter: supplier.filter || supplier.categoryFilter || "",
-    href: supplier.linkUrl || `/suppliers/${supplier.slug}`,
+    href: `/community/suppliers?source=${encodeURIComponent(supplier.slug)}`,
+    externalHref: supplier.linkUrl || `/community/suppliers?source=${encodeURIComponent(supplier.slug)}`,
     color: supplier.avatarColor || "#2563eb",
   }));
   return [...communityTiles, ...supplierTiles];
@@ -1430,13 +1473,13 @@ function renderCommunitySupplierTile(tile) {
       <p>${escapeHtml(tile.description)}</p>
     </a>
     <div class="sellerdit-tile-actions">
-      <button type="button" class="${tile.joinedByMe ? "is-active" : ""}" data-community-membership data-community-slug="${escapeHtml(tile.slug)}">${tile.joinedByMe ? "가입됨" : "＋ 팔로우"}</button>
+      <button type="button" class="${tile.joinedByMe ? "is-active" : ""}" data-community-membership data-community-slug="${escapeHtml(tile.slug)}">${tile.joinedByMe ? "가입됨" : "＋ 가입"}</button>
       <span>⋯</span>
     </div>
   </article>`;
 }
 
-function renderCommunitySupplierFilterRail() {
+function renderCommunitySupplierFilterRail(supplierTiles = [], communityCount = 0) {
   const topItems = [
     ["home", "/community", "홈", false],
     ["popular", "/community?sort=hot", "인기", false],
@@ -1447,14 +1490,16 @@ function renderCommunitySupplierFilterRail() {
     ["trend", "/trends", "검색 트렌드"],
     ["guide", "/guides", "계산 기준"],
   ];
+  const countByFilter = (value) => supplierTiles.filter((tile) => (tile.filter || "").split(/\s+/).includes(value)).length;
   const filters = [
-    ["all", "전체 공급처", 24],
-    ["agriculture", "농산물", 8],
-    ["industrial", "공산품", 6],
-    ["direct", "농수산 직매입", 4],
-    ["china-market", "1688·타오바오", 3],
-    ["wholesale", "국내 도매", 2],
-    ["logistics", "물류·검수", 1],
+    ["all", "전체 공급처", supplierTiles.length],
+    ["community", "가입 커뮤니티", communityCount],
+    ["agriculture", "농산물", countByFilter("agriculture")],
+    ["industrial", "공산품", countByFilter("industrial")],
+    ["direct", "농수산 직매입", countByFilter("direct")],
+    ["china-market", "1688·타오바오", countByFilter("china-market")],
+    ["wholesale", "국내 도매", countByFilter("wholesale")],
+    ["logistics", "물류·검수", countByFilter("logistics")],
   ];
   const renderNavItem = ([icon, href, label, active = false]) => `<a class="sellerdit-lnav-item ${active ? "is-active" : ""} ${icon === "create" ? "is-create-only" : ""}" href="${href}" ${icon === "create" ? 'aria-label="게시물 작성" title="게시물 작성"' : ""}><span class="sellerdit-lnav-ic">${sellerditIcon(icon)}</span><span>${escapeHtml(label)}</span></a>`;
   const renderFilterItem = ([value, label, count], index) => `<button class="sellerdit-lnav-item sellerdit-supplier-filter-item ${index === 0 ? "is-active" : ""}" type="button" data-supplier-filter="${escapeHtml(value)}"><span>${escapeHtml(label)}</span><em class="sellerdit-lnav-count">${escapeHtml(String(count))}</em></button>`;
@@ -1477,6 +1522,8 @@ function renderCommunitySupplierDirectoryPage(query = {}, currentUser = null) {
   const tiles = getCommunitySupplierTiles(currentUser);
   const communityTiles = tiles.filter((tile) => tile.type === "community");
   const supplierTiles = tiles.filter((tile) => tile.type === "supplier");
+  const selectedSupplier = supplierTiles.find((tile) => tile.slug === String(query.source || ""));
+  const supplierDetail = selectedSupplier ? `<section class="sellerdit-supplier-section" data-tile-section="selected"><h2>선택한 공급처</h2><article class="sellerdit-tile sellerdit-tile-supplier"><div class="sellerdit-tile-head"><span class="sellerdit-tile-avatar" style="--tile-avatar:${escapeHtml(selectedSupplier.color)}">${escapeHtml(selectedSupplier.initial)}</span><strong>${escapeHtml(selectedSupplier.name)}</strong></div><span class="sellerdit-supplier-tag">${escapeHtml(selectedSupplier.category)}</span><a class="sellerdit-supplier-link" href="${escapeHtml(selectedSupplier.externalHref)}" rel="nofollow noopener">공급처로 이동 →</a></article></section>` : "";
   return renderDocumentShell({
     title,
     description,
@@ -1484,9 +1531,10 @@ function renderCommunitySupplierDirectoryPage(query = {}, currentUser = null) {
     body: `${renderCommunityHeader("suppliers", currentUser)}
     <main class="community-shell">
       <section class="community-reddit-layout sellerdit-with-left-rail sellerdit-supplier-layout">
-        ${renderCommunitySupplierFilterRail()}
+        ${renderCommunitySupplierFilterRail(supplierTiles, communityTiles.length)}
         <section class="community-feed-panel sellerdit-supplier-main" aria-label="공급처">
           <h1 class="sellerdit-visually-hidden">셀러딧 공급처</h1>
+          ${supplierDetail}
           <section class="sellerdit-supplier-section" data-tile-section="community">
             <h2>가입 커뮤니티</h2>
             <div class="sellerdit-tile-grid">${communityTiles.map(renderCommunitySupplierTile).join("")}</div>
@@ -1636,13 +1684,13 @@ function renderCommunityPostPage(post, currentUser = null) {
           <article class="community-post-article sellerdit-detail-post" style="width:700px!important;max-width:700px!important;" data-community-post="${escapeHtml(post.slug)}">
             <h1 class="sellerdit-visually-hidden">${escapeHtml(getThreadPostSeoTitle(post))}</h1>
             <div class="sellerdit-post-meta">
-              <a class="sellerdit-avatar sellerdit-avatar-link" href="/u/${escapeHtml(makeCommunityHandle(post.authorName))}" aria-label="${escapeHtml(makeCommunityHandle(post.authorName))} 프로필" style="background:${escapeHtml(getCommunityAuthorColor(post.authorName))}">${escapeHtml(getCommunityAuthorInitial(post.authorName))}</a>
-              <a class="sellerdit-author" href="/u/${escapeHtml(makeCommunityHandle(post.authorName))}">${escapeHtml(makeCommunityHandle(post.authorName))}</a>
+              <a class="sellerdit-avatar sellerdit-avatar-link" href="/u/${escapeHtml(getCommunityAuthorHandle(post))}" aria-label="${escapeHtml(getCommunityAuthorHandle(post))} 프로필" style="background:${escapeHtml(getCommunityAuthorColor(getCommunityAuthorDisplayName(post)))}">${escapeHtml(getCommunityAuthorInitial(getCommunityAuthorDisplayName(post)))}</a>
+              <a class="sellerdit-author" href="/u/${escapeHtml(getCommunityAuthorHandle(post))}">${escapeHtml(getCommunityAuthorHandle(post))}</a>
               <span class="sellerdit-dot">·</span>
               <time datetime="${escapeHtml(post.createdAt)}">${escapeHtml(formatRelativeDate(post.createdAt) || "")}</time>
               <span class="sellerdit-dot sellerdit-detail-views-dot">·</span>
               <span class="sellerdit-detail-views">조회 ${formatInteger(post.views)}</span>
-              <button class="sellerdit-follow" type="button" data-community-follow data-follow-handle="${escapeHtml(makeCommunityHandle(post.authorName))}">팔로우</button>
+              <button class="sellerdit-follow ${post.followedByMe ? "is-active" : ""}" type="button" data-community-follow data-follow-handle="${escapeHtml(getCommunityAuthorHandle(post))}">${post.followedByMe ? "팔로잉" : "팔로우"}</button>
               <div class="sellerdit-post-more-wrap"><button class="sellerdit-more" type="button" aria-label="게시글 더보기" aria-expanded="false" data-post-more-toggle data-share-url="/community/${escapeHtml(post.slug)}">⋯</button><div class="sellerdit-post-more-menu" role="menu" hidden><button type="button" role="menuitem" data-post-menu-copy data-share-url="/community/${escapeHtml(post.slug)}">URL 복사</button><button type="button" role="menuitem" data-post-menu-hide>관심없음</button><button type="button" role="menuitem" data-post-menu-report>신고하기</button></div></div>
             </div>
             <div class="sellerdit-thread-body is-detail">${escapeHtml(threadContent)}</div>
@@ -1666,6 +1714,7 @@ function renderCommunityPostPage(post, currentUser = null) {
               ${renderSellerditComments(displayComments, post)}
             </div>
           </section>
+          ${renderCommunityWritePanel(post.category)}
         </section>
         ${renderSellerditRightRail("detail", relatedPosts)}
       </section>
@@ -1781,7 +1830,7 @@ function renderSellerditComment(comment, post, depth = 0, index = 0) {
   const replies = Array.isArray(comment.replies) ? comment.replies : [];
   const isAuthor = makeCommunityHandle(authorName) === makeCommunityHandle(post.authorName);
   const badge = comment.badge || (isAuthor ? "원글 작성자" : "");
-  const handle = makeCommunityHandle(authorName);
+  const handle = getCommunityAuthorHandle(comment);
   const commentId = escapeHtml(comment.id || "");
   const commentUrl = `/community/${escapeHtml(post.slug)}#comment-${commentId}`;
   const isSample = Boolean(comment.isSample);
@@ -1875,8 +1924,10 @@ function profileFromRows(user, profileRow) {
 
 function getProfileStats(handle, userId) {
   const normalizedHandle = makeCommunityHandle(handle || "");
-  const posts = getCommunityPosts({ limit: 100, sort: "new" }).filter((post) => makeCommunityHandle(post.authorName) === normalizedHandle);
-  const comments = getCommunityCommentsByHandle(normalizedHandle);
+  const posts = userId
+    ? db.prepare("SELECT * FROM community_posts WHERE status = 'published' AND author_user_id = ? ORDER BY created_at DESC LIMIT 100").all(userId).map(communityPostFromRow)
+    : getCommunityPosts({ limit: 100, sort: "new" }).filter((post) => getCommunityAuthorHandle(post) === normalizedHandle);
+  const comments = userId ? getCommunityCommentsByUserId(userId) : getCommunityCommentsByHandle(normalizedHandle);
   const likedPosts = userId ? getUserReactedCommunityPosts(userId, "like") : [];
   const savedPosts = userId ? getSavedCommunityPosts(userId) : [];
   const followers = db.prepare("SELECT COUNT(*) AS count FROM community_follows WHERE target_handle = ?").get(normalizedHandle)?.count || 0;
@@ -1950,6 +2001,16 @@ function getUserReactedCommunityPosts(userId, type = "like", limit = 100) {
     .all(userId, type, Math.max(1, Math.min(Number(limit || 100), 100))).map(communityPostFromRow);
 }
 
+function getCommunityCommentsByUserId(userId) {
+  return db.prepare(`SELECT c.*, p.slug AS post_slug, p.title AS post_title
+    FROM community_comments c
+    JOIN community_posts p ON p.id = c.post_id
+    WHERE p.status = 'published' AND c.user_id = ?
+    ORDER BY c.created_at DESC
+    LIMIT 100`).all(userId)
+    .map((row) => ({ ...communityCommentFromRow(row), postSlug: row.post_slug, postTitle: row.post_title }));
+}
+
 function getCommunityCommentsByHandle(handle) {
   const normalizedHandle = makeCommunityHandle(handle || "seller");
   return db.prepare(`SELECT c.*, p.slug AS post_slug, p.title AS post_title
@@ -1959,7 +2020,7 @@ function getCommunityCommentsByHandle(handle) {
     ORDER BY c.created_at DESC
     LIMIT 100`).all()
     .map((row) => ({ ...communityCommentFromRow(row), postSlug: row.post_slug, postTitle: row.post_title }))
-    .filter((comment) => makeCommunityHandle(comment.authorName) === normalizedHandle);
+    .filter((comment) => getCommunityAuthorHandle(comment) === normalizedHandle);
 }
 
 function renderProfileAvatar(profile, className = "sellerdit-profile-avatar") {
@@ -2001,7 +2062,7 @@ function renderProfileTabContent(tab, stats, profile, currentUser) {
 function renderSellerditProfilePage(handle, query = {}, currentUser = null) {
   const normalizedHandle = makeCommunityHandle(handle || "seller");
   const user = getUserByHandle(normalizedHandle);
-  const fallbackPosts = attachCommunityPostsState(getCommunityPosts({ limit: 100, sort: "new" }).filter((post) => makeCommunityHandle(post.authorName) === normalizedHandle), currentUser);
+  const fallbackPosts = attachCommunityPostsState(getCommunityPosts({ limit: 100, sort: "new" }).filter((post) => getCommunityAuthorHandle(post) === normalizedHandle), currentUser);
   const fallbackComments = getCommunityCommentsByHandle(normalizedHandle);
   const fallbackName = fallbackPosts[0]?.authorName || fallbackComments[0]?.authorName || normalizedHandle;
   const fallbackUser = user || { id: null, nickname: fallbackName, display_name: fallbackName, handle: normalizedHandle, created_at: "2026-06-22T00:00:00.000Z", updated_at: new Date().toISOString() };
@@ -2307,7 +2368,7 @@ function renderCommunityWritePanel(defaultCategory = "qna") {
           <legend>분류</legend>
           ${postTypes.map(([value, label], index) => `<label><input type="radio" name="postType" value="${value}" ${index === 0 ? "checked" : ""}><span>${escapeHtml(label)}</span></label>`).join("")}
         </fieldset>
-        <input type="hidden" name="category" value="qna" />
+        <input type="hidden" name="category" value="${escapeHtml(defaultCategory)}" />
         <label>
           <span>본문</span>
           <textarea name="body" rows="7" maxlength="5000" placeholder="셀러들과 나누고 싶은 이야기나 질문을 적어보세요" required></textarea>
@@ -2543,6 +2604,10 @@ function renderCommunityScript(postSlug = "") {
         }
       }
       track("community_view", { page_path: window.location.pathname });
+      var searchInput = document.querySelector(".community-global-search input[name='q']");
+      if (searchInput && !searchInput.value) {
+        searchInput.value = new URLSearchParams(window.location.search).get("q") || "";
+      }
       function applySellerditTopbarGuard() {
         var topbar = document.querySelector(".sellerdit-topbar");
         if (!topbar) return;
@@ -2883,10 +2948,11 @@ function renderCommunityScript(postSlug = "") {
       setupSupplierFilters();
       document.querySelectorAll("[data-community-membership]").forEach(function (button) {
         button.addEventListener("click", async function () {
+          if (!communityAuthState.authenticated) { window.location.href = loginUrl(); return; }
           var beforeText = button.textContent;
           var beforeActive = button.classList.contains("is-active");
           button.classList.toggle("is-active", !beforeActive);
-          button.textContent = beforeActive ? "＋ 팔로우" : "가입됨";
+          button.textContent = beforeActive ? "＋ 가입" : "가입됨";
           try {
             var response = await fetch("/api/community/memberships", {
               method: "POST",
@@ -3041,7 +3107,7 @@ function renderCommunityScript(postSlug = "") {
           var typeLabel = postType === "free" ? "자유롭게 말해요" : postType === "notice" ? "소식공유해요" : "셀러 여러분께 질문드려요";
           var attachment = form.querySelector("[data-community-attachment]");
           var payload = {
-            category: "qna",
+            category: data.get("category") || "qna",
             body: data.get("body"),
             postType: postType,
             tags: [typeLabel].concat(selectedTags).slice(0, 4)
@@ -3101,6 +3167,7 @@ function renderCommunityScript(postSlug = "") {
 
       document.querySelectorAll("[data-community-follow]").forEach(function (button) {
         button.addEventListener("click", async function () {
+          if (!communityAuthState.authenticated) { window.location.href = loginUrl(); return; }
           var beforeText = button.textContent;
           var beforeActive = button.classList.contains("is-active");
           button.classList.toggle("is-active", !beforeActive);
@@ -3228,8 +3295,13 @@ function renderCommunityScript(postSlug = "") {
           var textarea = form.querySelector("textarea");
           var response = await fetch("/api/community/comments/" + encodeURIComponent(form.dataset.commentId), { method: "PUT", credentials: "same-origin", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ body: textarea.value }) });
           if (response.status === 401) { window.location.href = loginUrl(); return; }
-          if (!response.ok) { setMessage(form, "댓글을 수정하지 못했습니다.", "warning"); return; }
-          window.location.reload();
+          var result = await response.json().catch(function () { return {}; });
+          if (!response.ok) { setMessage(form, result.message || "댓글을 수정하지 못했습니다.", "warning"); return; }
+          var comment = form.closest("article.sellerdit-comment");
+          var body = comment && comment.querySelector(":scope > .sellerdit-comment-body .ctext");
+          if (body && result.comment && result.comment.body) body.textContent = result.comment.body;
+          form.hidden = true;
+          showCommunityToast("댓글이 수정되었습니다", "수정 내용이 반영되었습니다.", "success");
         });
       });
       document.querySelectorAll("[data-comment-delete-button]").forEach(function (button) {
@@ -3399,6 +3471,23 @@ function renderCommunityScript(postSlug = "") {
       });
     })();
   </script>`;
+}
+
+function renderLegalPage(kind = "privacy") {
+  const isPrivacy = kind === "privacy";
+  const title = isPrivacy ? "개인정보 처리방침 | 셀러딧" : "이용약관 | 셀러딧";
+  const heading = isPrivacy ? "개인정보 처리방침" : "이용약관";
+  const body = isPrivacy
+    ? "셀러딧은 로그인, 프로필, 저장한 글, 댓글 등 서비스 제공에 필요한 최소한의 계정 정보를 처리합니다. OAuth 제공자에서 받은 식별자와 닉네임, 사용자가 입력한 프로필 정보는 커뮤니티 기능 제공과 보안 목적에 한해 사용합니다."
+    : "셀러딧 커뮤니티는 셀러 운영 정보를 나누는 공간입니다. 사용자는 타인의 권리를 침해하거나 허위·불법 정보를 게시하지 않아야 하며, 운영자는 서비스 안정성을 위해 필요한 범위에서 게시물을 제한할 수 있습니다.";
+  return renderDocumentShell({
+    title,
+    description: `${heading} 안내 페이지입니다.`,
+    canonicalUrl: `${PUBLIC_SITE_URL}/${isPrivacy ? "privacy" : "terms"}`,
+    robots: "noindex,follow",
+    ogType: "website",
+    body: `<main class="community-shell"><section class="guide-article community-guide-article"><p class="eyebrow">Sellerdit</p><h1>${heading}</h1><p class="guide-lede">${body}</p><section><h2>문의</h2><p>정책 관련 문의는 서비스 운영 채널을 통해 접수합니다.</p></section></section></main>`,
+  });
 }
 
 function renderGuideIndexPage() {
@@ -3611,7 +3700,7 @@ function renderDocumentShell({ title, description, canonicalUrl, body, jsonLd, s
     <meta name="twitter:description" content="${escapeHtml(description)}" />
     <meta name="twitter:image" content="${PUBLIC_SITE_URL}/assets/site-flow.svg" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
-    <link rel="stylesheet" href="/styles.css?v=20260629-sellerdit-functional-v6" />
+    <link rel="stylesheet" href="/styles.css?v=20260629-sellerdit-functional-v7" />
     <style>
       .sellerdit-profile-menu-wrap{position:relative!important;display:inline-flex!important;align-items:center!important}.sellerdit-profile-menu{position:absolute!important;top:calc(100% + 10px)!important;right:0!important;min-width:188px!important;padding:8px!important;border:1px solid rgba(15,23,42,.12)!important;border-radius:14px!important;background:#fff!important;box-shadow:0 18px 45px rgba(15,23,42,.18)!important;z-index:1300!important}.sellerdit-profile-menu[hidden]{display:none!important}.sellerdit-profile-menu::before{content:"";position:absolute;top:-6px;right:14px;width:12px;height:12px;background:#fff;border-left:1px solid rgba(15,23,42,.12);border-top:1px solid rgba(15,23,42,.12);transform:rotate(45deg)}.sellerdit-profile-menu a,.sellerdit-profile-menu button{width:100%!important;min-height:38px!important;display:flex!important;align-items:center!important;gap:8px!important;padding:0 12px!important;border:0!important;border-radius:10px!important;background:transparent!important;color:#0f172a!important;font:700 13px/1 Pretendard,system-ui,sans-serif!important;text-align:left!important;text-decoration:none!important;cursor:pointer!important}.sellerdit-profile-menu a:hover,.sellerdit-profile-menu button:hover,.sellerdit-profile-menu a:focus-visible,.sellerdit-profile-menu button:focus-visible{background:#f1f5f9!important;outline:none!important}.sellerdit-profile-menu button{color:#dc2626!important}@media (max-width:767.98px){.sellerdit-profile-menu{position:fixed!important;top:64px!important;right:12px!important;left:auto!important;width:min(220px,calc(100vw - 24px))!important}}
     </style>
@@ -4675,6 +4764,13 @@ function getSessionFromRequest(req) {
   };
 }
 
+function getKakaoRedirectUri(req) {
+  if (KAKAO_REDIRECT_URI && !/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?\//.test(KAKAO_REDIRECT_URI)) return KAKAO_REDIRECT_URI;
+  const proto = req.get("x-forwarded-proto") || req.protocol || "http";
+  const host = req.get("host");
+  return host ? `${proto}://${host}/auth/kakao/callback` : KAKAO_REDIRECT_URI;
+}
+
 function requireLogin(req, res, next) {
   if (!isAccountFeatureEnabled()) {
     res.status(403).json({ error: "account_feature_disabled", message: "저장 기능은 현재 제공하지 않습니다." });
@@ -4682,7 +4778,7 @@ function requireLogin(req, res, next) {
   }
 
   if (!req.currentUser) {
-    res.status(401).json({ error: "login_required", message: "상품 저장을 위해 로그인이 필요합니다." });
+    res.status(401).json({ error: "login_required", message: "로그인이 필요합니다." });
     return;
   }
   next();
@@ -5254,10 +5350,11 @@ function attachCommunityPostState(post, user) {
   if (!post) return post;
   const isOwner = Boolean(user && post.authorUserId && Number(post.authorUserId) === Number(user.id));
   const isAdmin = Boolean(user && user.role === "admin");
-  const state = { ...post, canEdit: isOwner || isAdmin, canDelete: isOwner || isAdmin, likedByMe: false, savedByMe: false };
+  const state = { ...post, canEdit: isOwner || isAdmin, canDelete: isOwner || isAdmin, likedByMe: false, savedByMe: false, followedByMe: false };
   if (user?.id) {
     state.likedByMe = Boolean(db.prepare("SELECT 1 FROM community_reactions WHERE post_id = ? AND user_id = ? AND type = 'like'").get(post.id, user.id));
     state.savedByMe = Boolean(db.prepare("SELECT 1 FROM community_reactions WHERE post_id = ? AND user_id = ? AND type = 'bookmark'").get(post.id, user.id));
+    state.followedByMe = Boolean(db.prepare("SELECT 1 FROM community_follows WHERE user_id = ? AND target_handle = ?").get(user.id, getCommunityAuthorHandle(post)));
   }
   return state;
 }
@@ -5352,7 +5449,7 @@ function createUniqueSupplierSlug(seed) {
 }
 
 function notificationFromRow(row) {
-  return { id: row.id, userId: row.user_id, actorUserId: row.actor_user_id, postId: row.post_id, commentId: row.comment_id, type: row.type, message: row.message, readAt: row.read_at, createdAt: row.created_at };
+  return { id: row.id, userId: row.user_id, actorUserId: row.actor_user_id, postId: row.post_id, postSlug: row.post_slug || "", title: row.post_title || "새 알림", commentId: row.comment_id, type: row.type, message: row.message, readAt: row.read_at, createdAt: row.created_at };
 }
 
 function createCommunityNotificationForComment(post, commentId, parentId, actorUser) {
