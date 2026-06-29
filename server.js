@@ -959,6 +959,8 @@ function renderCommunitySavedPage(currentUser) {
     title,
     description: "셀러딧에서 저장한 커뮤니티 게시글을 모아보는 공간입니다.",
     canonicalUrl,
+    robots: "noindex,follow",
+    ogType: "website",
     body: `<main class="community-shell sellerdit-saved-page">
       ${renderCommunityHeader("saved", currentUser)}
       <section class="community-workspace community-reddit-layout sellerdit-with-left-rail">
@@ -1342,6 +1344,7 @@ function renderCommunityIndexPage(query = {}, currentUser = null) {
       </section>
     </main>`,
     jsonLd: buildCommunityIndexJsonLd(title, description, canonicalUrl, posts.length ? posts : popularPosts),
+    ogType: "website",
     script: renderCommunityScript(),
   });
 }
@@ -1467,7 +1470,8 @@ function renderCommunitySupplierDirectoryPage(query = {}, currentUser = null) {
         </aside>
       </section>
     </main>`,
-    jsonLd: null,
+    jsonLd: buildCommunitySupplierDirectoryJsonLd(title, description, canonicalUrl, tiles),
+    ogType: "website",
     script: renderCommunityScript(),
   });
 }
@@ -1526,6 +1530,7 @@ function renderCommunityAiAnswerPage(query = {}, currentUser = null) {
       </section>
     </main>`,
     jsonLd: buildCommunityCategoryJsonLd(COMMUNITY_CATEGORIES.qna, canonicalUrl, qnaPosts),
+    ogType: "website",
     script: renderCommunityScript(),
   });
 }
@@ -1569,6 +1574,7 @@ function renderCommunityCategoryPage(categorySlug, query = {}, currentUser = nul
       </section>
     </main>`,
     jsonLd: buildCommunityCategoryJsonLd(category, canonicalUrl, posts),
+    ogType: "website",
     script: renderCommunityScript(),
   });
 }
@@ -2012,12 +2018,14 @@ function renderSellerditProfilePage(handle, query = {}, currentUser = null) {
             <strong>u/${escapeHtml(profile.username)}</strong>
             <p>${escapeHtml(profile.mainBadge || "신규 회원")} · 카르마 ${formatInteger(profile.stats.likes + profile.stats.commentKarma)}</p>
             <a href="/community">r/셀러딧으로 돌아가기</a>
-            ${profile.isMe ? `<a class="sellerdit-follow" href="/community/profile/edit">프로필 편집</a>` : `<button class="sellerdit-follow" type="button" data-community-follow data-follow-handle="${escapeHtml(profile.username)}">팔로우</button>`}
+            ${profile.isMe ? `<a class="sellerdit-follow" href="/community/profile/edit" rel="nofollow">프로필 편집</a>` : `<button class="sellerdit-follow" type="button" data-community-follow data-follow-handle="${escapeHtml(profile.username)}">팔로우</button>`}
           </section>
           ${renderSellerditFooterLinks()}
         </aside>
       </section>
     </main>`,
+    jsonLd: buildSellerditProfileJsonLd(profile, description, canonicalUrl),
+    ogType: "profile",
     script: renderCommunityScript(),
   });
 }
@@ -2029,6 +2037,8 @@ function renderCommunityProfileEditPage(currentUser) {
     title: "프로필 편집 | 셀러딧",
     description: "셀러딧 마이프로필 정보를 편집합니다.",
     canonicalUrl: `${PUBLIC_SITE_URL}/community/profile/edit`,
+    robots: "noindex,follow",
+    ogType: "website",
     body: `<main class="community-shell sellerdit-profile-edit-page">
       ${renderCommunityHeader("community", currentUser)}
       <section class="community-workspace community-reddit-layout sellerdit-with-left-rail">
@@ -2091,14 +2101,14 @@ function renderCommunityHeader(activeKey, currentUser = null) {
         <button class="sellerdit-mobile-icon sellerdit-mobile-search-trigger" type="button" aria-label="검색 열기" data-mobile-search-open><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.5 5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11ZM15 15l4 4"/></svg></button>
         <a class="sellerdit-reddit-icon sellerdit-chat-desktop" href="/community?chat=1" aria-label="채팅" title="채팅"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 11.5a8.38 8.38 0 0 1-8.5 8.4 8.5 8.5 0 0 1-3.9-.9L3 21l1.9-5.1A8.38 8.38 0 0 1 4 11.5 8.5 8.5 0 0 1 12.5 3 8.38 8.38 0 0 1 21 11.5Z"/></svg></a>
         <a class="sellerdit-create-pill sellerdit-create-desktop" href="#community-write" aria-label="게시물 만들기"><svg class="sellerdit-create-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>만들기</span></a>
-        <a class="sellerdit-reddit-icon sellerdit-notification-desktop" href="/api/community/notifications" aria-label="알림" title="알림"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 9a6 6 0 1 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9Z"/><path d="M9.8 21a2.4 2.4 0 0 0 4.4 0"/></svg></a>
-        <a class="sellerdit-reddit-icon sellerdit-saved-desktop" href="/community/saved" aria-label="저장한 글" title="저장한 글">${renderCommunityActionIcon("bookmark")}</a>
+        <a class="sellerdit-reddit-icon sellerdit-notification-desktop" href="/api/community/notifications" rel="nofollow" aria-label="알림" title="알림"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 9a6 6 0 1 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9Z"/><path d="M9.8 21a2.4 2.4 0 0 0 4.4 0"/></svg></a>
+        <a class="sellerdit-reddit-icon sellerdit-saved-desktop" href="/community/saved" rel="nofollow" aria-label="저장한 글" title="저장한 글">${renderCommunityActionIcon("bookmark")}</a>
         <div class="sellerdit-profile-menu-wrap" data-profile-menu-wrap>
           <a class="sellerdit-avatar-button sellerdit-kakao" href="${profileHref}" data-auth-button data-profile-menu-trigger aria-label="프로필 메뉴" aria-haspopup="menu" aria-expanded="false" aria-controls="sellerdit-profile-menu">${avatarMarkup}<span>${meProfile ? `${escapeHtml(meProfile.nickname)}님` : "카카오 로그인"}</span></a>
           <div class="sellerdit-profile-menu" id="sellerdit-profile-menu" role="menu" data-profile-menu ${meProfile ? "" : "hidden"}>
             <a role="menuitem" href="${profileHref}" data-profile-menu-my>내 프로필</a>
-            <a role="menuitem" href="/community/profile/edit">프로필 편집</a>
-            <a role="menuitem" href="/community/saved">저장한 글</a>
+            <a role="menuitem" href="/community/profile/edit" rel="nofollow">프로필 편집</a>
+            <a role="menuitem" href="/community/saved" rel="nofollow">저장한 글</a>
             <button role="menuitem" type="button" data-profile-menu-logout>로그아웃</button>
           </div>
         </div>
@@ -2119,8 +2129,8 @@ function renderCommunityHeader(activeKey, currentUser = null) {
     <a class="${activeKey === "community" ? "is-active" : ""}" href="/community"><span>⌂</span><em>홈</em></a>
     <a href="/community?sort=hot"><span>⌕</span><em>둘러보기</em></a>
     <a class="is-create" href="#community-write" aria-label="글쓰기"><span>＋</span><em>글쓰기</em></a>
-    <a href="/api/community/notifications"><span>♡</span><em>알림</em></a>
-    <a class="${activeKey === "saved" ? "is-active" : ""}" href="/community/saved"><span>▱</span><em>저장</em></a>
+    <a href="/api/community/notifications" rel="nofollow"><span>♡</span><em>알림</em></a>
+    <a class="${activeKey === "saved" ? "is-active" : ""}" href="/community/saved" rel="nofollow"><span>▱</span><em>저장</em></a>
     <a href="${profileHref}" data-auth-button-mobile><span>●</span><em>프로필</em></a>
   </nav>`;
 }
@@ -3369,7 +3379,7 @@ function renderServiceWorkerRegistration() {
     </script>`;
 }
 
-function renderDocumentShell({ title, description, canonicalUrl, body, jsonLd, script = "" }) {
+function renderDocumentShell({ title, description, canonicalUrl, body, jsonLd, script = "", ogType = "article", robots = "index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1" }) {
   const seoTitle = formatSeoTitle(title);
   const jsonLdBlock = jsonLd
     ? `<script type="application/ld+json">${JSON.stringify(jsonLd, null, 2).replace(/</g, "\\u003c")}</script>`
@@ -3382,12 +3392,12 @@ function renderDocumentShell({ title, description, canonicalUrl, body, jsonLd, s
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>${escapeHtml(seoTitle)}</title>
     <meta name="description" content="${escapeHtml(description)}" />
-    <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1" />
+    <meta name="robots" content="${escapeHtml(robots)}" />
     <link rel="icon" href="/assets/rocket-favicon.svg?v=20260611" type="image/svg+xml" />
     <link rel="shortcut icon" href="/assets/rocket-favicon.svg?v=20260611" />
     ${renderPwaHeadTags()}
     <link rel="canonical" href="${escapeHtml(canonicalUrl)}" />
-    <meta property="og:type" content="article" />
+    <meta property="og:type" content="${escapeHtml(ogType)}" />
     <meta property="og:locale" content="ko_KR" />
     <meta property="og:site_name" content="${SEO_SITE_BRAND}" />
     <meta property="og:title" content="${escapeHtml(seoTitle)}" />
@@ -3542,6 +3552,65 @@ function buildTrendPageJsonLd(title, description, canonicalUrl, trends) {
           name: `${item.provider}: ${item.title}`,
           url: item.url || canonicalUrl,
         })),
+      },
+    ],
+  };
+}
+
+
+function buildCommunitySupplierDirectoryJsonLd(title, description, canonicalUrl, tiles) {
+  const safeTiles = Array.isArray(tiles) ? tiles : [];
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      buildOrganizationNode(),
+      {
+        "@type": "CollectionPage",
+        "@id": `${canonicalUrl}#webpage`,
+        name: title,
+        description,
+        url: canonicalUrl,
+        inLanguage: "ko-KR",
+        isPartOf: { "@id": `${PUBLIC_SITE_URL}/#website` },
+        about: ["쿠팡셀러", "공급처", "사입", "중국사입", "로켓그로스"],
+      },
+      {
+        "@type": "ItemList",
+        "@id": `${canonicalUrl}#items`,
+        itemListElement: safeTiles.map((tile, index) => ({
+          "@type": "ListItem",
+          position: index + 1,
+          name: tile.name || tile.label || "셀러딧 항목",
+          url: normalizeSiteUrl(tile.href || canonicalUrl),
+        })),
+      },
+    ],
+  };
+}
+
+function buildSellerditProfileJsonLd(profile, description, canonicalUrl) {
+  const name = profile.nickname || profile.username || "셀러딧 사용자";
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      buildOrganizationNode(),
+      {
+        "@type": "ProfilePage",
+        "@id": `${canonicalUrl}#webpage`,
+        name: `u/${profile.username} | 셀러딧 프로필`,
+        description,
+        url: canonicalUrl,
+        inLanguage: "ko-KR",
+        isPartOf: { "@id": `${PUBLIC_SITE_URL}/#website` },
+        mainEntity: { "@id": `${canonicalUrl}#person` },
+      },
+      {
+        "@type": "Person",
+        "@id": `${canonicalUrl}#person`,
+        name,
+        alternateName: `u/${profile.username}`,
+        description: profile.bio || description,
+        url: canonicalUrl,
       },
     ],
   };
@@ -4157,6 +4226,7 @@ function renderSitemapXml() {
   const urls = [
     { loc: `${PUBLIC_SITE_URL}/`, priority: "1.0", changefreq: "weekly" },
     { loc: `${PUBLIC_SITE_URL}/community`, priority: "0.9", changefreq: "weekly" },
+    { loc: `${PUBLIC_SITE_URL}/community/suppliers`, priority: "0.75", changefreq: "weekly" },
     { loc: `${PUBLIC_SITE_URL}/trends`, priority: "0.8", changefreq: "daily" },
     ...communityCategories,
     ...communityPosts,
