@@ -26922,3 +26922,95 @@ html body:has(.sellerdit-topbar) .sellerdit-nav-wordlogo span {
     padding-top: 0 !important;
   }
 }
+
+
+/* Sellerdit functional pass v5: type + notifications + profile/login polish */
+:root {
+  --sellerdit-type-bump: 1px;
+}
+body:has(.sellerdit-topbar) .community-shell .sellerdit-thread-body.is-feed,
+body:has(.sellerdit-topbar) .community-shell .sellerdit-thread-body.is-detail,
+body:has(.sellerdit-topbar) .community-shell .sellerdit-recent-title,
+body:has(.sellerdit-topbar) .community-shell .sellerdit-community-copy strong,
+body:has(.sellerdit-topbar) .community-shell .sellerdit-comment p,
+body:has(.sellerdit-topbar) .community-shell .sellerdit-comment-body,
+body:has(.sellerdit-topbar) .community-shell .sellerdit-action,
+body:has(.sellerdit-topbar) .community-shell .sellerdit-post-meta,
+body:has(.sellerdit-topbar) .community-shell .sellerdit-recent-meta,
+body:has(.sellerdit-topbar) .community-shell .sellerdit-recent-post small {
+  font-size: calc(1em + var(--sellerdit-type-bump)) !important;
+}
+.community-shell .is-post-detail .sellerdit-comment-sortbar,
+.community-shell .sellerdit-comment-sortbar,
+.comment-sort.sellerdit-comment-sortbar {
+  display: none !important;
+}
+.sellerdit-notification-wrap {
+  position: relative !important;
+  display: inline-flex !important;
+  align-items: center !important;
+}
+.sellerdit-notification-panel {
+  position: absolute !important;
+  top: calc(100% + 10px) !important;
+  right: 0 !important;
+  width: min(320px, calc(100vw - 24px)) !important;
+  padding: 12px !important;
+  border: 1px solid rgba(15, 23, 42, 0.12) !important;
+  border-radius: 14px !important;
+  background: #fff !important;
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.18) !important;
+  color: #0f172a !important;
+  z-index: 1600 !important;
+}
+.sellerdit-notification-panel[hidden] { display: none !important; }
+.sellerdit-notification-panel strong { display: block !important; margin-bottom: 8px !important; font-size: 14px !important; }
+.sellerdit-notification-panel p { margin: 0 !important; color: #64748b !important; font-size: 13px !important; line-height: 1.45 !important; }
+.sellerdit-notification-item {
+  display: grid !important;
+  gap: 3px !important;
+  padding: 10px 8px !important;
+  border-radius: 10px !important;
+  color: #0f172a !important;
+  text-decoration: none !important;
+}
+.sellerdit-notification-item:hover { background: #f8fafc !important; }
+.sellerdit-notification-item span { font-size: 13px !important; font-weight: 800 !important; }
+.sellerdit-notification-item em { color: #64748b !important; font-size: 12px !important; font-style: normal !important; line-height: 1.4 !important; }
+.sellerdit-notification-login { display: inline-flex !important; margin-top: 10px !important; color: #2563eb !important; font-size: 13px !important; font-weight: 800 !important; text-decoration: none !important; }
+.sellerdit-avatar-button.sellerdit-login-link,
+body:has(.sellerdit-topbar) .sellerdit-avatar-button.sellerdit-login-link {
+  width: auto !important;
+  min-width: auto !important;
+  height: 36px !important;
+  padding: 0 10px !important;
+  border: 0 !important;
+  background: transparent !important;
+  color: #334155 !important;
+  box-shadow: none !important;
+  font-size: 14px !important;
+  font-weight: 800 !important;
+}
+.sellerdit-avatar-button.sellerdit-login-link .sellerdit-top-avatar { display: none !important; }
+@media (min-width: 1024px) {
+  body:has(.sellerdit-supplier-layout) .sellerdit-supplier-layout > .sellerdit-supplier-main {
+    margin-top: 0 !important;
+    transform: none !important;
+  }
+  body:has(.sellerdit-supplier-layout) .sellerdit-supplier-layout > .sellerdit-right-rail {
+    margin-top: 0 !important;
+    transform: translateY(-32px) !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  .community-reddit-layout.sellerdit-supplier-layout .community-right-rail.sellerdit-right-rail {
+    transform: translateY(-32px) !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  .sellerdit-supplier-right-rail {
+    transform: translateY(-32px) !important;
+  }
+}

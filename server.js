@@ -788,7 +788,7 @@ function renderIndexHtml() {
   const filePath = path.join(__dirname, "index.html");
   let html = fs.readFileSync(filePath, "utf8")
     .replaceAll("__SITE_URL__", PUBLIC_SITE_URL)
-    .replace('<link rel="stylesheet" href="./styles.css" />', '<link rel="stylesheet" href="/styles.css?v=20260629-sellerdit-align-header-v4" />');
+    .replace('<link rel="stylesheet" href="./styles.css" />', '<link rel="stylesheet" href="/styles.css?v=20260629-sellerdit-functional-v5" />');
   const headerStart = html.indexOf('<header class="community-topbar sellerdit-topbar sellerdit-home-topbar">');
   const headerEnd = html.indexOf('</header>', headerStart);
   if (headerStart !== -1 && headerEnd !== -1) {
@@ -994,6 +994,7 @@ function renderCommunitySavedPage(currentUser) {
             <p>북마크한 게시글을 여기서 다시 확인합니다.</p>
           </header>
           ${renderCommunityFeed(posts, "아직 저장한 글이 없습니다. 게시글의 북마크 버튼을 누르면 여기에 모입니다.")}
+          ${renderCommunityWritePanel()}
         </section>
         ${renderSellerditRightRail("detail", getCommunityPosts({ sort: "hot", limit: 4 }))}
       </section>
@@ -1483,7 +1484,7 @@ function renderCommunitySupplierDirectoryPage(query = {}, currentUser = null) {
             <div class="sellerdit-tile-grid">${supplierTiles.map(renderCommunitySupplierTile).join("")}</div>
           </section>
         </section>
-        <aside class="community-right-rail sellerdit-right-rail">
+        <aside class="community-right-rail sellerdit-right-rail sellerdit-supplier-right-rail" style="transform: translateY(-32px) !important;">
           ${renderPopularCommunitiesPanel()}
           ${renderSellerditFooterLinks()}
         </aside>
@@ -1649,9 +1650,8 @@ function renderCommunityPostPage(post, currentUser = null) {
                 <button class="primary-small-button" type="submit">댓글 남기기</button>
               </div>
             </form>
-            <div class="comment-sort sellerdit-comment-sortbar"><span>정렬 기준: <b>좋아요 많은 순</b></span></div>
             <div class="community-comment-list sellerdit-comment-tree">
-              ${renderSellerditComments(sortCommunityCommentsByLikes(displayComments), post)}
+              ${renderSellerditComments(displayComments, post)}
             </div>
           </section>
         </section>
@@ -2100,7 +2100,7 @@ function renderCommunityHeader(activeKey, currentUser = null) {
   const profileHref = meProfile ? `/u/${encodeURIComponent(meProfile.username)}` : "/auth/kakao/start";
   const avatarMarkup = meProfile
     ? (meProfile.avatarUrl ? `<span class="sellerdit-top-avatar has-image"><img src="${escapeHtml(meProfile.avatarUrl)}" alt="" loading="lazy"></span>` : `<span class="sellerdit-top-avatar" style="background:${escapeHtml(getCommunityAuthorColor(meProfile.nickname))}">${escapeHtml(getCommunityAuthorInitial(meProfile.nickname))}</span>`)
-    : `<span class="sellerdit-top-avatar">S</span>`;
+    : "";
   const categoryBar = `<nav class="sellerdit-top-categorybar" aria-label="상단 카테고리"><a href="/">로켓그로스 계산기</a><a href="/trends">검색트렌드</a><a class="sellerdit-nav-wordlogo" href="/community" aria-label="셀러딧 커뮤니티"><span>셀러딧</span></a></nav>`;
   return `<header class="community-topbar sellerdit-topbar sellerdit-reddit-topbar" data-active-section="${escapeHtml(activeKey || "community")}">
     <div class="sellerdit-topbar-inner">
@@ -2116,10 +2116,13 @@ function renderCommunityHeader(activeKey, currentUser = null) {
       <div class="sellerdit-reddit-actions" aria-label="상단 작업">
         <button class="sellerdit-mobile-icon sellerdit-mobile-search-trigger" type="button" aria-label="검색 열기" data-mobile-search-open><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.5 5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11ZM15 15l4 4"/></svg></button>
         <a class="sellerdit-create-pill sellerdit-create-desktop" href="#community-write" aria-label="게시물 작성" title="게시물 작성"><svg class="sellerdit-create-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span class="sellerdit-create-hint">게시물 작성</span></a>
-        <a class="sellerdit-reddit-icon sellerdit-notification-desktop" href="/api/community/notifications" rel="nofollow" aria-label="알림" title="알림"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 9a6 6 0 1 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9Z"/><path d="M9.8 21a2.4 2.4 0 0 0 4.4 0"/></svg></a>
+        <div class="sellerdit-notification-wrap" data-notification-wrap>
+          <button class="sellerdit-reddit-icon sellerdit-notification-desktop" type="button" aria-label="알림" title="알림" aria-expanded="false" aria-controls="sellerdit-notification-panel" data-notification-button><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 9a6 6 0 1 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9Z"/><path d="M9.8 21a2.4 2.4 0 0 0 4.4 0"/></svg></button>
+          <div class="sellerdit-notification-panel" id="sellerdit-notification-panel" data-notification-panel hidden><strong>알림</strong><p>알림을 불러오는 중입니다.</p></div>
+        </div>
         <a class="sellerdit-reddit-icon sellerdit-saved-desktop" href="/community/saved" rel="nofollow" aria-label="저장한 글" title="저장한 글">${renderCommunityActionIcon("bookmark")}</a>
         <div class="sellerdit-profile-menu-wrap" data-profile-menu-wrap>
-          <a class="sellerdit-avatar-button sellerdit-kakao" href="${profileHref}" data-auth-button data-profile-menu-trigger aria-label="프로필 메뉴" aria-haspopup="menu" aria-expanded="false" aria-controls="sellerdit-profile-menu">${avatarMarkup}<span>${meProfile ? `${escapeHtml(meProfile.nickname)}님` : "로그인"}</span></a>
+          <a class="sellerdit-avatar-button ${meProfile ? "sellerdit-kakao" : "sellerdit-login-link"}" href="${profileHref}" data-auth-button ${meProfile ? 'data-profile-menu-trigger aria-haspopup="menu" aria-expanded="false" aria-controls="sellerdit-profile-menu"' : ''} aria-label="${meProfile ? '프로필 메뉴' : '로그인'}">${avatarMarkup}<span>${meProfile ? `${escapeHtml(meProfile.nickname)}님` : "로그인"}</span></a>
           <div class="sellerdit-profile-menu" id="sellerdit-profile-menu" role="menu" data-profile-menu ${meProfile ? "" : "hidden"}>
             <a role="menuitem" href="${profileHref}" data-profile-menu-my>내 프로필</a>
             <a role="menuitem" href="/community/profile/edit" rel="nofollow">프로필 편집</a>
@@ -2559,6 +2562,7 @@ function renderCommunityScript(postSlug = "") {
         profileMenuTrigger.setAttribute("aria-expanded", open ? "true" : "false");
       }
 
+      var communityAuthState = { authenticated: false };
       async function refreshCommunityAuth() {
         var loginButtons = Array.prototype.slice.call(document.querySelectorAll("[data-auth-button]"));
         var mobileAuthButton = document.querySelector("[data-auth-button-mobile]");
@@ -2574,13 +2578,20 @@ function renderCommunityScript(postSlug = "") {
             return;
           }
           if (!data.kakaoConfigured) {
-            loginButtons.forEach(function (button) { button.textContent = "카카오 설정 필요"; button.href = "/auth/kakao/start"; });
+            communityAuthState.authenticated = false;
+            loginButtons.forEach(function (button) {
+              var label = button.querySelector("span:last-child");
+              if (label) label.textContent = "로그인";
+              else button.textContent = "로그인";
+              button.href = "/auth/kakao/start";
+            });
             logoutButton && (logoutButton.hidden = true);
             return;
           }
           document.querySelectorAll("[data-comment-login-cta]").forEach(function (link) {
             link.hidden = Boolean(data.authenticated && data.user);
           });
+          communityAuthState.authenticated = Boolean(data.authenticated && data.user);
           if (data.authenticated && data.user) {
             var name = data.user.nickname || "셀러";
             var href = "/u/" + encodeURIComponent(data.user.handle || name);
@@ -2598,7 +2609,13 @@ function renderCommunityScript(postSlug = "") {
             setProfileMenu(false);
             logoutButton && (logoutButton.hidden = false);
           } else {
-            loginButtons.forEach(function (button) { button.href = loginUrl(); });
+            communityAuthState.authenticated = false;
+            loginButtons.forEach(function (button) {
+              button.href = loginUrl();
+              var label = button.querySelector("span:last-child");
+              if (label) label.textContent = "로그인";
+              else button.textContent = "로그인";
+            });
             if (mobileAuthButton) mobileAuthButton.href = loginUrl();
             profileMenuAuthed = false;
             setProfileMenu(false);
@@ -2629,6 +2646,61 @@ function renderCommunityScript(postSlug = "") {
       });
       document.addEventListener("keydown", function (event) {
         if (event.key === "Escape") setProfileMenu(false);
+      });
+
+
+      var notificationButton = document.querySelector("[data-notification-button]");
+      var notificationPanel = document.querySelector("[data-notification-panel]");
+      function notificationEscape(value) {
+        return String(value || "").replace(/[&<>"']/g, function (char) {
+          return ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char];
+        });
+      }
+      function renderNotifications(items) {
+        if (!notificationPanel) return;
+        if (!items || !items.length) {
+          notificationPanel.innerHTML = "<strong>알림</strong><p>아직 새 알림이 없습니다.</p>";
+          return;
+        }
+        notificationPanel.innerHTML = "<strong>알림</strong><div>" + items.map(function (item) {
+          var href = item.postSlug ? "/community/" + encodeURIComponent(item.postSlug) + (item.commentId ? "#" + encodeURIComponent(item.commentId) : "") : "/community";
+          return '<a class="sellerdit-notification-item" href="' + href + '"><span>' + notificationEscape(item.title || "새 알림") + '</span><em>' + notificationEscape(item.message || "") + '</em></a>';
+        }).join("") + "</div>";
+      }
+      async function toggleNotifications() {
+        if (!notificationButton || !notificationPanel) return;
+        var willOpen = notificationPanel.hidden;
+        notificationPanel.hidden = !willOpen;
+        notificationButton.setAttribute("aria-expanded", willOpen ? "true" : "false");
+        if (!willOpen) return;
+        notificationPanel.innerHTML = "<strong>알림</strong><p>알림을 불러오는 중입니다.</p>";
+        if (!communityAuthState.authenticated) {
+          notificationPanel.innerHTML = '<strong>알림</strong><p>로그인 후 알림을 확인할 수 있습니다.</p><a class="sellerdit-notification-login" href="' + loginUrl() + '">로그인</a>';
+          return;
+        }
+        try {
+          var response = await fetch("/api/community/notifications", { credentials: "same-origin", headers: { "Accept": "application/json" } });
+          if (response.status === 401) {
+            notificationPanel.innerHTML = '<strong>알림</strong><p>로그인 후 알림을 확인할 수 있습니다.</p><a class="sellerdit-notification-login" href="' + loginUrl() + '">로그인</a>';
+            return;
+          }
+          if (!response.ok) throw new Error("notification_failed");
+          var data = await response.json();
+          renderNotifications(data.notifications || []);
+        } catch (error) {
+          notificationPanel.innerHTML = "<strong>알림</strong><p>알림을 불러오지 못했습니다.</p>";
+        }
+      }
+      notificationButton && notificationButton.addEventListener("click", function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+        toggleNotifications();
+      });
+      document.addEventListener("click", function (event) {
+        if (!notificationPanel || notificationPanel.hidden) return;
+        if (event.target.closest("[data-notification-wrap]")) return;
+        notificationPanel.hidden = true;
+        notificationButton && notificationButton.setAttribute("aria-expanded", "false");
       });
 
       async function logoutCommunityUser() {
@@ -3517,7 +3589,7 @@ function renderDocumentShell({ title, description, canonicalUrl, body, jsonLd, s
     <meta name="twitter:description" content="${escapeHtml(description)}" />
     <meta name="twitter:image" content="${PUBLIC_SITE_URL}/assets/site-flow.svg" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
-    <link rel="stylesheet" href="/styles.css?v=20260629-sellerdit-align-header-v4" />
+    <link rel="stylesheet" href="/styles.css?v=20260629-sellerdit-functional-v5" />
     <style>
       .sellerdit-profile-menu-wrap{position:relative!important;display:inline-flex!important;align-items:center!important}.sellerdit-profile-menu{position:absolute!important;top:calc(100% + 10px)!important;right:0!important;min-width:188px!important;padding:8px!important;border:1px solid rgba(15,23,42,.12)!important;border-radius:14px!important;background:#fff!important;box-shadow:0 18px 45px rgba(15,23,42,.18)!important;z-index:1300!important}.sellerdit-profile-menu[hidden]{display:none!important}.sellerdit-profile-menu::before{content:"";position:absolute;top:-6px;right:14px;width:12px;height:12px;background:#fff;border-left:1px solid rgba(15,23,42,.12);border-top:1px solid rgba(15,23,42,.12);transform:rotate(45deg)}.sellerdit-profile-menu a,.sellerdit-profile-menu button{width:100%!important;min-height:38px!important;display:flex!important;align-items:center!important;gap:8px!important;padding:0 12px!important;border:0!important;border-radius:10px!important;background:transparent!important;color:#0f172a!important;font:700 13px/1 Pretendard,system-ui,sans-serif!important;text-align:left!important;text-decoration:none!important;cursor:pointer!important}.sellerdit-profile-menu a:hover,.sellerdit-profile-menu button:hover,.sellerdit-profile-menu a:focus-visible,.sellerdit-profile-menu button:focus-visible{background:#f1f5f9!important;outline:none!important}.sellerdit-profile-menu button{color:#dc2626!important}@media (max-width:767.98px){.sellerdit-profile-menu{position:fixed!important;top:64px!important;right:12px!important;left:auto!important;width:min(220px,calc(100vw - 24px))!important}}
     </style>
