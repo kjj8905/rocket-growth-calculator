@@ -25941,7 +25941,120 @@ body:has(.sellerdit-topbar) .sellerdit-recent-copy small {
   font-size: 11.5px !important;
 }
 
+/* Sellerdit home/trends header unification - 20260629 */
+body.sellerdit-home-page,
+body:has(.trend-page) {
+  padding-top: var(--sellerdit-topbar-height) !important;
+}
+body.sellerdit-home-page .sellerdit-home-topbar,
+body:has(.trend-page) .sellerdit-topbar {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  height: var(--sellerdit-topbar-height) !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-bottom: 1px solid #e5e7eb !important;
+  border-radius: 0 !important;
+  background: rgba(255,255,255,.96) !important;
+  box-shadow: none !important;
+  backdrop-filter: blur(10px) !important;
+}
+body.sellerdit-home-page .sellerdit-topbar-inner,
+body:has(.trend-page) .sellerdit-topbar-inner {
+  width: min(1280px, calc(100% - 32px)) !important;
+  height: var(--sellerdit-topbar-height) !important;
+  min-height: var(--sellerdit-topbar-height) !important;
+  margin: 0 auto !important;
+  padding: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 14px !important;
+  overflow: visible !important;
+}
+body.sellerdit-home-page .sellerdit-home-shell,
+body:has(.trend-page) .trend-page {
+  margin-top: 0 !important;
+  padding-top: 18px !important;
+}
+body.sellerdit-home-page .community-brand,
+body:has(.trend-page) .community-brand {
+  height: 40px !important;
+  min-height: 40px !important;
+  padding: 0 8px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  line-height: 1 !important;
+}
+body.sellerdit-home-page .community-global-search,
+body:has(.trend-page) .community-global-search {
+  flex: 1 1 420px !important;
+  max-width: 560px !important;
+  margin: 0 !important;
+}
+body.sellerdit-home-page .community-global-search input,
+body:has(.trend-page) .community-global-search input {
+  height: 36px !important;
+}
+body.sellerdit-home-page .sellerdit-topbar nav,
+body:has(.trend-page) .sellerdit-topbar nav,
+body:has(.trend-page) .sellerdit-top-categorybar {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  flex: 0 0 auto !important;
+  margin: 0 !important;
+}
+body.sellerdit-home-page .sellerdit-topbar nav a,
+body.sellerdit-home-page .sellerdit-topbar nav button,
+body:has(.trend-page) .sellerdit-topbar nav a,
+body:has(.trend-page) .sellerdit-topbar nav button,
+body:has(.trend-page) .sellerdit-top-categorybar a {
+  min-height: 36px !important;
+  padding: 0 10px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+}
+body.sellerdit-home-page .sellerdit-header-dots,
+body:has(.trend-page) .sellerdit-mobile-dots,
+body:has(.trend-page) .sellerdit-bottom-tab,
+body:has(.trend-page) .sellerdit-mobile-filterbar,
+body:has(.trend-page) .topbar-hamburger {
+  display: none !important;
+}
+
 /* Sellerdit feed font hard rollback - 20260629 */
+html body.sellerdit-home-page:has(.sellerdit-home-topbar) .sellerdit-topbar,
+html body:has(.trend-page):has(.sellerdit-topbar) .sellerdit-topbar {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  height: var(--sellerdit-topbar-height) !important;
+  min-height: var(--sellerdit-topbar-height) !important;
+  display: flex !important;
+}
+html body.sellerdit-home-page:has(.sellerdit-home-topbar) .sellerdit-topbar-inner,
+html body:has(.trend-page):has(.sellerdit-topbar) .sellerdit-topbar .sellerdit-topbar-inner,
+html body:has(.trend-page):has(.sellerdit-topbar) header.sellerdit-reddit-topbar .sellerdit-topbar-inner {
+  width: min(1280px, calc(100% - 32px)) !important;
+  height: var(--sellerdit-topbar-height) !important;
+  min-height: var(--sellerdit-topbar-height) !important;
+  display: flex !important;
+  align-items: center !important;
+}
+html body.sellerdit-home-page:has(.sellerdit-home-topbar),
+html body:has(.trend-page):has(.sellerdit-topbar) {
+  padding-top: var(--sellerdit-topbar-height) !important;
+}
+html body.sellerdit-home-page:has(.sellerdit-home-topbar) .sellerdit-home-shell,
+html body:has(.trend-page):has(.sellerdit-topbar) .trend-page {
+  padding-top: 18px !important;
+}
+
 html body:has(.sellerdit-topbar) main.community-shell .community-feed-panel .sellerdit-feed-post .sellerdit-feed-content .sellerdit-thread-body,
 html body:has(.sellerdit-topbar) main.community-shell .community-feed-panel .sellerdit-feed-post .sellerdit-thread-body.is-feed,
 html body:has(.sellerdit-topbar) main.community-shell .sellerdit-feedpanel .sellerdit-feed-post .sellerdit-thread-body.is-feed,
