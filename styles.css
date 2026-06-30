@@ -17169,10 +17169,11 @@ body:has(.sellerdit-topbar) .sellerdit-recent-copy > strong {
 }
 
 body:has(.sellerdit-topbar) .sellerdit-recent-copy small {
-  color: #8b949d !important;
-  font-size: 12px !important;
+  color: #98a2ad !important;
+  font-size: 11px !important;
   font-weight: 400 !important;
-  line-height: 16px !important;
+  line-height: 14px !important;
+  letter-spacing: -0.01em !important;
 }
 
 body:has(.sellerdit-topbar) .sellerdit-recent-thumb {
@@ -27958,3 +27959,13 @@ html body:has(.sellerdit-topbar) .sellerdit-right-rail .sellerdit-recent-title {
     grid-row: 1 !important;
   }
 }
+
+/* Sellerdit right-rail recent post stats: keep like/comment text subdued */
+html body:has(.sellerdit-topbar) main.community-shell.sellerdit-layout-shell .sellerdit-right-rail .sellerdit-recent-posts-panel .sellerdit-recent-post .sellerdit-recent-copy > small {
+  color: #98a2ad !important;
+  font-size: 11px !important;
+  font-weight: 400 !important;
+  line-height: 14px !important;
+  letter-spacing: -0.01em !important;
+}
+
