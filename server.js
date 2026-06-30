@@ -814,7 +814,7 @@ function renderIndexHtml() {
   const filePath = path.join(__dirname, "index.html");
   let html = fs.readFileSync(filePath, "utf8")
     .replaceAll("__SITE_URL__", PUBLIC_SITE_URL)
-    .replace('<link rel="stylesheet" href="./styles.css" />', '<link rel="stylesheet" href="/styles.css?v=20260630-recent-meta-v1" />');
+    .replace('<link rel="stylesheet" href="./styles.css" />', '<link rel="stylesheet" href="/styles.css?v=20260630-recent-stats-icons-v2" />');
   const headerStart = html.indexOf('<header class="community-topbar sellerdit-topbar sellerdit-home-topbar">');
   const headerEnd = html.indexOf('</header>', headerStart);
   if (headerStart !== -1 && headerEnd !== -1) {
@@ -1235,18 +1235,18 @@ function renderSellerditRecentPostsPanel() {
         const fallback = fallbacks[index] || fallbacks[0];
         const title = post.slug ? getThreadPostSeoTitle(post, 90) : (post.title || fallback.title);
         const href = post.slug ? `/community/${escapeHtml(post.slug)}` : "/community";
-        const likes = formatInteger(post.likesCount || fallback.likesCount || 0);
+        const likes = formatInteger(post.likesCount ?? fallback.likesCount ?? 0);
         const comments = formatInteger(post.commentsCount ?? fallback.commentsCount ?? 0);
         const community = communityName(post, index);
         const avatar = getCommunityAuthorInitial(community.replace("r/", ""));
-        const color = post.color || fallback.color;
+        const color = post.communityColor || post.authorColor || fallback.color || "#2563eb";
         const image = imageFor(post, index);
         const imageCount = post.imageCount || fallback.imageCount || index + 2;
         return `<a class="sellerdit-recent-post" href="${href}">
           <span class="sellerdit-recent-copy">
             <span class="sellerdit-recent-meta"><span class="sellerdit-recent-avatar" style="background:${escapeHtml(color)}">${escapeHtml(avatar)}</span><span style="overflow:hidden;color:#334155;font-size:12px;font-weight:500;text-overflow:ellipsis;white-space:nowrap">${escapeHtml(community)}</span><i>·</i><em>${escapeHtml(elapsed(post.createdAt, index))}</em></span>
             <span class="sellerdit-recent-title" style="display:-webkit-box;overflow:hidden;color:#334155;font-size:14px;font-weight:500;line-height:20px;-webkit-box-orient:vertical;-webkit-line-clamp:2">${escapeHtml(title)}</span>
-            <small>좋아요 ${likes}개 · 댓글 ${comments}개</small>
+            <small class="sellerdit-recent-stats" aria-label="좋아요 ${likes}개, 댓글 ${comments}개"><span class="sellerdit-recent-stat sellerdit-recent-stat-like">${renderCommunityActionIcon("like")}<span>${likes}</span></span><span class="sellerdit-recent-stat sellerdit-recent-stat-comment">${renderCommunityActionIcon("comment")}<span>${comments}</span></span></small>
           </span>
           ${image ? `<span class="sellerdit-recent-thumb"><img src="${escapeHtml(image)}" alt="" loading="lazy" /><em><svg viewBox="0 0 12 12" aria-hidden="true"><rect x="2" y="3" width="7" height="6" rx="1.2"/><path d="M4 2h6v6"/></svg>${formatInteger(imageCount)}</em></span>` : ""}
         </a>`;
@@ -3799,7 +3799,7 @@ function renderDocumentShell({ title, description, canonicalUrl, body, jsonLd, s
     <meta name="twitter:description" content="${escapeHtml(description)}" />
     <meta name="twitter:image" content="${PUBLIC_SITE_URL}/assets/site-flow.svg" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
-    <link rel="stylesheet" href="/styles.css?v=20260630-recent-meta-v1" />
+    <link rel="stylesheet" href="/styles.css?v=20260630-recent-stats-icons-v2" />
     <style>
       .sellerdit-profile-menu-wrap{position:relative!important;display:inline-flex!important;align-items:center!important}.sellerdit-profile-menu{position:absolute!important;top:calc(100% + 10px)!important;right:0!important;min-width:188px!important;padding:8px!important;border:1px solid rgba(15,23,42,.12)!important;border-radius:14px!important;background:#fff!important;box-shadow:0 18px 45px rgba(15,23,42,.18)!important;z-index:1300!important}.sellerdit-profile-menu[hidden]{display:none!important}.sellerdit-profile-menu::before{content:"";position:absolute;top:-6px;right:14px;width:12px;height:12px;background:#fff;border-left:1px solid rgba(15,23,42,.12);border-top:1px solid rgba(15,23,42,.12);transform:rotate(45deg)}.sellerdit-profile-menu a,.sellerdit-profile-menu button{width:100%!important;min-height:38px!important;display:flex!important;align-items:center!important;gap:8px!important;padding:0 12px!important;border:0!important;border-radius:10px!important;background:transparent!important;color:#0f172a!important;font:700 13px/1 Pretendard,system-ui,sans-serif!important;text-align:left!important;text-decoration:none!important;cursor:pointer!important}.sellerdit-profile-menu a:hover,.sellerdit-profile-menu button:hover,.sellerdit-profile-menu a:focus-visible,.sellerdit-profile-menu button:focus-visible{background:#f1f5f9!important;outline:none!important}.sellerdit-profile-menu button{color:#dc2626!important}@media (max-width:767.98px){.sellerdit-profile-menu{position:fixed!important;top:64px!important;right:12px!important;left:auto!important;width:min(220px,calc(100vw - 24px))!important}}
     </style>

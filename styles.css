@@ -27961,11 +27961,79 @@ html body:has(.sellerdit-topbar) .sellerdit-right-rail .sellerdit-recent-title {
 }
 
 /* Sellerdit right-rail recent post stats: keep like/comment text subdued */
-html body:has(.sellerdit-topbar) main.community-shell.sellerdit-layout-shell .sellerdit-right-rail .sellerdit-recent-posts-panel .sellerdit-recent-post .sellerdit-recent-copy > small {
+html body:has(.sellerdit-topbar) main.community-shell.sellerdit-layout-shell .sellerdit-right-rail .sellerdit-recent-posts-panel .sellerdit-recent-post .sellerdit-recent-copy > small,
+html body:has(.sellerdit-topbar) main.community-shell.sellerdit-layout-shell .sellerdit-right-rail .sellerdit-recent-posts-panel .sellerdit-recent-post .sellerdit-recent-stats {
   color: #98a2ad !important;
   font-size: 11px !important;
   font-weight: 400 !important;
   line-height: 14px !important;
   letter-spacing: -0.01em !important;
+}
+
+html body:has(.sellerdit-topbar) main.community-shell.sellerdit-layout-shell .sellerdit-right-rail .sellerdit-recent-posts-panel .sellerdit-recent-stats {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 9px !important;
+}
+
+html body:has(.sellerdit-topbar) main.community-shell.sellerdit-layout-shell .sellerdit-right-rail .sellerdit-recent-posts-panel .sellerdit-recent-stat {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 3px !important;
+  color: inherit !important;
+  font: inherit !important;
+  line-height: inherit !important;
+  white-space: nowrap !important;
+}
+
+html body:has(.sellerdit-topbar) main.community-shell.sellerdit-layout-shell .sellerdit-right-rail .sellerdit-recent-posts-panel .sellerdit-recent-stat svg {
+  width: 12px !important;
+  height: 12px !important;
+  flex: 0 0 12px !important;
+  display: block !important;
+  color: inherit !important;
+  fill: none !important;
+  stroke: currentColor !important;
+  stroke-width: 1.9 !important;
+}
+
+html body:has(.sellerdit-topbar) main.community-shell.sellerdit-layout-shell .sellerdit-right-rail .sellerdit-recent-posts-panel .sellerdit-recent-stat-like svg {
+  fill: currentColor !important;
+  stroke: none !important;
+}
+
+/* Sellerdit action counts: keep post like/comment icons and counts visually connected */
+html body:has(.sellerdit-topbar) main.community-shell.sellerdit-layout-shell .community-vote-actions > .sellerdit-action-like,
+html body:has(.sellerdit-topbar) main.community-shell.sellerdit-layout-shell .community-vote-actions > .sellerdit-action-comment,
+html body:has(.sellerdit-topbar) main.community-shell.sellerdit-layout-shell .sellerdit-actions > .sellerdit-action-like,
+html body:has(.sellerdit-topbar) main.community-shell.sellerdit-layout-shell .sellerdit-actions > .sellerdit-action-comment {
+  min-width: 0 !important;
+  width: auto !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  padding: 0 2px !important;
+  background: transparent !important;
+  color: #475569 !important;
+}
+
+html body:has(.sellerdit-topbar) main.community-shell.sellerdit-layout-shell .community-vote-actions > .sellerdit-action-like span,
+html body:has(.sellerdit-topbar) main.community-shell.sellerdit-layout-shell .community-vote-actions > .sellerdit-action-comment span,
+html body:has(.sellerdit-topbar) main.community-shell.sellerdit-layout-shell .sellerdit-actions > .sellerdit-action-like span,
+html body:has(.sellerdit-topbar) main.community-shell.sellerdit-layout-shell .sellerdit-actions > .sellerdit-action-comment span {
+  min-width: 0 !important;
+  width: auto !important;
+  height: 18px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  place-items: normal !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: currentColor !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  line-height: 18px !important;
 }
 
