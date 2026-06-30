@@ -818,7 +818,7 @@ function renderIndexHtml() {
   const filePath = path.join(__dirname, "index.html");
   let html = fs.readFileSync(filePath, "utf8")
     .replaceAll("__SITE_URL__", PUBLIC_SITE_URL)
-    .replace('<link rel="stylesheet" href="./styles.css" />', '<link rel="stylesheet" href="/styles.css?v=20260630-blog-write-follow-v2" />');
+    .replace('<link rel="stylesheet" href="./styles.css" />', '<link rel="stylesheet" href="/styles.css?v=20260630-follow-profile-sync-v1" />');
   const headerStart = html.indexOf('<header class="community-topbar sellerdit-topbar sellerdit-home-topbar">');
   const headerEnd = html.indexOf('</header>', headerStart);
   if (headerStart !== -1 && headerEnd !== -1) {
@@ -1076,7 +1076,6 @@ function renderCommunityLeftRail(activeKey = "community", currentUser = null) {
     ["home", "/community", "홈", activeKey === "community"],
     ["popular", "/community?sort=hot", "인기", false],
     ["bookmark", "/community/saved", "저장한 글", activeKey === "saved"],
-    ["blog", "/community/blog", "내 블로그", activeKey === "blog"],
     ["create", "#community-write", "글쓰기", false],
   ];
   const quickItems = [
@@ -1100,14 +1099,14 @@ function renderCommunityLeftRail(activeKey = "community", currentUser = null) {
       <section class="sellerdit-lnav-section sellerdit-supplier-nav" aria-labelledby="sellerdit-supplier-nav-title" data-lnav-collapsible>
         <button class="sellerdit-lnav-sec" id="sellerdit-supplier-nav-title" type="button" data-lnav-toggle aria-expanded="true"><span>SELLERDIT 공급처</span><span aria-hidden="true">⌃</span></button>
         <div class="sellerdit-lnav-body">
-          ${supplierItems.map(([theme, icon, label]) => `<a class="sellerdit-lnav-item sellerdit-supplier-row" href="/u/${encodeURIComponent(makeCommunityHandle(label))}"><span class="sellerdit-lnav-ic sellerdit-round-ic supplier-thumb is-${escapeHtml(theme)}">${escapeHtml(icon)}</span><span>${escapeHtml(label)}</span></a>`).join("")}
+          ${supplierItems.map(([theme, icon, label]) => `<a class="sellerdit-lnav-item sellerdit-supplier-row" href="/u/${encodeURIComponent(makeCommunityHandle(label))}">${renderLinkedProfileAvatar(label, `sellerdit-lnav-ic sellerdit-round-ic supplier-thumb sellerdit-linked-avatar is-${escapeHtml(theme)}`)}<span>${escapeHtml(label)}</span></a>`).join("")}
           <a class="sellerdit-lnav-item sellerdit-more-browse" href="/community/suppliers"><span class="sellerdit-lnav-ic sellerdit-browse-ic">${renderCommunityActionIcon("browse")}</span><span>더 둘러보기</span></a>
         </div>
       </section>
       <section class="sellerdit-lnav-section sellerdit-recent-nav" aria-labelledby="sellerdit-recent-nav-title" data-lnav-collapsible>
         <button class="sellerdit-lnav-sec" id="sellerdit-recent-nav-title" type="button" data-lnav-toggle aria-expanded="true"><span>최근 방문 프로필</span><span aria-hidden="true">⌃</span></button>
         <div class="sellerdit-lnav-body">
-          ${recentItems.map((name) => `<a class="sellerdit-lnav-item sellerdit-recent-row" href="/u/${encodeURIComponent(makeCommunityHandle(name))}"><span class="sellerdit-lnav-ic sellerdit-recent-avatar">${escapeHtml(name.slice(0, 1))}</span><span>${escapeHtml(name)}</span></a>`).join("")}
+          ${recentItems.map((name) => `<a class="sellerdit-lnav-item sellerdit-recent-row" href="/u/${encodeURIComponent(makeCommunityHandle(name))}">${renderLinkedProfileAvatar(name, "sellerdit-lnav-ic sellerdit-recent-avatar sellerdit-linked-avatar")}<span>${escapeHtml(name)}</span></a>`).join("")}
         </div>
       </section>
       <section class="sellerdit-lnav-section sellerdit-shortcut-nav" aria-labelledby="sellerdit-shortcut-nav-title" data-lnav-collapsible>
@@ -1524,7 +1523,6 @@ function renderCommunitySupplierFilterRail(supplierTiles = [], communityCount = 
   const topItems = [
     ["home", "/community", "홈", false],
     ["popular", "/community?sort=hot", "인기", false],
-    ["blog", "/community/blog", "내 블로그", false],
     ["create", "#community-write", "글쓰기", false],
   ];
   const quickItems = [
@@ -2116,6 +2114,17 @@ function renderProfileAvatar(profile, className = "sellerdit-profile-avatar") {
     : `<span class="${className}" style="background:${escapeHtml(getCommunityAuthorColor(profile.nickname))}">${escapeHtml(getCommunityAuthorInitial(profile.nickname))}</span>`;
 }
 
+function renderLinkedProfileAvatar(name, className = "sellerdit-lnav-ic sellerdit-linked-avatar") {
+  const displayName = String(name || "셀러").trim() || "셀러";
+  const user = getUserByHandle(makeCommunityHandle(displayName));
+  if (user) {
+    const profile = buildProfileView(user, user);
+    return renderProfileAvatar(profile, className);
+  }
+  const color = getCommunityAuthorColor(displayName);
+  return `<span class="${className}" style="--linked-avatar-bg:${escapeHtml(color)};background:${escapeHtml(color)}">${escapeHtml(getCommunityAuthorInitial(displayName))}</span>`;
+}
+
 function renderProfileBadges(profile) {
   const badges = [profile.mainBadge, ...(profile.badges || [])].filter(Boolean);
   return `<div class="sellerdit-profile-badges">${Array.from(new Set(badges)).slice(0, 4).map((badge) => `<span>${escapeHtml(badge)}</span>`).join("")}</div>`;
@@ -2261,7 +2270,7 @@ function renderCommunityHeader(activeKey, currentUser = null) {
   const avatarMarkup = meProfile
     ? (meProfile.avatarUrl ? `<span class="sellerdit-top-avatar has-image"><img src="${escapeHtml(meProfile.avatarUrl)}" alt="" loading="lazy"></span>` : `<span class="sellerdit-top-avatar" style="background:${escapeHtml(getCommunityAuthorColor(meProfile.nickname))}">${escapeHtml(getCommunityAuthorInitial(meProfile.nickname))}</span>`)
     : "";
-  const categoryBar = `<nav class="sellerdit-top-categorybar" aria-label="상단 카테고리"><a href="/">로켓그로스 계산기</a><a href="/trends">검색트렌드</a><a class="sellerdit-nav-wordlogo" href="/community" aria-label="셀러딧 커뮤니티"><span>셀러딧</span></a><a class="${activeKey === "blog" ? "is-active" : ""}" href="/community/blog">내 블로그</a></nav>`;
+  const categoryBar = `<nav class="sellerdit-top-categorybar" aria-label="상단 카테고리"><a href="/">로켓그로스 계산기</a><a href="/trends">검색트렌드</a><a class="sellerdit-nav-wordlogo" href="/community" aria-label="셀러딧 커뮤니티"><span>셀러딧</span></a><a class="${activeKey === "blog" ? "is-active" : ""}" href="/community/blog">셀러 정보</a></nav>`;
   const needsFallbackDrawer = ["home", "trends", "guides"].includes(activeKey || "");
   const fallbackDrawer = needsFallbackDrawer ? renderCommunityLeftRail(activeKey || "community", currentUser) : "";
   return `<header class="community-topbar sellerdit-topbar sellerdit-reddit-topbar" data-active-section="${escapeHtml(activeKey || "community")}">
@@ -3865,7 +3874,7 @@ function renderDocumentShell({ title, description, canonicalUrl, body, jsonLd, s
     <meta name="twitter:description" content="${escapeHtml(description)}" />
     <meta name="twitter:image" content="${PUBLIC_SITE_URL}/assets/site-flow.svg" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
-    <link rel="stylesheet" href="/styles.css?v=20260630-blog-write-follow-v2" />
+    <link rel="stylesheet" href="/styles.css?v=20260630-follow-profile-sync-v1" />
     <style>
       .sellerdit-profile-menu-wrap{position:relative!important;display:inline-flex!important;align-items:center!important}.sellerdit-profile-menu{position:absolute!important;top:calc(100% + 10px)!important;right:0!important;min-width:188px!important;padding:8px!important;border:1px solid rgba(15,23,42,.12)!important;border-radius:14px!important;background:#fff!important;box-shadow:0 18px 45px rgba(15,23,42,.18)!important;z-index:1300!important}.sellerdit-profile-menu[hidden]{display:none!important}.sellerdit-profile-menu::before{content:"";position:absolute;top:-6px;right:14px;width:12px;height:12px;background:#fff;border-left:1px solid rgba(15,23,42,.12);border-top:1px solid rgba(15,23,42,.12);transform:rotate(45deg)}.sellerdit-profile-menu a,.sellerdit-profile-menu button{width:100%!important;min-height:38px!important;display:flex!important;align-items:center!important;gap:8px!important;padding:0 12px!important;border:0!important;border-radius:10px!important;background:transparent!important;color:#0f172a!important;font:700 13px/1 Pretendard,system-ui,sans-serif!important;text-align:left!important;text-decoration:none!important;cursor:pointer!important}.sellerdit-profile-menu a:hover,.sellerdit-profile-menu button:hover,.sellerdit-profile-menu a:focus-visible,.sellerdit-profile-menu button:focus-visible{background:#f1f5f9!important;outline:none!important}.sellerdit-profile-menu button{color:#dc2626!important}@media (max-width:767.98px){.sellerdit-profile-menu{position:fixed!important;top:64px!important;right:12px!important;left:auto!important;width:min(220px,calc(100vw - 24px))!important}}
     </style>

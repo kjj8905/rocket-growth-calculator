@@ -28103,14 +28103,14 @@ html body:has(.sellerdit-topbar) main.community-shell.sellerdit-layout-shell .se
   width: 100% !important;
 }
 
-html body:has(.sellerdit-topbar) main.community-shell.sellerdit-layout-shell .sellerdit-feed-post .sellerdit-post-meta .sellerdit-follow {
-  flex: 0 0 auto !important;
-  margin-left: 4px !important;
-}
-
-html body:has(.sellerdit-topbar) main.community-shell.sellerdit-layout-shell .sellerdit-feed-post .sellerdit-post-meta .sellerdit-post-more-wrap {
+html body:has(.sellerdit-topbar) main.community-shell.sellerdit-layout-shell .sellerdit-post-meta .sellerdit-follow {
   flex: 0 0 auto !important;
   margin-left: auto !important;
+}
+
+html body:has(.sellerdit-topbar) main.community-shell.sellerdit-layout-shell .sellerdit-post-meta .sellerdit-post-more-wrap {
+  flex: 0 0 auto !important;
+  margin-left: 4px !important;
 }
 
 html body:has(.sellerdit-topbar) .sellerdit-bottom-tab a.is-create span svg {
@@ -28208,3 +28208,58 @@ html body:has(.sellerdit-topbar) .sellerdit-bottom-tab a.is-create span svg {
   }
 }
 
+
+
+/* Sellerdit profile identity sync: use the same circular profile token in side rails */
+body:has(.sellerdit-topbar) .sellerdit-reddit-left-rail .sellerdit-linked-avatar:not(.has-image) {
+  background: var(--linked-avatar-bg, #2563eb) !important;
+  color: #ffffff !important;
+  overflow: hidden !important;
+  padding: 0 !important;
+}
+
+.sellerdit-lnav-ic.sellerdit-linked-avatar.has-image,
+.sellerdit-supplier-row .supplier-thumb.has-image,
+.sellerdit-recent-row .sellerdit-recent-avatar.has-image {
+  overflow: hidden !important;
+  padding: 0 !important;
+  background: #eef3ff !important;
+}
+
+.sellerdit-lnav-ic.sellerdit-linked-avatar img,
+.sellerdit-supplier-row .supplier-thumb.has-image img,
+.sellerdit-recent-row .sellerdit-recent-avatar.has-image img {
+  width: 100% !important;
+  height: 100% !important;
+  display: block !important;
+  object-fit: cover !important;
+}
+
+
+/* Sellerdit post meta action lock: follow is fixed immediately left of the three-dot menu */
+html body:has(.sellerdit-topbar) main.community-shell.sellerdit-layout-shell .sellerdit-feed-post .sellerdit-post-meta,
+html body:has(.sellerdit-topbar) main.community-shell.sellerdit-layout-shell .sellerdit-detail-post .sellerdit-post-meta {
+  position: relative !important;
+  padding-right: 102px !important;
+}
+
+html body:has(.sellerdit-topbar) main.community-shell.sellerdit-layout-shell .sellerdit-feed-post .sellerdit-post-meta .sellerdit-follow,
+html body:has(.sellerdit-topbar) main.community-shell.sellerdit-layout-shell .sellerdit-detail-post .sellerdit-post-meta .sellerdit-follow {
+  position: absolute !important;
+  top: 50% !important;
+  right: 34px !important;
+  transform: translateY(-50%) !important;
+  margin: 0 !important;
+  width: 56px !important;
+  min-width: 56px !important;
+  justify-content: center !important;
+}
+
+html body:has(.sellerdit-topbar) main.community-shell.sellerdit-layout-shell .sellerdit-feed-post .sellerdit-post-meta .sellerdit-post-more-wrap,
+html body:has(.sellerdit-topbar) main.community-shell.sellerdit-layout-shell .sellerdit-detail-post .sellerdit-post-meta .sellerdit-post-more-wrap {
+  position: absolute !important;
+  top: 50% !important;
+  right: 0 !important;
+  transform: translateY(-50%) !important;
+  margin: 0 !important;
+}
