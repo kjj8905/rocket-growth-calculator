@@ -5,20 +5,20 @@ const baseUrl = process.env.DESIGN_BASE_URL || "http://localhost:4176";
 const routes = [
   {
     path: "/community",
-    mustContain: ["셀러딧", "data-community-reaction", "data-community-share"],
+    mustContain: ["셀러딧", "sellerdit-layout-shell", "sellerdit-layout-grid", "data-community-reaction", "data-community-share"],
   },
   {
     path: "/community?sort=new&cat=china-sourcing",
-    mustContain: ["중국사입", "data-community-reaction", "data-community-share"],
+    mustContain: ["중국사입", "sellerdit-layout-shell", "sellerdit-layout-grid", "data-community-reaction", "data-community-share"],
   },
   {
     path: "/community/suppliers",
-    mustContain: ["공급처", "data-tile-type=\"community\"", "data-tile-type=\"supplier\"", "data-community-membership"],
+    mustContain: ["공급처", "sellerdit-layout-shell", "sellerdit-layout-grid", "data-tile-type=\"community\"", "data-tile-type=\"supplier\"", "data-community-membership"],
     mustNotContain: ["무지개"],
   },
   {
     path: "/u/%EC%B4%88%EB%B3%B4%EC%85%80%EB%9F%AC%EB%AF%BC%EC%88%98",
-    mustContain: ["sellerdit-profile-header", "sellerdit-profile-feed-list", "sellerdit-profile-card", "프로필 탭"],
+    mustContain: ["sellerdit-layout-shell", "sellerdit-layout-grid", "sellerdit-profile-header", "sellerdit-profile-feed-list", "sellerdit-profile-card", "프로필 탭"],
   },
 ];
 
@@ -56,6 +56,11 @@ async function main() {
   const cssResponse = await fetch(cssUrl);
   const css = await cssResponse.text();
   const cssTokens = [
+    "sellerdit-layout-shell",
+    "sellerdit-layout-grid",
+    "--sellerdit-shell-feed-w",
+    "--sellerdit-shell-right-w",
+    "--sellerdit-shell-left-offset",
     "sellerdit-profile-main",
     "sellerdit-profile-header",
     "sellerdit-tile",

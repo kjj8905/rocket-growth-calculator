@@ -12,6 +12,10 @@ import {
   LEGACY_COMMUNITY_CATEGORY_REDIRECTS,
   SEED_COMMUNITY_POSTS,
 } from "./community-posts.js";
+import {
+  renderSellerditAppShell as renderSellerditLayoutShell,
+  renderSellerditHeaderShell as renderSellerditLayoutHeaderShell,
+} from "./src/server/sellerdit-layout.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -810,7 +814,7 @@ function renderIndexHtml() {
   const filePath = path.join(__dirname, "index.html");
   let html = fs.readFileSync(filePath, "utf8")
     .replaceAll("__SITE_URL__", PUBLIC_SITE_URL)
-    .replace('<link rel="stylesheet" href="./styles.css" />', '<link rel="stylesheet" href="/styles.css?v=20260630-sellerdit-mobile-fix-v12" />');
+    .replace('<link rel="stylesheet" href="./styles.css" />', '<link rel="stylesheet" href="/styles.css?v=20260630-layout-tokens-v8" />');
   const headerStart = html.indexOf('<header class="community-topbar sellerdit-topbar sellerdit-home-topbar">');
   const headerEnd = html.indexOf('</header>', headerStart);
   if (headerStart !== -1 && headerEnd !== -1) {
@@ -1387,46 +1391,19 @@ function renderCommunityPager(basePath, page, totalPages, search, sort, tag, vie
   return `<nav class="community-pager" aria-label="페이지 이동">${items.join("")}</nav>`;
 }
 
-function renderSellerditAppShell({
-  activeKey = "community",
-  currentUser = null,
-  mainClass = "",
-  layoutClass = "community-workspace community-reddit-layout sellerdit-with-left-rail",
-  layoutAttrs = "",
-  leftRail = null,
-  contentTag = "section",
-  contentClass = "community-feed-panel",
-  contentAttrs = "",
-  content = "",
-  rightRail = "",
-} = {}) {
-  const mainClassName = ["community-shell", mainClass].filter(Boolean).join(" ");
-  const leftRailMarkup = leftRail === null ? renderCommunityLeftRail(activeKey, currentUser) : leftRail;
-  const contentAttributeText = contentAttrs ? ` ${contentAttrs.trim()}` : "";
-  const layoutAttributeText = layoutAttrs ? ` ${layoutAttrs.trim()}` : "";
-  return `<main class="${escapeHtml(mainClassName)}">
-      ${renderCommunityHeader(activeKey, currentUser)}
-      <section class="${escapeHtml(layoutClass)}"${layoutAttributeText}>
-        ${leftRailMarkup}
-        <${contentTag} class="${escapeHtml(contentClass)}"${contentAttributeText}>
-          ${content}
-        </${contentTag}>
-        ${rightRail}
-      </section>
-    </main>`;
+function renderSellerditAppShell(options = {}) {
+  return renderSellerditLayoutShell({
+    ...options,
+    renderHeader: renderCommunityHeader,
+    renderDefaultLeftRail: renderCommunityLeftRail,
+  });
 }
 
-function renderSellerditHeaderShell({
-  activeKey = "community",
-  currentUser = null,
-  mainClass = "",
-  content = "",
-} = {}) {
-  const mainClassName = ["community-shell", mainClass].filter(Boolean).join(" ");
-  return `<main class="${escapeHtml(mainClassName)}">
-      ${renderCommunityHeader(activeKey, currentUser)}
-      ${content}
-    </main>`;
+function renderSellerditHeaderShell(options = {}) {
+  return renderSellerditLayoutHeaderShell({
+    ...options,
+    renderHeader: renderCommunityHeader,
+  });
 }
 
 function renderCommunityIndexPage(query = {}, currentUser = null) {
@@ -1592,7 +1569,7 @@ function renderCommunitySupplierDirectoryPage(query = {}, currentUser = null) {
             <h2>운영자 등록 공급처</h2>
             <div class="sellerdit-tile-grid">${supplierTiles.map(renderCommunitySupplierTile).join("")}</div>
           </section>`,
-      rightRail: `<aside class="community-right-rail sellerdit-right-rail sellerdit-supplier-right-rail" style="transform: translateY(-32px) !important;">
+      rightRail: `<aside class="community-right-rail sellerdit-right-rail sellerdit-supplier-right-rail">
           ${renderPopularCommunitiesPanel()}
           ${renderSellerditFooterLinks()}
         </aside>`,
@@ -1726,9 +1703,8 @@ function renderCommunityPostPage(post, currentUser = null) {
       layoutClass: "community-workspace community-reddit-layout sellerdit-with-left-rail is-post-detail",
       leftRail: renderCommunityLeftRail("community", currentUser),
       contentClass: "community-detail-main",
-      contentAttrs: 'style="width:706px!important;min-width:706px!important;max-width:706px!important;"',
       content: `<div class="sellerdit-mobile-detailbar"><a href="/community" aria-label="목록으로 돌아가기">←</a></div>
-          <article class="community-post-article sellerdit-detail-post" style="width:700px!important;max-width:700px!important;" data-community-post="${escapeHtml(post.slug)}">
+          <article class="community-post-article sellerdit-detail-post" data-community-post="${escapeHtml(post.slug)}">
             <h1 class="sellerdit-visually-hidden">${escapeHtml(getThreadPostSeoTitle(post))}</h1>
             <div class="sellerdit-post-meta">
               <a class="sellerdit-avatar sellerdit-avatar-link" href="/u/${escapeHtml(getCommunityAuthorHandle(post))}" aria-label="${escapeHtml(getCommunityAuthorHandle(post))} 프로필" style="background:${escapeHtml(getCommunityAuthorColor(getCommunityAuthorDisplayName(post)))}">${escapeHtml(getCommunityAuthorInitial(getCommunityAuthorDisplayName(post)))}</a>
@@ -2132,7 +2108,6 @@ function renderSellerditProfilePage(handle, query = {}, currentUser = null) {
       currentUser,
       mainClass: "sellerdit-profile-page",
       layoutClass: "community-workspace community-reddit-layout sellerdit-profile-layout sellerdit-with-left-rail",
-      layoutAttrs: 'style="width:1016px!important;min-width:1016px!important;max-width:1016px!important;grid-template-columns:700px 304px!important;gap:12px!important;padding-left:0!important;padding-right:0!important;"',
       contentClass: "community-feed-panel sellerdit-profile-main",
       contentAttrs: 'aria-labelledby="sellerdit-profile-title"',
       content: `<header class="sellerdit-profile-header is-v2" style="${coverStyle}">
@@ -3824,7 +3799,7 @@ function renderDocumentShell({ title, description, canonicalUrl, body, jsonLd, s
     <meta name="twitter:description" content="${escapeHtml(description)}" />
     <meta name="twitter:image" content="${PUBLIC_SITE_URL}/assets/site-flow.svg" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
-    <link rel="stylesheet" href="/styles.css?v=20260630-sellerdit-mobile-fix-v12" />
+    <link rel="stylesheet" href="/styles.css?v=20260630-layout-tokens-v8" />
     <style>
       .sellerdit-profile-menu-wrap{position:relative!important;display:inline-flex!important;align-items:center!important}.sellerdit-profile-menu{position:absolute!important;top:calc(100% + 10px)!important;right:0!important;min-width:188px!important;padding:8px!important;border:1px solid rgba(15,23,42,.12)!important;border-radius:14px!important;background:#fff!important;box-shadow:0 18px 45px rgba(15,23,42,.18)!important;z-index:1300!important}.sellerdit-profile-menu[hidden]{display:none!important}.sellerdit-profile-menu::before{content:"";position:absolute;top:-6px;right:14px;width:12px;height:12px;background:#fff;border-left:1px solid rgba(15,23,42,.12);border-top:1px solid rgba(15,23,42,.12);transform:rotate(45deg)}.sellerdit-profile-menu a,.sellerdit-profile-menu button{width:100%!important;min-height:38px!important;display:flex!important;align-items:center!important;gap:8px!important;padding:0 12px!important;border:0!important;border-radius:10px!important;background:transparent!important;color:#0f172a!important;font:700 13px/1 Pretendard,system-ui,sans-serif!important;text-align:left!important;text-decoration:none!important;cursor:pointer!important}.sellerdit-profile-menu a:hover,.sellerdit-profile-menu button:hover,.sellerdit-profile-menu a:focus-visible,.sellerdit-profile-menu button:focus-visible{background:#f1f5f9!important;outline:none!important}.sellerdit-profile-menu button{color:#dc2626!important}@media (max-width:767.98px){.sellerdit-profile-menu{position:fixed!important;top:64px!important;right:12px!important;left:auto!important;width:min(220px,calc(100vw - 24px))!important}}
     </style>

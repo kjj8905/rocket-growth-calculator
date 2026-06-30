@@ -27667,3 +27667,294 @@ html body:has(.sellerdit-topbar) .sellerdit-right-rail .sellerdit-recent-title {
     max-height: 56px !important;
   }
 }
+
+/* Sellerdit common layout tokens and shell contract */
+.sellerdit-layout-shell {
+  width: 100%;
+}
+
+:root {
+  --sellerdit-shell-left-w: 270px;
+  --sellerdit-shell-feed-w: 728px;
+  --sellerdit-shell-right-w: 338px;
+  --sellerdit-shell-gap: 12px;
+  --sellerdit-shell-left-offset: 288px;
+  --sellerdit-shell-topbar-h: 56px;
+  --sellerdit-shell-top-gap: 24px;
+  --sellerdit-shell-bottom-gap: 40px;
+  --sellerdit-shell-surface: #ffffff;
+  --sellerdit-shell-border: #e7e9ec;
+  --sellerdit-shell-strong-border: #cfd4d9;
+  --sellerdit-radius-sm: 8px;
+  --sellerdit-radius-md: 12px;
+  --sellerdit-radius-pill: 999px;
+  --sellerdit-font-size-sm: 13px;
+  --sellerdit-font-size-md: 14px;
+  --sellerdit-font-size-lg: 16px;
+}
+
+@media (min-width: 1024px) {
+  body:has(.sellerdit-topbar) .sellerdit-layout-grid {
+    --sellerdit-center-w: calc(var(--sellerdit-shell-feed-w) + var(--sellerdit-shell-gap) + var(--sellerdit-shell-right-w));
+    display: grid !important;
+    grid-template-columns: var(--sellerdit-shell-feed-w) var(--sellerdit-shell-right-w) !important;
+    column-gap: var(--sellerdit-shell-gap) !important;
+    row-gap: 0 !important;
+    width: var(--sellerdit-center-w) !important;
+    max-width: var(--sellerdit-center-w) !important;
+    justify-content: start !important;
+    align-items: start !important;
+    margin: var(--sellerdit-shell-top-gap) 0 48px max(var(--sellerdit-shell-left-offset), calc(var(--sellerdit-shell-left-w) + ((100vw - var(--sellerdit-shell-left-w) - var(--sellerdit-center-w)) / 2) + 4px)) !important;
+    padding: 0 0 var(--sellerdit-shell-bottom-gap) !important;
+  }
+
+  body:has(.sellerdit-topbar) .sellerdit-layout-grid > .sellerdit-reddit-left-rail,
+  body:has(.sellerdit-topbar) .sellerdit-layout-grid > .community-left-rail {
+    position: fixed !important;
+    left: 0 !important;
+    top: var(--sellerdit-shell-topbar-h) !important;
+    bottom: auto !important;
+    z-index: 20 !important;
+    width: var(--sellerdit-shell-left-w) !important;
+    height: calc(100vh - var(--sellerdit-shell-topbar-h)) !important;
+    max-height: calc(100vh - var(--sellerdit-shell-topbar-h)) !important;
+    grid-column: auto !important;
+    overflow-y: auto !important;
+    border-right: 1px solid var(--sellerdit-shell-strong-border) !important;
+    border-radius: 0 !important;
+    background: var(--sellerdit-shell-surface) !important;
+    box-shadow: none !important;
+    transform: none !important;
+  }
+
+  body:has(.sellerdit-topbar) .sellerdit-layout-grid > .sellerdit-layout-content,
+  body:has(.sellerdit-topbar) .sellerdit-layout-grid > .community-feed-panel,
+  body:has(.sellerdit-topbar) .sellerdit-layout-grid > .community-detail-main {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+    width: var(--sellerdit-shell-feed-w) !important;
+    min-width: 0 !important;
+    max-width: var(--sellerdit-shell-feed-w) !important;
+    margin: 0 !important;
+  }
+
+  body:has(.sellerdit-topbar) .sellerdit-layout-grid > .sellerdit-right-rail,
+  body:has(.sellerdit-topbar) .sellerdit-layout-grid > .community-right-rail {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+    width: var(--sellerdit-shell-right-w) !important;
+    min-width: var(--sellerdit-shell-right-w) !important;
+    max-width: var(--sellerdit-shell-right-w) !important;
+    position: sticky !important;
+    top: calc(var(--sellerdit-shell-topbar-h) + var(--sellerdit-shell-top-gap)) !important;
+    align-self: start !important;
+  }
+
+  body:has(.sellerdit-supplier-layout) .sellerdit-layout-grid > .sellerdit-supplier-right-rail {
+    top: var(--sellerdit-shell-top-gap) !important;
+    margin-top: calc(-1 * var(--sellerdit-shell-topbar-h)) !important;
+  }
+
+  body:has(.is-post-detail) .sellerdit-layout-grid > .community-detail-main .sellerdit-detail-post {
+    width: calc(var(--sellerdit-shell-feed-w) - 28px) !important;
+    max-width: calc(var(--sellerdit-shell-feed-w) - 28px) !important;
+  }
+}
+
+/* Sellerdit common layout final override */
+@media (min-width: 1024px) {
+  body:has(.sellerdit-topbar) .community-shell.sellerdit-layout-shell > .sellerdit-layout-grid {
+    --sellerdit-center-w: calc(var(--sellerdit-shell-feed-w) + var(--sellerdit-shell-gap) + var(--sellerdit-shell-right-w));
+    display: grid !important;
+    grid-template-columns: var(--sellerdit-shell-feed-w) var(--sellerdit-shell-right-w) !important;
+    gap: 0 var(--sellerdit-shell-gap) !important;
+    width: var(--sellerdit-center-w) !important;
+    max-width: var(--sellerdit-center-w) !important;
+    min-width: 0 !important;
+    justify-content: start !important;
+    align-items: start !important;
+    margin: var(--sellerdit-shell-top-gap) 0 48px max(var(--sellerdit-shell-left-offset), calc(var(--sellerdit-shell-left-w) + ((100vw - var(--sellerdit-shell-left-w) - var(--sellerdit-center-w)) / 2) + 4px)) !important;
+    padding: 0 0 var(--sellerdit-shell-bottom-gap) !important;
+  }
+
+  body:has(.sellerdit-topbar) .community-shell.sellerdit-layout-shell > .sellerdit-layout-grid > .sellerdit-layout-content {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+    width: var(--sellerdit-shell-feed-w) !important;
+    min-width: 0 !important;
+    max-width: var(--sellerdit-shell-feed-w) !important;
+    margin: 0 !important;
+  }
+
+  body:has(.sellerdit-topbar) .community-shell.sellerdit-layout-shell > .sellerdit-layout-grid > .sellerdit-right-rail {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+    width: var(--sellerdit-shell-right-w) !important;
+    min-width: var(--sellerdit-shell-right-w) !important;
+    max-width: var(--sellerdit-shell-right-w) !important;
+    position: sticky !important;
+    top: calc(var(--sellerdit-shell-topbar-h) + var(--sellerdit-shell-top-gap)) !important;
+    align-self: start !important;
+  }
+
+  body:has(.sellerdit-supplier-layout) .community-shell.sellerdit-layout-shell > .sellerdit-layout-grid > .sellerdit-supplier-right-rail {
+    top: var(--sellerdit-shell-top-gap) !important;
+    margin-top: calc(-1 * var(--sellerdit-shell-topbar-h)) !important;
+  }
+
+  body:has(.sellerdit-topbar) .community-shell.sellerdit-layout-shell > .sellerdit-layout-grid > .sellerdit-reddit-left-rail {
+    position: fixed !important;
+    left: 0 !important;
+    top: var(--sellerdit-shell-topbar-h) !important;
+    width: var(--sellerdit-shell-left-w) !important;
+    height: calc(100vh - var(--sellerdit-shell-topbar-h)) !important;
+    max-height: calc(100vh - var(--sellerdit-shell-topbar-h)) !important;
+    grid-column: auto !important;
+    overflow-y: auto !important;
+    border-right: 1px solid var(--sellerdit-shell-strong-border) !important;
+    background: var(--sellerdit-shell-surface) !important;
+    box-shadow: none !important;
+    transform: none !important;
+  }
+
+  body:has(.is-post-detail) .community-shell.sellerdit-layout-shell > .sellerdit-layout-grid > .community-detail-main .sellerdit-detail-post {
+    width: calc(var(--sellerdit-shell-feed-w) - 28px) !important;
+    max-width: calc(var(--sellerdit-shell-feed-w) - 28px) !important;
+  }
+}
+
+/* Sellerdit common layout specificity lock */
+@media (min-width: 1024px) {
+  html body:has(.sellerdit-topbar) main.community-shell.sellerdit-layout-shell > section.sellerdit-layout-grid.community-workspace.community-reddit-layout,
+  html body:has(.sellerdit-topbar) main.community-shell.sellerdit-layout-shell > section.sellerdit-layout-grid.community-workspace.community-reddit-layout.sellerdit-with-left-rail {
+    --sellerdit-center-w: calc(var(--sellerdit-shell-feed-w) + var(--sellerdit-shell-gap) + var(--sellerdit-shell-right-w)) !important;
+    display: grid !important;
+    grid-template-columns: var(--sellerdit-shell-feed-w) var(--sellerdit-shell-right-w) !important;
+    gap: 0 var(--sellerdit-shell-gap) !important;
+    width: var(--sellerdit-center-w) !important;
+    max-width: var(--sellerdit-center-w) !important;
+    min-width: 0 !important;
+    margin: var(--sellerdit-shell-top-gap) 0 48px max(var(--sellerdit-shell-left-offset), calc(var(--sellerdit-shell-left-w) + ((100vw - var(--sellerdit-shell-left-w) - var(--sellerdit-center-w)) / 2) + 4px)) !important;
+    padding: 0 0 var(--sellerdit-shell-bottom-gap) !important;
+    justify-content: start !important;
+    align-items: start !important;
+  }
+
+  html body:has(.sellerdit-topbar) main.community-shell.sellerdit-layout-shell > section.sellerdit-layout-grid.community-workspace.community-reddit-layout > .sellerdit-layout-content {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+    width: var(--sellerdit-shell-feed-w) !important;
+    max-width: var(--sellerdit-shell-feed-w) !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+  }
+
+  html body:has(.sellerdit-topbar) main.community-shell.sellerdit-layout-shell > section.sellerdit-layout-grid.community-workspace.community-reddit-layout > .sellerdit-right-rail {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+    width: var(--sellerdit-shell-right-w) !important;
+    min-width: var(--sellerdit-shell-right-w) !important;
+    max-width: var(--sellerdit-shell-right-w) !important;
+    position: sticky !important;
+    top: calc(var(--sellerdit-shell-topbar-h) + var(--sellerdit-shell-top-gap)) !important;
+    align-self: start !important;
+  }
+}
+
+/* Sellerdit common layout universal lock */
+@media (min-width: 1024px) {
+  html body:has(.sellerdit-topbar) main.community-shell.sellerdit-layout-shell > section.sellerdit-layout-grid.community-reddit-layout,
+  html body:has(.sellerdit-topbar) main.community-shell.sellerdit-layout-shell > section.sellerdit-layout-grid.community-reddit-layout.sellerdit-with-left-rail,
+  html body:has(.sellerdit-topbar) main.community-shell.sellerdit-layout-shell > section.sellerdit-layout-grid.sellerdit-supplier-layout {
+    --sellerdit-center-w: calc(var(--sellerdit-shell-feed-w) + var(--sellerdit-shell-gap) + var(--sellerdit-shell-right-w)) !important;
+    display: grid !important;
+    grid-template-columns: var(--sellerdit-shell-feed-w) var(--sellerdit-shell-right-w) !important;
+    gap: 0 var(--sellerdit-shell-gap) !important;
+    width: var(--sellerdit-center-w) !important;
+    max-width: var(--sellerdit-center-w) !important;
+    min-width: 0 !important;
+    margin: var(--sellerdit-shell-top-gap) 0 48px max(var(--sellerdit-shell-left-offset), calc(var(--sellerdit-shell-left-w) + ((100vw - var(--sellerdit-shell-left-w) - var(--sellerdit-center-w)) / 2) + 4px)) !important;
+    padding: 0 0 var(--sellerdit-shell-bottom-gap) !important;
+    justify-content: start !important;
+    align-items: start !important;
+  }
+
+  html body:has(.sellerdit-topbar) main.community-shell.sellerdit-layout-shell > section.sellerdit-layout-grid > .sellerdit-layout-content {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+    width: var(--sellerdit-shell-feed-w) !important;
+    max-width: var(--sellerdit-shell-feed-w) !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+  }
+
+  html body:has(.sellerdit-topbar) main.community-shell.sellerdit-layout-shell > section.sellerdit-layout-grid > .sellerdit-right-rail {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+    width: var(--sellerdit-shell-right-w) !important;
+    min-width: var(--sellerdit-shell-right-w) !important;
+    max-width: var(--sellerdit-shell-right-w) !important;
+    position: sticky !important;
+    top: calc(var(--sellerdit-shell-topbar-h) + var(--sellerdit-shell-top-gap)) !important;
+    margin-top: 0 !important;
+    align-self: start !important;
+  }
+}
+
+/* Sellerdit supplier child layout lock */
+@media (min-width: 1024px) {
+  html body:has(.sellerdit-supplier-layout) main.community-shell.sellerdit-layout-shell > section.sellerdit-layout-grid.sellerdit-supplier-layout > .sellerdit-layout-content.sellerdit-supplier-main,
+  html body:has(.sellerdit-supplier-layout) main.community-shell.sellerdit-layout-shell > section.sellerdit-layout-grid.sellerdit-supplier-layout > .community-feed-panel.sellerdit-supplier-main {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+    width: var(--sellerdit-shell-feed-w) !important;
+    min-width: 0 !important;
+    max-width: var(--sellerdit-shell-feed-w) !important;
+    margin: 0 !important;
+  }
+
+  html body:has(.sellerdit-supplier-layout) main.community-shell.sellerdit-layout-shell > section.sellerdit-layout-grid.sellerdit-supplier-layout > aside.sellerdit-right-rail.sellerdit-supplier-right-rail {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+    width: var(--sellerdit-shell-right-w) !important;
+    min-width: var(--sellerdit-shell-right-w) !important;
+    max-width: var(--sellerdit-shell-right-w) !important;
+    position: sticky !important;
+    top: calc(var(--sellerdit-shell-topbar-h) + var(--sellerdit-shell-top-gap)) !important;
+    margin-top: 0 !important;
+    align-self: start !important;
+  }
+}
+
+/* Sellerdit supplier exact specificity lock */
+@media (min-width: 1024px) {
+  html body:has(.sellerdit-topbar):has(.sellerdit-supplier-layout) main.community-shell.sellerdit-layout-shell > section.sellerdit-layout-grid.community-reddit-layout.sellerdit-with-left-rail.sellerdit-supplier-layout > section.community-feed-panel.sellerdit-layout-content.sellerdit-supplier-main {
+    width: var(--sellerdit-shell-feed-w) !important;
+    min-width: 0 !important;
+    max-width: var(--sellerdit-shell-feed-w) !important;
+    margin: 0 !important;
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+  }
+
+  html body:has(.sellerdit-topbar):has(.sellerdit-supplier-layout) main.community-shell.sellerdit-layout-shell > section.sellerdit-layout-grid.community-reddit-layout.sellerdit-with-left-rail.sellerdit-supplier-layout > aside.community-right-rail.sellerdit-right-rail.sellerdit-supplier-right-rail {
+    width: var(--sellerdit-shell-right-w) !important;
+    min-width: var(--sellerdit-shell-right-w) !important;
+    max-width: var(--sellerdit-shell-right-w) !important;
+    top: var(--sellerdit-shell-top-gap) !important;
+    margin-top: calc(-1 * var(--sellerdit-shell-topbar-h)) !important;
+  }
+}
+
+/* Sellerdit profile side layout lock */
+@media (min-width: 1024px) {
+  html body:has(.sellerdit-topbar):has(.sellerdit-profile-layout) main.community-shell.sellerdit-layout-shell > section.sellerdit-layout-grid.community-reddit-layout.sellerdit-profile-layout > aside.community-right-rail.sellerdit-right-rail.sellerdit-profile-side {
+    width: var(--sellerdit-shell-right-w) !important;
+    min-width: var(--sellerdit-shell-right-w) !important;
+    max-width: var(--sellerdit-shell-right-w) !important;
+    top: var(--sellerdit-shell-top-gap) !important;
+    margin-top: calc(-1 * var(--sellerdit-shell-topbar-h)) !important;
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+  }
+}
