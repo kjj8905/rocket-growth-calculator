@@ -1010,23 +1010,21 @@ function renderCommunitySavedPage(currentUser) {
     canonicalUrl,
     robots: "noindex,follow",
     ogType: "website",
-    body: `<main class="community-shell sellerdit-saved-page">
-      ${renderCommunityHeader("saved", currentUser)}
-      <section class="community-workspace community-reddit-layout sellerdit-with-left-rail">
-        ${renderCommunityLeftRail("saved", currentUser)}
-        <section class="community-feed-panel" aria-labelledby="sellerdit-saved-title">
-          <header class="community-hero sellerdit-feed-hero">
+    body: renderSellerditAppShell({
+      activeKey: "saved",
+      currentUser,
+      mainClass: "sellerdit-saved-page",
+      contentAttrs: 'aria-labelledby="sellerdit-saved-title"',
+      content: `<header class="community-hero sellerdit-feed-hero">
             <p class="eyebrow">Saved</p>
             <h1 id="sellerdit-saved-title">저장한 글</h1>
             <p>북마크한 게시글을 여기서 다시 확인합니다.</p>
           </header>
           ${loginCta}
           ${renderCommunityFeed(posts, emptyMessage)}
-          ${renderCommunityWritePanel()}
-        </section>
-        ${renderSellerditRightRail("detail", getCommunityPosts({ sort: "hot", limit: 4 }))}
-      </section>
-    </main>`,
+          ${renderCommunityWritePanel()}`,
+      rightRail: renderSellerditRightRail("detail", getCommunityPosts({ sort: "hot", limit: 4 })),
+    }),
     script: renderCommunityScript(),
   });
 }
@@ -1389,6 +1387,48 @@ function renderCommunityPager(basePath, page, totalPages, search, sort, tag, vie
   return `<nav class="community-pager" aria-label="페이지 이동">${items.join("")}</nav>`;
 }
 
+function renderSellerditAppShell({
+  activeKey = "community",
+  currentUser = null,
+  mainClass = "",
+  layoutClass = "community-workspace community-reddit-layout sellerdit-with-left-rail",
+  layoutAttrs = "",
+  leftRail = null,
+  contentTag = "section",
+  contentClass = "community-feed-panel",
+  contentAttrs = "",
+  content = "",
+  rightRail = "",
+} = {}) {
+  const mainClassName = ["community-shell", mainClass].filter(Boolean).join(" ");
+  const leftRailMarkup = leftRail === null ? renderCommunityLeftRail(activeKey, currentUser) : leftRail;
+  const contentAttributeText = contentAttrs ? ` ${contentAttrs.trim()}` : "";
+  const layoutAttributeText = layoutAttrs ? ` ${layoutAttrs.trim()}` : "";
+  return `<main class="${escapeHtml(mainClassName)}">
+      ${renderCommunityHeader(activeKey, currentUser)}
+      <section class="${escapeHtml(layoutClass)}"${layoutAttributeText}>
+        ${leftRailMarkup}
+        <${contentTag} class="${escapeHtml(contentClass)}"${contentAttributeText}>
+          ${content}
+        </${contentTag}>
+        ${rightRail}
+      </section>
+    </main>`;
+}
+
+function renderSellerditHeaderShell({
+  activeKey = "community",
+  currentUser = null,
+  mainClass = "",
+  content = "",
+} = {}) {
+  const mainClassName = ["community-shell", mainClass].filter(Boolean).join(" ");
+  return `<main class="${escapeHtml(mainClassName)}">
+      ${renderCommunityHeader(activeKey, currentUser)}
+      ${content}
+    </main>`;
+}
+
 function renderCommunityIndexPage(query = {}, currentUser = null) {
   const sort = COMMUNITY_SORTS[query.sort] ? String(query.sort) : "hot";
   const search = String(query.q || "").trim().slice(0, 60);
@@ -1414,20 +1454,17 @@ function renderCommunityIndexPage(query = {}, currentUser = null) {
     title,
     description,
     canonicalUrl,
-    body: `<main class="community-shell">
-      ${renderCommunityHeader("community", currentUser)}
-      <section class="community-workspace community-reddit-layout sellerdit-with-left-rail">
-        ${renderCommunityLeftRail("community", currentUser)}
-        <section class="community-feed-panel" aria-labelledby="community-title">
-          <h1 id="community-title" class="sellerdit-visually-hidden">${escapeHtml(heading)}</h1>
+    body: renderSellerditAppShell({
+      activeKey: "community",
+      currentUser,
+      contentAttrs: 'aria-labelledby="community-title"',
+      content: `<h1 id="community-title" class="sellerdit-visually-hidden">${escapeHtml(heading)}</h1>
           ${renderCommunitySortBar("/community", sort, search, tag, category || "", view)}
           <div class="sellerdit-feed-view sellerdit-feed-view-${escapeHtml(view)}">${renderCommunityFeed(posts, search ? "검색 결과가 없습니다. 다른 키워드로 찾아보세요." : "아직 등록된 글이 없습니다.")}</div>
           ${renderCommunityPager("/community", page, totalPages, search, sort, tag, view)}
-          ${renderCommunityWritePanel()}
-        </section>
-        ${renderSellerditRightRail("list")}
-      </section>
-    </main>`,
+          ${renderCommunityWritePanel()}`,
+      rightRail: renderSellerditRightRail("list"),
+    }),
     jsonLd: buildCommunityIndexJsonLd(title, description, canonicalUrl, posts.length ? posts : popularPosts),
     ogType: "website",
     script: renderCommunityScript(),
@@ -1538,12 +1575,14 @@ function renderCommunitySupplierDirectoryPage(query = {}, currentUser = null) {
     title,
     description,
     canonicalUrl,
-    body: `${renderCommunityHeader("suppliers", currentUser)}
-    <main class="community-shell">
-      <section class="community-reddit-layout sellerdit-with-left-rail sellerdit-supplier-layout">
-        ${renderCommunitySupplierFilterRail(supplierTiles, communityTiles.length)}
-        <section class="community-feed-panel sellerdit-supplier-main" aria-label="공급처">
-          <h1 class="sellerdit-visually-hidden">셀러딧 공급처</h1>
+    body: renderSellerditAppShell({
+      activeKey: "suppliers",
+      currentUser,
+      layoutClass: "community-reddit-layout sellerdit-with-left-rail sellerdit-supplier-layout",
+      leftRail: renderCommunitySupplierFilterRail(supplierTiles, communityTiles.length),
+      contentClass: "community-feed-panel sellerdit-supplier-main",
+      contentAttrs: 'aria-label="공급처"',
+      content: `<h1 class="sellerdit-visually-hidden">셀러딧 공급처</h1>
           ${supplierDetail}
           <section class="sellerdit-supplier-section" data-tile-section="community">
             <h2>가입 커뮤니티</h2>
@@ -1552,14 +1591,12 @@ function renderCommunitySupplierDirectoryPage(query = {}, currentUser = null) {
           <section class="sellerdit-supplier-section" data-tile-section="supplier">
             <h2>운영자 등록 공급처</h2>
             <div class="sellerdit-tile-grid">${supplierTiles.map(renderCommunitySupplierTile).join("")}</div>
-          </section>
-        </section>
-        <aside class="community-right-rail sellerdit-right-rail sellerdit-supplier-right-rail" style="transform: translateY(-32px) !important;">
+          </section>`,
+      rightRail: `<aside class="community-right-rail sellerdit-right-rail sellerdit-supplier-right-rail" style="transform: translateY(-32px) !important;">
           ${renderPopularCommunitiesPanel()}
           ${renderSellerditFooterLinks()}
-        </aside>
-      </section>
-    </main>`,
+        </aside>`,
+    }),
     jsonLd: buildCommunitySupplierDirectoryJsonLd(title, description, canonicalUrl, tiles),
     ogType: "website",
     script: renderCommunityScript(),
@@ -1577,12 +1614,13 @@ function renderCommunityAiAnswerPage(query = {}, currentUser = null) {
     title,
     description,
     canonicalUrl,
-    body: `<main class="community-shell">
-      ${renderCommunityHeader("qna", currentUser)}
-      <section class="community-workspace community-reddit-layout sellerdit-ai-layout sellerdit-with-left-rail sellerdit-no-right-rail">
-        ${renderCommunityLeftRail("qna", currentUser)}
-        <section class="community-feed-panel sellerdit-ai-main" aria-labelledby="sellerdit-ai-title">
-          <div class="sellerdit-ai-hero">
+    body: renderSellerditAppShell({
+      activeKey: "qna",
+      currentUser,
+      layoutClass: "community-workspace community-reddit-layout sellerdit-ai-layout sellerdit-with-left-rail sellerdit-no-right-rail",
+      contentClass: "community-feed-panel sellerdit-ai-main",
+      contentAttrs: 'aria-labelledby="sellerdit-ai-title"',
+      content: `<div class="sellerdit-ai-hero">
             <div class="sellerdit-ai-orbit" aria-hidden="true">
               <span></span><span></span><span></span>
             </div>
@@ -1615,10 +1653,9 @@ function renderCommunityAiAnswerPage(query = {}, currentUser = null) {
           <section class="sellerdit-qna-list">
             <h2>최근 셀러 질문</h2>
             ${qnaPosts.map(renderCommunityVoteCard).join("")}
-          </section>
-        </section>
-      </section>
-    </main>`,
+          </section>`,
+      rightRail: "",
+    }),
     jsonLd: buildCommunityCategoryJsonLd(COMMUNITY_CATEGORIES.qna, canonicalUrl, qnaPosts),
     ogType: "website",
     script: renderCommunityScript(),
@@ -1649,19 +1686,17 @@ function renderCommunityCategoryPage(categorySlug, query = {}, currentUser = nul
     title: `${category.title} | 셀러딧 커뮤니티`,
     description: category.description,
     canonicalUrl,
-    body: `<main class="community-shell">
-      ${renderCommunityHeader(category.slug, currentUser)}
-      <section class="community-workspace community-reddit-layout">
-        ${renderCommunityLeftRail(category.slug, currentUser)}
-        <section class="community-feed-panel" aria-labelledby="community-category-title">
-          <h1 id="community-category-title" class="sellerdit-visually-hidden">${escapeHtml(heading)}</h1>
+    body: renderSellerditAppShell({
+      activeKey: category.slug,
+      currentUser,
+      layoutClass: "community-workspace community-reddit-layout",
+      contentAttrs: 'aria-labelledby="community-category-title"',
+      content: `<h1 id="community-category-title" class="sellerdit-visually-hidden">${escapeHtml(heading)}</h1>
           ${renderCommunityFeed(posts, search ? "검색 결과가 없습니다. 다른 키워드로 찾아보세요." : "이 게시판에는 아직 글이 없습니다.")}
           ${renderCommunityPager(basePath, page, totalPages, search, sort, "")}
-          ${renderCommunityWritePanel(category.slug)}
-        </section>
-        ${renderSellerditRightRail("list")}
-      </section>
-    </main>`,
+          ${renderCommunityWritePanel(category.slug)}`,
+      rightRail: renderSellerditRightRail("list"),
+    }),
     jsonLd: buildCommunityCategoryJsonLd(category, canonicalUrl, posts),
     ogType: "website",
     script: renderCommunityScript(),
@@ -1685,12 +1720,14 @@ function renderCommunityPostPage(post, currentUser = null) {
     title: `${seoTitle} | 셀러딧 커뮤니티`,
     description: seoDescription,
     canonicalUrl,
-    body: `<main class="community-shell">
-      ${renderCommunityHeader(post.category, currentUser)}
-      <section class="community-workspace community-reddit-layout sellerdit-with-left-rail is-post-detail">
-        ${renderCommunityLeftRail("community", currentUser)}
-        <section class="community-detail-main" style="width:706px!important;min-width:706px!important;max-width:706px!important;">
-          <div class="sellerdit-mobile-detailbar"><a href="/community" aria-label="목록으로 돌아가기">←</a></div>
+    body: renderSellerditAppShell({
+      activeKey: post.category,
+      currentUser,
+      layoutClass: "community-workspace community-reddit-layout sellerdit-with-left-rail is-post-detail",
+      leftRail: renderCommunityLeftRail("community", currentUser),
+      contentClass: "community-detail-main",
+      contentAttrs: 'style="width:706px!important;min-width:706px!important;max-width:706px!important;"',
+      content: `<div class="sellerdit-mobile-detailbar"><a href="/community" aria-label="목록으로 돌아가기">←</a></div>
           <article class="community-post-article sellerdit-detail-post" style="width:700px!important;max-width:700px!important;" data-community-post="${escapeHtml(post.slug)}">
             <h1 class="sellerdit-visually-hidden">${escapeHtml(getThreadPostSeoTitle(post))}</h1>
             <div class="sellerdit-post-meta">
@@ -1724,11 +1761,9 @@ function renderCommunityPostPage(post, currentUser = null) {
               ${renderSellerditComments(displayComments, post)}
             </div>
           </section>
-          ${renderCommunityWritePanel(post.category)}
-        </section>
-        ${renderSellerditRightRail("detail", relatedPosts)}
-      </section>
-    </main>`,
+          ${renderCommunityWritePanel(post.category)}`,
+      rightRail: renderSellerditRightRail("detail", relatedPosts),
+    }),
     jsonLd: buildCommunityPostJsonLd(post, canonicalUrl, displayComments),
     script: renderCommunityScript(post.slug),
   });
@@ -2092,12 +2127,15 @@ function renderSellerditProfilePage(handle, query = {}, currentUser = null) {
     title,
     description,
     canonicalUrl,
-    body: `<main class="community-shell sellerdit-profile-page">
-      ${renderCommunityHeader("community", currentUser)}
-      <section class="community-workspace community-reddit-layout sellerdit-profile-layout sellerdit-with-left-rail" style="width:1016px!important;min-width:1016px!important;max-width:1016px!important;grid-template-columns:700px 304px!important;gap:12px!important;padding-left:0!important;padding-right:0!important;">
-        ${renderCommunityLeftRail("community", currentUser)}
-        <section class="community-feed-panel sellerdit-profile-main" aria-labelledby="sellerdit-profile-title">
-          <header class="sellerdit-profile-header is-v2" style="${coverStyle}">
+    body: renderSellerditAppShell({
+      activeKey: "community",
+      currentUser,
+      mainClass: "sellerdit-profile-page",
+      layoutClass: "community-workspace community-reddit-layout sellerdit-profile-layout sellerdit-with-left-rail",
+      layoutAttrs: 'style="width:1016px!important;min-width:1016px!important;max-width:1016px!important;grid-template-columns:700px 304px!important;gap:12px!important;padding-left:0!important;padding-right:0!important;"',
+      contentClass: "community-feed-panel sellerdit-profile-main",
+      contentAttrs: 'aria-labelledby="sellerdit-profile-title"',
+      content: `<header class="sellerdit-profile-header is-v2" style="${coverStyle}">
             <div class="sellerdit-profile-cover-shade"></div>
             ${renderProfileAvatar(profile)}
             <div class="sellerdit-profile-summary">
@@ -2110,9 +2148,8 @@ function renderSellerditProfilePage(handle, query = {}, currentUser = null) {
           <nav class="sellerdit-profile-tabs" aria-label="프로필 탭">
             ${[["posts","게시물"],["comments","댓글"],["saved","저장한 글"],["likes","좋아요"],["about","소개"]].map(([key,label]) => `<a class="${tab === key ? "is-active" : ""}" href="/u/${escapeHtml(profile.username)}?tab=${key}">${label}</a>`).join("")}
           </nav>
-          ${renderProfileTabContent(tab, stats, profile, currentUser)}
-        </section>
-        <aside class="community-right-rail sellerdit-right-rail sellerdit-profile-side">
+          ${renderProfileTabContent(tab, stats, profile, currentUser)}`,
+      rightRail: `<aside class="community-right-rail sellerdit-right-rail sellerdit-profile-side">
           <section class="sellerdit-profile-card sellerdit-profile-action-card" style="${escapeHtml(getCommunityAuthorStyle(profile.nickname))}">
             ${renderProfileAvatar(profile, "sellerdit-profile-avatar is-small")}
             <strong>${escapeHtml(profile.username)}</strong>
@@ -2121,9 +2158,8 @@ function renderSellerditProfilePage(handle, query = {}, currentUser = null) {
             ${profile.isMe ? `<a class="sellerdit-follow" href="/community/profile/edit" rel="nofollow">프로필 편집</a>` : `<button class="sellerdit-follow" type="button" data-community-follow data-follow-handle="${escapeHtml(profile.username)}">팔로우</button>`}
           </section>
           ${renderSellerditFooterLinks()}
-        </aside>
-      </section>
-    </main>`,
+        </aside>`,
+    }),
     jsonLd: buildSellerditProfileJsonLd(profile, description, canonicalUrl),
     ogType: "profile",
     script: renderCommunityScript(),
@@ -2139,12 +2175,13 @@ function renderCommunityProfileEditPage(currentUser) {
     canonicalUrl: `${PUBLIC_SITE_URL}/community/profile/edit`,
     robots: "noindex,follow",
     ogType: "website",
-    body: `<main class="community-shell sellerdit-profile-edit-page">
-      ${renderCommunityHeader("community", currentUser)}
-      <section class="community-workspace community-reddit-layout sellerdit-with-left-rail">
-        ${renderCommunityLeftRail("community", currentUser)}
-        <section class="community-feed-panel sellerdit-profile-edit" aria-labelledby="profile-edit-title">
-          <header class="community-hero sellerdit-feed-hero"><p class="eyebrow">My profile</p><h1 id="profile-edit-title">프로필 편집</h1><p>셀러 정보와 활동 신뢰도를 한 화면에서 정리합니다.</p></header>
+    body: renderSellerditAppShell({
+      activeKey: "community",
+      currentUser,
+      mainClass: "sellerdit-profile-edit-page",
+      contentClass: "community-feed-panel sellerdit-profile-edit",
+      contentAttrs: 'aria-labelledby="profile-edit-title"',
+      content: `<header class="community-hero sellerdit-feed-hero"><p class="eyebrow">My profile</p><h1 id="profile-edit-title">프로필 편집</h1><p>셀러 정보와 활동 신뢰도를 한 화면에서 정리합니다.</p></header>
           <form class="sellerdit-profile-editor" data-profile-edit-form>
             <section class="sellerdit-profile-edit-form">
               <h2>기본 정보</h2>
@@ -2171,10 +2208,8 @@ function renderCommunityProfileEditPage(currentUser) {
                 <div class="sellerdit-profile-preview-row"><span class="sellerdit-profile-preview-avatar">${escapeHtml(getCommunityAuthorInitial(profile.nickname))}</span><div><strong>${escapeHtml(profile.nickname)}</strong><p>${escapeHtml(profile.bio || "한 줄 소개가 여기에 표시됩니다.")}</p><em>${escapeHtml(profile.mainBadge || "신규 회원")}</em></div></div>
               </div>
             </aside>
-          </form>
-        </section>
-      </section>
-    </main>`,
+          </form>`,
+    }),
     script: renderCommunityScript(),
   });
 }
@@ -2454,9 +2489,9 @@ function renderTrendPage(trends) {
     title,
     description,
     canonicalUrl,
-    body: `<main class="community-shell">
-      ${renderCommunityHeader("trends")}
-      <section class="trend-page" aria-labelledby="trend-page-title">
+    body: renderSellerditHeaderShell({
+      activeKey: "trends",
+      content: `<section class="trend-page" aria-labelledby="trend-page-title">
         <div class="trend-page-head">
           <div>
             <span class="community-page-label">검색어 순위</span>
@@ -2471,8 +2506,8 @@ function renderTrendPage(trends) {
           <strong>운영 기준</strong>
           <p>구글은 트렌딩 RSS, 네이버는 데이터랩 관심도, Daum은 구글 트렌딩 키워드의 Daum 검색 결과량 기준으로 표시합니다. 플랫폼 정책에 따라 표시 방식은 달라질 수 있습니다.</p>
         </section>
-      </section>
-    </main>`,
+      </section>`,
+    }),
     jsonLd: buildTrendPageJsonLd(title, description, canonicalUrl, trends),
     script: `${renderTrendScript()}${renderCommunityScript()}`,
   });
@@ -3600,9 +3635,9 @@ function renderGuideIndexPage() {
     title,
     description,
     canonicalUrl,
-    body: `<main class="community-shell">
-      ${renderCommunityHeader("guides")}
-      <section class="community-forum-shell">
+    body: renderSellerditHeaderShell({
+      activeKey: "guides",
+      content: `<section class="community-forum-shell">
         <section class="community-feed-panel" aria-labelledby="guide-library-title">
           <div class="community-feed-head">
             <div>
@@ -3627,8 +3662,8 @@ function renderGuideIndexPage() {
           ${renderTrendMiniPanel()}
           ${renderCommunityTagPanel()}
         </aside>
-      </section>
-    </main>`,
+      </section>`,
+    }),
     jsonLd: buildGuideIndexJsonLd(title, description, canonicalUrl),
     script: renderCommunityScript(),
   });
@@ -3661,9 +3696,9 @@ function renderGuidePage(guide) {
     title: guide.metaTitle,
     description: guide.description,
     canonicalUrl,
-    body: `<main class="community-shell">
-      ${renderCommunityHeader("guides")}
-      <section class="guide-detail-layout">
+    body: renderSellerditHeaderShell({
+      activeKey: "guides",
+      content: `<section class="guide-detail-layout">
         <article class="guide-article community-guide-article">
           <nav class="guide-breadcrumb" aria-label="breadcrumb">
             <a href="/">계산기</a>
@@ -3699,8 +3734,8 @@ function renderGuidePage(guide) {
             <div>${relatedLinks}</div>
           </aside>
         </aside>
-      </section>
-    </main>`,
+      </section>`,
+    }),
     jsonLd: buildGuideJsonLd(guide, canonicalUrl),
     script: renderCommunityScript(),
   });
@@ -3711,9 +3746,9 @@ function renderNotFoundPage() {
     title: "페이지를 찾을 수 없습니다",
     description: "요청한 로켓그로스 계산기 가이드 페이지를 찾을 수 없습니다.",
     canonicalUrl: `${PUBLIC_SITE_URL}/guides`,
-    body: `<main class="community-shell">
-      ${renderCommunityHeader("guides")}
-      <article class="guide-article community-guide-article">
+    body: renderSellerditHeaderShell({
+      activeKey: "guides",
+      content: `<article class="guide-article community-guide-article">
         <p class="eyebrow">404</p>
         <h1>페이지를 찾을 수 없습니다.</h1>
         <p class="guide-lede">주소를 다시 확인하거나 지식 허브에서 필요한 계산 기준을 선택하세요.</p>
@@ -3721,8 +3756,8 @@ function renderNotFoundPage() {
           <a class="guide-primary-link" href="/guides">지식 허브 보기</a>
           <a class="guide-secondary-link" href="/">계산기로 돌아가기</a>
         </div>
-      </article>
-    </main>`,
+      </article>`,
+    }),
     jsonLd: null,
     script: renderCommunityScript(),
   });
