@@ -27223,10 +27223,16 @@ html body:has(.sellerdit-topbar) main.community-shell .sellerdit-detail-body p {
 }
 html body:has(.sellerdit-topbar) main.community-shell .community-vote-title,
 html body:has(.sellerdit-topbar) main.community-shell article.sellerdit-feed-post .community-vote-title,
-html body:has(.sellerdit-topbar) main.community-shell article.community-vote-card .community-vote-title,
-html body:has(.sellerdit-topbar) main.community-shell .sellerdit-recent-title {
+html body:has(.sellerdit-topbar) main.community-shell article.community-vote-card .community-vote-title {
   font-size: 19px !important;
   line-height: 1.38 !important;
+}
+
+html body:has(.sellerdit-topbar) main.community-shell .sellerdit-recent-title,
+html body:has(.sellerdit-topbar) .sellerdit-right-rail .sellerdit-recent-title {
+  font-size: 14px !important;
+  line-height: 20px !important;
+  font-weight: 600 !important;
 }
 
 
