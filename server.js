@@ -606,6 +606,14 @@ app.get("/api/search-trends", async (req, res) => {
   res.json(trends);
 });
 
+app.get(["/search-trends", "/search-trends/"], (req, res) => {
+  res.redirect(301, "/trends");
+});
+
+app.get(["/rocket-growth-calculator", "/rocket-growth-calculator/", "/calculator", "/calculator/"], (req, res) => {
+  res.redirect(301, "/?calc=china");
+});
+
 app.get(["/", "/index.html"], (req, res) => {
   const requestedCategory = String(req.query.category || "");
   if (HIDDEN_CALCULATOR_CATEGORIES.has(requestedCategory)) {
@@ -2622,8 +2630,40 @@ function renderCommunityScript(postSlug = "") {
         topbar.style.setProperty("right", "0", "important");
         topbar.style.setProperty("z-index", "1200", "important");
       }
+      function applySellerditMobileWidthGuard() {
+        if (!(window.matchMedia && window.matchMedia("(max-width: 1023.98px)").matches)) return;
+        var selectors = [
+          ".community-reddit-layout.is-post-detail",
+          ".community-reddit-layout.is-post-detail > .community-detail-main",
+          ".community-reddit-layout.is-post-detail .community-post-article",
+          ".community-reddit-layout.is-post-detail .sellerdit-detail-post",
+          ".community-reddit-layout.is-post-detail .sellerdit-detail-promo",
+          ".community-reddit-layout.is-post-detail .community-comments",
+          ".community-reddit-layout.sellerdit-profile-layout",
+          ".sellerdit-profile-layout",
+          ".sellerdit-profile-main",
+          ".sellerdit-profile-header",
+          ".sellerdit-profile-tabs",
+          ".sellerdit-feed-content"
+        ];
+        selectors.forEach(function (selector) {
+          document.querySelectorAll(selector).forEach(function (node) {
+            node.style.setProperty("width", "100%", "important");
+            node.style.setProperty("min-width", "0", "important");
+            node.style.setProperty("max-width", "100%", "important");
+            node.style.setProperty("margin-left", "0", "important");
+            node.style.setProperty("margin-right", "0", "important");
+            node.style.setProperty("box-sizing", "border-box", "important");
+            node.style.setProperty("overflow-wrap", "anywhere", "important");
+          });
+        });
+      }
       applySellerditTopbarGuard();
-      window.addEventListener("resize", applySellerditTopbarGuard);
+      applySellerditMobileWidthGuard();
+      window.addEventListener("resize", function () {
+        applySellerditTopbarGuard();
+        applySellerditMobileWidthGuard();
+      });
       ${postSlug ? `window.setTimeout(function () { track("post_read_60s", { post_slug: ${JSON.stringify(postSlug)} }); }, 60000);` : ""}
 
       function loginUrl() {
@@ -2783,13 +2823,23 @@ function renderCommunityScript(postSlug = "") {
       async function toggleNotifications() {
         if (!notificationButton || !notificationPanel) return;
         var willOpen = notificationPanel.hidden;
+        if (willOpen && !communityAuthState.authenticated) {
+          notificationPanel.hidden = true;
+          forceNotificationPanelBox(false);
+          notificationButtons.forEach(function (button) { button.setAttribute("aria-expanded", "false"); });
+          showCommunityToast("로그인이 필요합니다", "알림은 로그인 후 확인할 수 있습니다.", "warning");
+          return;
+        }
         notificationPanel.hidden = !willOpen;
         forceNotificationPanelBox(willOpen);
         notificationButtons.forEach(function (button) { button.setAttribute("aria-expanded", willOpen ? "true" : "false"); });
         if (!willOpen) return;
         notificationPanel.innerHTML = "<strong>알림</strong><p>알림을 불러오는 중입니다.</p>";
         if (!communityAuthState.authenticated) {
-          notificationPanel.innerHTML = '<strong>알림</strong><p>로그인 후 알림을 확인할 수 있습니다.</p><a class="sellerdit-notification-login" href="' + loginUrl() + '">로그인</a>';
+          showCommunityToast("로그인이 필요합니다", "알림은 로그인 후 확인할 수 있습니다.", "warning");
+          notificationPanel.hidden = true;
+          forceNotificationPanelBox(false);
+          notificationButtons.forEach(function (button) { button.setAttribute("aria-expanded", "false"); });
           return;
         }
         try {
@@ -2845,7 +2895,7 @@ function renderCommunityScript(postSlug = "") {
           drawer && drawer.setAttribute("aria-hidden", collapsed ? "true" : "false");
           return;
         }
-        setDrawer(true);
+        setDrawer(!document.body.classList.contains("sellerdit-drawer-open"));
       });
       document.querySelectorAll("[data-mobile-drawer-close]").forEach(function (button) {
         button.addEventListener("click", function () { setDrawer(false); });
