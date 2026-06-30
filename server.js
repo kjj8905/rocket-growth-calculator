@@ -802,11 +802,14 @@ function renderIndexHtml() {
   const filePath = path.join(__dirname, "index.html");
   let html = fs.readFileSync(filePath, "utf8")
     .replaceAll("__SITE_URL__", PUBLIC_SITE_URL)
-    .replace('<link rel="stylesheet" href="./styles.css" />', '<link rel="stylesheet" href="/styles.css?v=20260630-sellerdit-mobile-fix-v10" />');
+    .replace('<link rel="stylesheet" href="./styles.css" />', '<link rel="stylesheet" href="/styles.css?v=20260630-sellerdit-mobile-fix-v12" />');
   const headerStart = html.indexOf('<header class="community-topbar sellerdit-topbar sellerdit-home-topbar">');
   const headerEnd = html.indexOf('</header>', headerStart);
   if (headerStart !== -1 && headerEnd !== -1) {
     html = `${html.slice(0, headerStart)}${renderCommunityHeader("home")}${html.slice(headerEnd + '</header>'.length)}`;
+  }
+  if (!html.includes("data-sellerdit-community-script")) {
+    html = html.replace("</body>", `${renderCommunityScript().replace("<script>", "<script data-sellerdit-community-script>")}</body>`);
   }
   return html;
 }
@@ -2175,6 +2178,8 @@ function renderCommunityHeader(activeKey, currentUser = null) {
     ? (meProfile.avatarUrl ? `<span class="sellerdit-top-avatar has-image"><img src="${escapeHtml(meProfile.avatarUrl)}" alt="" loading="lazy"></span>` : `<span class="sellerdit-top-avatar" style="background:${escapeHtml(getCommunityAuthorColor(meProfile.nickname))}">${escapeHtml(getCommunityAuthorInitial(meProfile.nickname))}</span>`)
     : "";
   const categoryBar = `<nav class="sellerdit-top-categorybar" aria-label="상단 카테고리"><a href="/">로켓그로스 계산기</a><a href="/trends">검색트렌드</a><a class="sellerdit-nav-wordlogo" href="/community" aria-label="셀러딧 커뮤니티"><span>셀러딧</span></a></nav>`;
+  const needsFallbackDrawer = ["home", "trends", "guides"].includes(activeKey || "");
+  const fallbackDrawer = needsFallbackDrawer ? renderCommunityLeftRail(activeKey || "community", currentUser) : "";
   return `<header class="community-topbar sellerdit-topbar sellerdit-reddit-topbar" data-active-section="${escapeHtml(activeKey || "community")}">
     <div class="sellerdit-topbar-inner">
       <button class="sellerdit-mobile-icon topbar-hamburger" type="button" aria-label="왼쪽 메뉴 토글" aria-controls="sellerdit-mobile-drawer" aria-expanded="false" data-mobile-drawer-open>
@@ -2215,6 +2220,7 @@ function renderCommunityHeader(activeKey, currentUser = null) {
       </div>
     </div>
   </header>
+  ${fallbackDrawer}
   <div class="sellerdit-mobile-drawer-overlay" data-mobile-drawer-close hidden></div>
   <nav class="sellerdit-bottom-tab" aria-label="셀러딧 하단 탭">
     <a class="${activeKey === "community" ? "is-active" : ""}" href="/community"><span>⌂</span><em>홈</em></a>
@@ -2460,7 +2466,7 @@ function renderTrendPage(trends) {
       </section>
     </main>`,
     jsonLd: buildTrendPageJsonLd(title, description, canonicalUrl, trends),
-    script: renderTrendScript(),
+    script: `${renderTrendScript()}${renderCommunityScript()}`,
   });
 }
 
@@ -2745,10 +2751,40 @@ function renderCommunityScript(postSlug = "") {
           return '<a class="sellerdit-notification-item" href="' + href + '"><span>' + notificationEscape(item.title || "새 알림") + '</span><em>' + notificationEscape(item.message || "") + '</em></a>';
         }).join("") + "</div>";
       }
+      function forceNotificationPanelBox(open) {
+        var wrap = document.querySelector("[data-notification-wrap]");
+        if (wrap) {
+          wrap.style.setProperty("display", "inline-grid", "important");
+          wrap.style.setProperty("visibility", "visible", "important");
+          wrap.style.setProperty("opacity", "1", "important");
+          wrap.style.setProperty("width", "44px", "important");
+          wrap.style.setProperty("height", "44px", "important");
+          wrap.style.setProperty("pointer-events", "auto", "important");
+        }
+        if (!notificationPanel) return;
+        if (!open) {
+          notificationPanel.style.setProperty("display", "none", "important");
+          return;
+        }
+        notificationPanel.style.setProperty("display", "block", "important");
+        notificationPanel.style.setProperty("position", "fixed", "important");
+        notificationPanel.style.setProperty("top", "72px", "important");
+        notificationPanel.style.setProperty("left", "10px", "important");
+        notificationPanel.style.setProperty("right", "10px", "important");
+        notificationPanel.style.setProperty("width", "calc(100vw - 20px)", "important");
+        notificationPanel.style.setProperty("min-height", "72px", "important");
+        notificationPanel.style.setProperty("height", "auto", "important");
+        notificationPanel.style.setProperty("box-sizing", "border-box", "important");
+        notificationPanel.style.setProperty("z-index", "1400", "important");
+        notificationPanel.style.setProperty("visibility", "visible", "important");
+        notificationPanel.style.setProperty("opacity", "1", "important");
+        notificationPanel.style.setProperty("transform", "none", "important");
+      }
       async function toggleNotifications() {
         if (!notificationButton || !notificationPanel) return;
         var willOpen = notificationPanel.hidden;
         notificationPanel.hidden = !willOpen;
+        forceNotificationPanelBox(willOpen);
         notificationButtons.forEach(function (button) { button.setAttribute("aria-expanded", willOpen ? "true" : "false"); });
         if (!willOpen) return;
         notificationPanel.innerHTML = "<strong>알림</strong><p>알림을 불러오는 중입니다.</p>";
@@ -2780,6 +2816,7 @@ function renderCommunityScript(postSlug = "") {
         if (!notificationPanel || notificationPanel.hidden) return;
         if (event.target.closest("[data-notification-wrap]")) return;
         notificationPanel.hidden = true;
+        forceNotificationPanelBox(false);
         notificationButtons.forEach(function (button) { button.setAttribute("aria-expanded", "false"); });
       });
 
@@ -3543,6 +3580,7 @@ function renderGuideIndexPage() {
       </section>
     </main>`,
     jsonLd: buildGuideIndexJsonLd(title, description, canonicalUrl),
+    script: renderCommunityScript(),
   });
 }
 
@@ -3614,6 +3652,7 @@ function renderGuidePage(guide) {
       </section>
     </main>`,
     jsonLd: buildGuideJsonLd(guide, canonicalUrl),
+    script: renderCommunityScript(),
   });
 }
 
@@ -3635,6 +3674,7 @@ function renderNotFoundPage() {
       </article>
     </main>`,
     jsonLd: null,
+    script: renderCommunityScript(),
   });
 }
 
@@ -3699,7 +3739,7 @@ function renderDocumentShell({ title, description, canonicalUrl, body, jsonLd, s
     <meta name="twitter:description" content="${escapeHtml(description)}" />
     <meta name="twitter:image" content="${PUBLIC_SITE_URL}/assets/site-flow.svg" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
-    <link rel="stylesheet" href="/styles.css?v=20260630-sellerdit-mobile-fix-v10" />
+    <link rel="stylesheet" href="/styles.css?v=20260630-sellerdit-mobile-fix-v12" />
     <style>
       .sellerdit-profile-menu-wrap{position:relative!important;display:inline-flex!important;align-items:center!important}.sellerdit-profile-menu{position:absolute!important;top:calc(100% + 10px)!important;right:0!important;min-width:188px!important;padding:8px!important;border:1px solid rgba(15,23,42,.12)!important;border-radius:14px!important;background:#fff!important;box-shadow:0 18px 45px rgba(15,23,42,.18)!important;z-index:1300!important}.sellerdit-profile-menu[hidden]{display:none!important}.sellerdit-profile-menu::before{content:"";position:absolute;top:-6px;right:14px;width:12px;height:12px;background:#fff;border-left:1px solid rgba(15,23,42,.12);border-top:1px solid rgba(15,23,42,.12);transform:rotate(45deg)}.sellerdit-profile-menu a,.sellerdit-profile-menu button{width:100%!important;min-height:38px!important;display:flex!important;align-items:center!important;gap:8px!important;padding:0 12px!important;border:0!important;border-radius:10px!important;background:transparent!important;color:#0f172a!important;font:700 13px/1 Pretendard,system-ui,sans-serif!important;text-align:left!important;text-decoration:none!important;cursor:pointer!important}.sellerdit-profile-menu a:hover,.sellerdit-profile-menu button:hover,.sellerdit-profile-menu a:focus-visible,.sellerdit-profile-menu button:focus-visible{background:#f1f5f9!important;outline:none!important}.sellerdit-profile-menu button{color:#dc2626!important}@media (max-width:767.98px){.sellerdit-profile-menu{position:fixed!important;top:64px!important;right:12px!important;left:auto!important;width:min(220px,calc(100vw - 24px))!important}}
     </style>

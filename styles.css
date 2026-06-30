@@ -27519,3 +27519,45 @@ html body:has(.sellerdit-topbar) main.community-shell .sellerdit-recent-title {
     padding-top: 56px !important;
   }
 }
+
+
+/* Sellerdit mobile notification visible-box and fallback drawer fix — 20260630 */
+@media (max-width: 1023.98px) {
+  html body:has(.sellerdit-topbar) .sellerdit-reddit-actions .sellerdit-notification-wrap,
+  html body:has(.community-shell):has(.sellerdit-topbar) .sellerdit-reddit-actions .sellerdit-notification-wrap,
+  html body:has(.sellerdit-topbar) [data-notification-wrap] {
+    display: inline-grid !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    place-items: center !important;
+    position: static !important;
+    width: 44px !important;
+    min-width: 44px !important;
+    height: 44px !important;
+    pointer-events: auto !important;
+  }
+  html body:has(.sellerdit-topbar) .sellerdit-notification-panel:not([hidden]),
+  html body:has(.community-shell):has(.sellerdit-topbar) .sellerdit-notification-panel:not([hidden]),
+  html body:has(.sellerdit-topbar) [data-notification-panel]:not([hidden]) {
+    display: block !important;
+    position: fixed !important;
+    top: 72px !important;
+    left: 10px !important;
+    right: 10px !important;
+    width: calc(100vw - 20px) !important;
+    min-width: 0 !important;
+    max-width: calc(100vw - 20px) !important;
+    min-height: 72px !important;
+    height: auto !important;
+    padding: 12px !important;
+    box-sizing: border-box !important;
+    z-index: 1400 !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    transform: none !important;
+    pointer-events: auto !important;
+  }
+  html body:has(.sellerdit-topbar) #sellerdit-mobile-drawer.sellerdit-reddit-left-rail {
+    display: block !important;
+  }
+}
