@@ -1610,16 +1610,11 @@ function renderCommunityBlogPage(query = {}, currentUser = null) {
   const posts = attachCommunityPostsState(getCommunityPosts({ ...feedOptions, limit: pageSize, offset: (page - 1) * pageSize }), currentUser);
   const canonicalUrl = `${PUBLIC_SITE_URL}/community/blog`;
   const title = "내 블로그 | 셀러딧";
-  const description = "셀러 경험, 계산 사례, 상품 소싱 기록을 검색 유입형 블로그 글로 쌓는 셀러딧 내 블로그 영역입니다.";
+  const description = "셀러 경험, 계산 사례, 상품 소싱 기록을 모아 보는 셀러딧 내 블로그 영역입니다.";
   const blogGuide = `<section class="sellerdit-blog-hero" aria-labelledby="sellerdit-blog-title">
-      <span>SEO 블로그</span>
+      <span>MY BLOG</span>
       <h1 id="sellerdit-blog-title">내 블로그</h1>
-      <p>상품 소싱, 로켓그로스 비용 계산, 입고·정산 사례를 검색 유입형 글로 쌓는 공간입니다.</p>
-      <ul>
-        <li>제목은 검색어 + 문제 상황을 함께 적습니다.</li>
-        <li>본문 첫 문단에 결론과 계산 기준을 먼저 씁니다.</li>
-        <li>관련 계산기·가이드·커뮤니티 글을 내부 링크로 연결합니다.</li>
-      </ul>
+      <p>상품 소싱, 로켓그로스 비용 계산, 입고·정산 사례를 블로그 글로 정리해 두는 공간입니다.</p>
       <a href="#community-write">블로그 글 작성</a>
     </section>`;
 
