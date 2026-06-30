@@ -659,10 +659,6 @@ app.get(["/community/suppliers", "/community/suppliers/"], (req, res) => {
 });
 
 app.get(["/community/saved", "/community/saved/"], (req, res) => {
-  if (!req.currentUser) {
-    res.redirect(302, `/auth/kakao/start?returnTo=${encodeURIComponent(req.originalUrl)}`);
-    return;
-  }
   res.type("html").send(renderCommunitySavedPage(req.currentUser));
 });
 
@@ -806,7 +802,7 @@ function renderIndexHtml() {
   const filePath = path.join(__dirname, "index.html");
   let html = fs.readFileSync(filePath, "utf8")
     .replaceAll("__SITE_URL__", PUBLIC_SITE_URL)
-    .replace('<link rel="stylesheet" href="./styles.css" />', '<link rel="stylesheet" href="/styles.css?v=20260630-sellerdit-profile-type-v9" />');
+    .replace('<link rel="stylesheet" href="./styles.css" />', '<link rel="stylesheet" href="/styles.css?v=20260630-sellerdit-mobile-fix-v10" />');
   const headerStart = html.indexOf('<header class="community-topbar sellerdit-topbar sellerdit-home-topbar">');
   const headerEnd = html.indexOf('</header>', headerStart);
   if (headerStart !== -1 && headerEnd !== -1) {
@@ -992,9 +988,11 @@ function renderCommunityFeed(posts, emptyText = "아직 등록된 글이 없습�
 }
 
 function renderCommunitySavedPage(currentUser) {
-  const posts = getSavedCommunityPosts(currentUser.id).map((post) => attachCommunityPostState(post, currentUser));
+  const posts = currentUser ? getSavedCommunityPosts(currentUser.id).map((post) => attachCommunityPostState(post, currentUser)) : [];
   const title = "저장한 글 | 셀러딧";
   const canonicalUrl = `${PUBLIC_SITE_URL}/community/saved`;
+  const emptyMessage = currentUser ? "아직 저장한 글이 없습니다. 게시글의 북마크 버튼을 누르면 여기에 모입니다." : "로그인 후 저장한 글을 확인할 수 있습니다.";
+  const loginCta = currentUser ? "" : `<div class="sellerdit-login-required"><strong>저장한 글은 로그인 후 확인할 수 있습니다.</strong><a href="/auth/kakao/start?returnTo=${encodeURIComponent('/community/saved')}">로그인하기</a></div>`;
   return renderDocumentShell({
     title,
     description: "셀러딧에서 저장한 커뮤니티 게시글을 모아보는 공간입니다.",
@@ -1011,7 +1009,8 @@ function renderCommunitySavedPage(currentUser) {
             <h1 id="sellerdit-saved-title">저장한 글</h1>
             <p>북마크한 게시글을 여기서 다시 확인합니다.</p>
           </header>
-          ${renderCommunityFeed(posts, "아직 저장한 글이 없습니다. 게시글의 북마크 버튼을 누르면 여기에 모입니다.")}
+          ${loginCta}
+          ${renderCommunityFeed(posts, emptyMessage)}
           ${renderCommunityWritePanel()}
         </section>
         ${renderSellerditRightRail("detail", getCommunityPosts({ sort: "hot", limit: 4 }))}
@@ -1503,7 +1502,7 @@ function renderCommunitySupplierFilterRail(supplierTiles = [], communityCount = 
   ];
   const renderNavItem = ([icon, href, label, active = false]) => `<a class="sellerdit-lnav-item ${active ? "is-active" : ""} ${icon === "create" ? "is-create-only" : ""}" href="${href}" ${icon === "create" ? 'aria-label="게시물 작성" title="게시물 작성"' : ""}><span class="sellerdit-lnav-ic">${sellerditIcon(icon)}</span><span>${escapeHtml(label)}</span></a>`;
   const renderFilterItem = ([value, label, count], index) => `<button class="sellerdit-lnav-item sellerdit-supplier-filter-item ${index === 0 ? "is-active" : ""}" type="button" data-supplier-filter="${escapeHtml(value)}"><span>${escapeHtml(label)}</span><em class="sellerdit-lnav-count">${escapeHtml(String(count))}</em></button>`;
-  return `<aside class="community-left-rail sellerdit-left-rail sellerdit-reddit-left-rail sellerdit-supplier-filter-rail" aria-label="셀러딧 왼쪽 메뉴">
+  return `<aside id="sellerdit-mobile-drawer" class="community-left-rail sellerdit-left-rail sellerdit-reddit-left-rail sellerdit-supplier-filter-rail" aria-label="셀러딧 왼쪽 메뉴" aria-hidden="true">
     <nav class="sellerdit-lnav" aria-label="셀러딧 섹션">
       ${topItems.map(renderNavItem).join("")}
       <div class="sellerdit-lnav-sec">바로가기</div>
@@ -3700,7 +3699,7 @@ function renderDocumentShell({ title, description, canonicalUrl, body, jsonLd, s
     <meta name="twitter:description" content="${escapeHtml(description)}" />
     <meta name="twitter:image" content="${PUBLIC_SITE_URL}/assets/site-flow.svg" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
-    <link rel="stylesheet" href="/styles.css?v=20260630-sellerdit-profile-type-v9" />
+    <link rel="stylesheet" href="/styles.css?v=20260630-sellerdit-mobile-fix-v10" />
     <style>
       .sellerdit-profile-menu-wrap{position:relative!important;display:inline-flex!important;align-items:center!important}.sellerdit-profile-menu{position:absolute!important;top:calc(100% + 10px)!important;right:0!important;min-width:188px!important;padding:8px!important;border:1px solid rgba(15,23,42,.12)!important;border-radius:14px!important;background:#fff!important;box-shadow:0 18px 45px rgba(15,23,42,.18)!important;z-index:1300!important}.sellerdit-profile-menu[hidden]{display:none!important}.sellerdit-profile-menu::before{content:"";position:absolute;top:-6px;right:14px;width:12px;height:12px;background:#fff;border-left:1px solid rgba(15,23,42,.12);border-top:1px solid rgba(15,23,42,.12);transform:rotate(45deg)}.sellerdit-profile-menu a,.sellerdit-profile-menu button{width:100%!important;min-height:38px!important;display:flex!important;align-items:center!important;gap:8px!important;padding:0 12px!important;border:0!important;border-radius:10px!important;background:transparent!important;color:#0f172a!important;font:700 13px/1 Pretendard,system-ui,sans-serif!important;text-align:left!important;text-decoration:none!important;cursor:pointer!important}.sellerdit-profile-menu a:hover,.sellerdit-profile-menu button:hover,.sellerdit-profile-menu a:focus-visible,.sellerdit-profile-menu button:focus-visible{background:#f1f5f9!important;outline:none!important}.sellerdit-profile-menu button{color:#dc2626!important}@media (max-width:767.98px){.sellerdit-profile-menu{position:fixed!important;top:64px!important;right:12px!important;left:auto!important;width:min(220px,calc(100vw - 24px))!important}}
     </style>
