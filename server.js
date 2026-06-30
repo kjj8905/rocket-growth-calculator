@@ -1221,27 +1221,35 @@ function renderKillerContentPanel() {
   </section>`;
 }
 
-function renderSellerditRecentPostsPanel() {
-  const posts = getCommunityPosts({ sort: "new", limit: 3 });
-  const fallbacks = [
-    { community: "r/로켓그로스", title: "입고 전 꼭 확인할 비용 7가지", commentsCount: 8, likesCount: 290, createdAt: "12시간 전", color: "#2563eb", image: "/assets/final-cost-summary.svg", imageCount: 2 },
-    { community: "r/1688사입", title: "1688 상품단가 말고 어떤 비용을 더 봐야 하나요?", commentsCount: 25, likesCount: 75, createdAt: "4일 전", color: "#f97316", image: "/assets/china-sourcing.svg", imageCount: 3 },
-    { community: "r/초보셀러", title: "판매가 19,900원인데 마진이 남을까요?", commentsCount: 10, likesCount: 528, createdAt: "1일 전", color: "#8b5cf6", image: "/assets/coupang-costs.svg", imageCount: 10 },
-  ];
+function renderSellerditRecentPostsPanel(options = {}) {
+  const isBlog = options.category === "blog";
+  const posts = getCommunityPosts({ category: options.category || undefined, notice: false, sort: isBlog ? "hot" : "new", limit: 3 });
+  const fallbacks = isBlog
+    ? [
+        { community: "내 블로그", title: "로켓그로스 입고 전 꼭 확인할 비용 7가지", commentsCount: 8, likesCount: 290, createdAt: "12시간 전", color: "#2563eb", image: "/assets/final-cost-summary.svg", imageCount: 2 },
+        { community: "내 블로그", title: "LCL 견적에 국내 운송비가 빠져 있으면 어떻게 계산하나요?", commentsCount: 25, likesCount: 75, createdAt: "4일 전", color: "#475569", image: "/assets/china-sourcing.svg", imageCount: 3 },
+        { community: "내 블로그", title: "중국 사입에서 CBM을 잘못 넣으면 생기는 문제", commentsCount: 10, likesCount: 528, createdAt: "1일 전", color: "#64748b", image: "/assets/coupang-costs.svg", imageCount: 10 },
+      ]
+    : [
+        { community: "r/로켓그로스", title: "입고 전 꼭 확인할 비용 7가지", commentsCount: 8, likesCount: 290, createdAt: "12시간 전", color: "#2563eb", image: "/assets/final-cost-summary.svg", imageCount: 2 },
+        { community: "r/1688사입", title: "1688 상품단가 말고 어떤 비용을 더 봐야 하나요?", commentsCount: 25, likesCount: 75, createdAt: "4일 전", color: "#f97316", image: "/assets/china-sourcing.svg", imageCount: 3 },
+        { community: "r/초보셀러", title: "판매가 19,900원인데 마진이 남을까요?", commentsCount: 10, likesCount: 528, createdAt: "1일 전", color: "#8b5cf6", image: "/assets/coupang-costs.svg", imageCount: 10 },
+      ];
   const source = posts.length ? posts : fallbacks;
+  const panelTitle = options.title || (isBlog ? "내 블로그 인기글" : "인기 게시물");
   const elapsed = (value, index) => {
     if (String(value || "").includes("전")) return value;
     return ["12시간 전", "4일 전", "1일 전"][index] || "방금 전";
   };
-  const communityName = (post, index) => post.community || ["r/로켓그로스", "r/1688사입", "r/초보셀러"][index] || "r/셀러딧";
+  const communityName = (post, index) => post.community || (isBlog ? "내 블로그" : ["r/로켓그로스", "r/1688사입", "r/초보셀러"][index]) || "r/셀러딧";
   const imageFor = (post, index) => post.image || ["/assets/final-cost-summary.svg", "/assets/china-sourcing.svg", "/assets/coupang-costs.svg"][index] || "";
-  return `<section class="sellerdit-recent-posts-panel" aria-label="인기 게시물">
-    <div class="sellerdit-recent-posts-head"><span style="color:#334155;font-size:13px;font-weight:500;line-height:18px">인기 게시물</span></div>
+  return `<section class="sellerdit-recent-posts-panel" aria-label="${escapeHtml(panelTitle)}">
+    <div class="sellerdit-recent-posts-head"><span style="color:#334155;font-size:13px;font-weight:500;line-height:18px">${escapeHtml(panelTitle)}</span></div>
     <div class="sellerdit-recent-posts-list">
       ${source.slice(0, 3).map((post, index) => {
         const fallback = fallbacks[index] || fallbacks[0];
         const title = post.slug ? getThreadPostSeoTitle(post, 90) : (post.title || fallback.title);
-        const href = post.slug ? `/community/${escapeHtml(post.slug)}` : "/community";
+        const href = post.slug ? `/community/${escapeHtml(post.slug)}` : (isBlog ? "/community/blog" : "/community");
         const likes = formatInteger(post.likesCount ?? fallback.likesCount ?? 0);
         const comments = formatInteger(post.commentsCount ?? fallback.commentsCount ?? 0);
         const community = communityName(post, index);
@@ -1631,12 +1639,7 @@ function renderCommunityBlogPage(query = {}, currentUser = null) {
           ${renderCommunityPager("/community/blog", page, totalPages, search, sort, "")}
           ${renderCommunityWritePanel("blog")}`,
       rightRail: `<aside class="community-right-rail sellerdit-right-rail sellerdit-blog-right-rail">
-          <section class="sellerdit-widget sellerdit-blog-seo-card">
-            <h2>노출 최적화 체크</h2>
-            <p>검색어를 제목·첫 문단·소제목에 자연스럽게 넣고, 계산기와 관련 글을 내부 링크로 연결하세요.</p>
-            <a href="/trends">검색 트렌드 보기</a>
-          </section>
-          ${renderSellerditRecentPostsPanel()}
+          ${renderSellerditRecentPostsPanel({ category: "blog", title: "내 블로그 인기글" })}
         </aside>`,
     }),
     jsonLd: buildCommunityCategoryJsonLd(category, canonicalUrl, posts),
