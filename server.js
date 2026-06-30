@@ -674,6 +674,10 @@ app.get(["/community/saved", "/community/saved/"], (req, res) => {
   res.type("html").send(renderCommunitySavedPage(req.currentUser));
 });
 
+app.get(["/community/blog", "/community/blog/"], (req, res) => {
+  res.type("html").send(renderCommunityBlogPage(req.query, req.currentUser));
+});
+
 app.get(["/community/profile/edit", "/community/profile/edit/"], (req, res) => {
   if (!req.currentUser) {
     res.redirect(302, `/auth/kakao/start?returnTo=${encodeURIComponent(req.originalUrl)}`);
@@ -690,7 +694,7 @@ app.get("/suppliers/:slug", (req, res) => {
   }
   res.redirect(302, `/community/suppliers?source=${encodeURIComponent(supplier.slug)}`);
 });
-app.get("/community/:category(china-sourcing|china-korea-logistics|korea-coupang-inbound|coupang-selling-cost|final-margin|qna)", (req, res) => {
+app.get("/community/:category(china-sourcing|china-korea-logistics|korea-coupang-inbound|coupang-selling-cost|final-margin|qna|blog)", (req, res) => {
   res.type("html").send(renderCommunityCategoryPage(req.params.category, req.query, req.currentUser));
 });
 
@@ -814,7 +818,7 @@ function renderIndexHtml() {
   const filePath = path.join(__dirname, "index.html");
   let html = fs.readFileSync(filePath, "utf8")
     .replaceAll("__SITE_URL__", PUBLIC_SITE_URL)
-    .replace('<link rel="stylesheet" href="./styles.css" />', '<link rel="stylesheet" href="/styles.css?v=20260630-mobile-topbar-safe-v3" />');
+    .replace('<link rel="stylesheet" href="./styles.css" />', '<link rel="stylesheet" href="/styles.css?v=20260630-blog-write-follow-v2" />');
   const headerStart = html.indexOf('<header class="community-topbar sellerdit-topbar sellerdit-home-topbar">');
   const headerEnd = html.indexOf('</header>', headerStart);
   if (headerStart !== -1 && headerEnd !== -1) {
@@ -988,6 +992,7 @@ function getCommunityThumbTitle(categorySlug) {
     "coupang-selling-cost": "수수료",
     "final-margin": "마진",
     qna: "Q&A",
+    blog: "BLOG",
   };
   return titles[categorySlug] || "계산";
 }
@@ -1056,7 +1061,8 @@ function sellerditIcon(name) {
     popular: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m10 14 4-4"/><path d="M10 10h4v4"/></svg>',
     notice: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h14v12H4z"/><path d="M8 10h7"/><path d="M8 14h5"/><path d="M18 9h2v8h-2"/></svg>',
     explore: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="18" r="2"/><circle cx="18" cy="6" r="2"/><circle cx="8" cy="7" r="2"/><path d="m9.6 8.2 5.8-1.4"/><path d="m7.2 16.3.8-7.4"/><path d="m7.6 17 9.1-9.6"/></svg>',
-    create: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v8"/><path d="M8 12h8"/></svg>',
+    create: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4.5L19 9.5 14.5 5 4 15.5V20Z"/><path d="m13.5 6 4.5 4.5"/></svg>',
+    blog: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h10l4 4v12H5z"/><path d="M14 4v5h5"/><path d="M8 13h8"/><path d="M8 17h6"/></svg>',
     calc: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="3" width="12" height="18" rx="2"/><path d="M9 7h6"/><path d="M9 11h.01M12 11h.01M15 11h.01M9 15h.01M12 15h.01M15 15h.01"/></svg>',
     trend: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16l5-5 4 4 7-8"/><path d="M15 7h5v5"/></svg>',
     guide: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4h9v16H8a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3Z"/><path d="M9 8h5"/><path d="M9 12h5"/><path d="M9 16h4"/></svg>',
@@ -1070,7 +1076,8 @@ function renderCommunityLeftRail(activeKey = "community", currentUser = null) {
     ["home", "/community", "홈", activeKey === "community"],
     ["popular", "/community?sort=hot", "인기", false],
     ["bookmark", "/community/saved", "저장한 글", activeKey === "saved"],
-    ["create", "#community-write", "+", false],
+    ["blog", "/community/blog", "내 블로그", activeKey === "blog"],
+    ["create", "#community-write", "글쓰기", false],
   ];
   const quickItems = [
     ["calc", "/", "로켓계산기"],
@@ -1354,6 +1361,7 @@ function getCommunityCalculatorHref(categorySlug) {
     "coupang-selling-cost": "/?calc=coupang",
     "final-margin": "/?calc=final",
     qna: "/",
+    blog: "/trends",
   };
   return routes[categorySlug] || "/";
 }
@@ -1366,6 +1374,7 @@ function getCommunityGuideHref(categorySlug) {
     "coupang-selling-cost": "/guides/coupang-fee",
     "final-margin": "/guides/rocket-growth-calculator",
     qna: "/guides",
+    blog: "/guides",
   };
   return routes[categorySlug] || "/guides";
 }
@@ -1507,7 +1516,8 @@ function renderCommunitySupplierFilterRail(supplierTiles = [], communityCount = 
   const topItems = [
     ["home", "/community", "홈", false],
     ["popular", "/community?sort=hot", "인기", false],
-    ["create", "#community-write", "+", false],
+    ["blog", "/community/blog", "내 블로그", false],
+    ["create", "#community-write", "글쓰기", false],
   ];
   const quickItems = [
     ["calc", "/", "로켓계산기"],
@@ -1580,6 +1590,61 @@ function renderCommunitySupplierDirectoryPage(query = {}, currentUser = null) {
   });
 }
 
+function renderCommunityBlogPage(query = {}, currentUser = null) {
+  const category = COMMUNITY_CATEGORIES.blog;
+  const sort = COMMUNITY_SORTS[query.sort] ? String(query.sort) : "new";
+  const search = String(query.q || "").trim().slice(0, 60);
+  const pageSize = 12;
+  const feedOptions = { category: "blog", notice: false, sort, search };
+  const total = countCommunityPosts(feedOptions);
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const page = Math.min(Math.max(1, Number(query.page) || 1), totalPages);
+  const posts = attachCommunityPostsState(getCommunityPosts({ ...feedOptions, limit: pageSize, offset: (page - 1) * pageSize }), currentUser);
+  const canonicalUrl = `${PUBLIC_SITE_URL}/community/blog`;
+  const title = "내 블로그 | 셀러딧";
+  const description = "셀러 경험, 계산 사례, 상품 소싱 기록을 검색 유입형 블로그 글로 쌓는 셀러딧 내 블로그 영역입니다.";
+  const blogGuide = `<section class="sellerdit-blog-hero" aria-labelledby="sellerdit-blog-title">
+      <span>SEO 블로그</span>
+      <h1 id="sellerdit-blog-title">내 블로그</h1>
+      <p>상품 소싱, 로켓그로스 비용 계산, 입고·정산 사례를 검색 유입형 글로 쌓는 공간입니다.</p>
+      <ul>
+        <li>제목은 검색어 + 문제 상황을 함께 적습니다.</li>
+        <li>본문 첫 문단에 결론과 계산 기준을 먼저 씁니다.</li>
+        <li>관련 계산기·가이드·커뮤니티 글을 내부 링크로 연결합니다.</li>
+      </ul>
+      <a href="#community-write">블로그 글 작성</a>
+    </section>`;
+
+  return renderDocumentShell({
+    title,
+    description,
+    canonicalUrl,
+    body: renderSellerditAppShell({
+      activeKey: "blog",
+      currentUser,
+      layoutClass: "community-workspace community-reddit-layout sellerdit-blog-layout",
+      contentClass: "community-feed-panel sellerdit-blog-main",
+      contentAttrs: 'aria-labelledby="sellerdit-blog-title"',
+      content: `${blogGuide}
+          ${renderCommunitySortBar("/community/blog", sort, search, "", "", "list")}
+          ${renderCommunityFeed(posts, search ? "검색 결과가 없습니다. 다른 키워드로 찾아보세요." : "아직 블로그 글이 없습니다. 첫 글을 작성해 보세요.")}
+          ${renderCommunityPager("/community/blog", page, totalPages, search, sort, "")}
+          ${renderCommunityWritePanel("blog")}`,
+      rightRail: `<aside class="community-right-rail sellerdit-right-rail sellerdit-blog-right-rail">
+          <section class="sellerdit-widget sellerdit-blog-seo-card">
+            <h2>노출 최적화 체크</h2>
+            <p>검색어를 제목·첫 문단·소제목에 자연스럽게 넣고, 계산기와 관련 글을 내부 링크로 연결하세요.</p>
+            <a href="/trends">검색 트렌드 보기</a>
+          </section>
+          ${renderSellerditRecentPostsPanel()}
+        </aside>`,
+    }),
+    jsonLd: buildCommunityCategoryJsonLd(category, canonicalUrl, posts),
+    ogType: "website",
+    script: renderCommunityScript(),
+  });
+}
+
 function renderCommunityAiAnswerPage(query = {}, currentUser = null) {
   const search = String(query.q || "").trim().slice(0, 80);
   const qnaPosts = getCommunityPosts({ category: "qna", notice: false, sort: "hot", limit: 8 });
@@ -1642,6 +1707,9 @@ function renderCommunityAiAnswerPage(query = {}, currentUser = null) {
 function renderCommunityCategoryPage(categorySlug, query = {}, currentUser = null) {
   if (categorySlug === "qna") {
     return renderCommunityAiAnswerPage(query, currentUser);
+  }
+  if (categorySlug === "blog") {
+    return renderCommunityBlogPage(query, currentUser);
   }
   const category = COMMUNITY_CATEGORIES[categorySlug] || COMMUNITY_CATEGORIES["final-margin"];
   const basePath = `/community/${category.slug}`;
@@ -2195,7 +2263,7 @@ function renderCommunityHeader(activeKey, currentUser = null) {
   const avatarMarkup = meProfile
     ? (meProfile.avatarUrl ? `<span class="sellerdit-top-avatar has-image"><img src="${escapeHtml(meProfile.avatarUrl)}" alt="" loading="lazy"></span>` : `<span class="sellerdit-top-avatar" style="background:${escapeHtml(getCommunityAuthorColor(meProfile.nickname))}">${escapeHtml(getCommunityAuthorInitial(meProfile.nickname))}</span>`)
     : "";
-  const categoryBar = `<nav class="sellerdit-top-categorybar" aria-label="상단 카테고리"><a href="/">로켓그로스 계산기</a><a href="/trends">검색트렌드</a><a class="sellerdit-nav-wordlogo" href="/community" aria-label="셀러딧 커뮤니티"><span>셀러딧</span></a></nav>`;
+  const categoryBar = `<nav class="sellerdit-top-categorybar" aria-label="상단 카테고리"><a href="/">로켓그로스 계산기</a><a href="/trends">검색트렌드</a><a class="sellerdit-nav-wordlogo" href="/community" aria-label="셀러딧 커뮤니티"><span>셀러딧</span></a><a class="${activeKey === "blog" ? "is-active" : ""}" href="/community/blog">내 블로그</a></nav>`;
   const needsFallbackDrawer = ["home", "trends", "guides"].includes(activeKey || "");
   const fallbackDrawer = needsFallbackDrawer ? renderCommunityLeftRail(activeKey || "community", currentUser) : "";
   return `<header class="community-topbar sellerdit-topbar sellerdit-reddit-topbar" data-active-section="${escapeHtml(activeKey || "community")}">
@@ -2211,7 +2279,7 @@ function renderCommunityHeader(activeKey, currentUser = null) {
       </form>
       <div class="sellerdit-reddit-actions" aria-label="상단 작업">
         <button class="sellerdit-mobile-icon sellerdit-mobile-search-trigger" type="button" aria-label="검색 열기" data-mobile-search-open><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.5 5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11ZM15 15l4 4"/></svg></button>
-        <a class="sellerdit-create-pill sellerdit-create-desktop" href="#community-write" aria-label="게시물 작성" title="게시물 작성"><svg class="sellerdit-create-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span class="sellerdit-create-hint">게시물 작성</span></a>
+        <a class="sellerdit-create-pill sellerdit-create-desktop" href="#community-write" aria-label="게시물 작성" title="게시물 작성"><svg class="sellerdit-create-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4.5L19 9.5 14.5 5 4 15.5V20Z"/><path d="m13.5 6 4.5 4.5"/></svg><span class="sellerdit-create-hint">게시물 작성</span></a>
         <div class="sellerdit-notification-wrap" data-notification-wrap>
           <button class="sellerdit-reddit-icon sellerdit-notification-desktop" type="button" aria-label="알림" title="알림" aria-expanded="false" aria-controls="sellerdit-notification-panel" data-notification-button><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 9a6 6 0 1 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9Z"/><path d="M9.8 21a2.4 2.4 0 0 0 4.4 0"/></svg></button>
           <div class="sellerdit-notification-panel" id="sellerdit-notification-panel" data-notification-panel hidden><strong>알림</strong><p>알림을 불러오는 중입니다.</p></div>
@@ -2242,7 +2310,7 @@ function renderCommunityHeader(activeKey, currentUser = null) {
   <div class="sellerdit-mobile-drawer-overlay" data-mobile-drawer-close hidden></div>
   <nav class="sellerdit-bottom-tab" aria-label="셀러딧 하단 탭">
     <a class="${activeKey === "community" ? "is-active" : ""}" href="/community"><span>⌂</span><em>홈</em></a>
-    <a class="is-create" href="#community-write" aria-label="게시물 작성"><span>＋</span><em>작성</em></a>
+    <a class="is-create" href="#community-write" aria-label="게시물 작성"><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4.5L19 9.5 14.5 5 4 15.5V20Z"/><path d="m13.5 6 4.5 4.5"/></svg></span><em>작성</em></a>
     <a href="#sellerdit-notifications" role="button" data-notification-button aria-label="알림" aria-expanded="false" aria-controls="sellerdit-notification-panel"><span>♡</span><em>알림</em></a>
     <a class="${activeKey === "saved" ? "is-active" : ""}" href="/community/saved" rel="nofollow"><span>▱</span><em>저장</em></a>
     <a href="${profileHref}" data-auth-button-mobile><span>●</span><em>프로필</em></a>
@@ -3799,7 +3867,7 @@ function renderDocumentShell({ title, description, canonicalUrl, body, jsonLd, s
     <meta name="twitter:description" content="${escapeHtml(description)}" />
     <meta name="twitter:image" content="${PUBLIC_SITE_URL}/assets/site-flow.svg" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
-    <link rel="stylesheet" href="/styles.css?v=20260630-mobile-topbar-safe-v3" />
+    <link rel="stylesheet" href="/styles.css?v=20260630-blog-write-follow-v2" />
     <style>
       .sellerdit-profile-menu-wrap{position:relative!important;display:inline-flex!important;align-items:center!important}.sellerdit-profile-menu{position:absolute!important;top:calc(100% + 10px)!important;right:0!important;min-width:188px!important;padding:8px!important;border:1px solid rgba(15,23,42,.12)!important;border-radius:14px!important;background:#fff!important;box-shadow:0 18px 45px rgba(15,23,42,.18)!important;z-index:1300!important}.sellerdit-profile-menu[hidden]{display:none!important}.sellerdit-profile-menu::before{content:"";position:absolute;top:-6px;right:14px;width:12px;height:12px;background:#fff;border-left:1px solid rgba(15,23,42,.12);border-top:1px solid rgba(15,23,42,.12);transform:rotate(45deg)}.sellerdit-profile-menu a,.sellerdit-profile-menu button{width:100%!important;min-height:38px!important;display:flex!important;align-items:center!important;gap:8px!important;padding:0 12px!important;border:0!important;border-radius:10px!important;background:transparent!important;color:#0f172a!important;font:700 13px/1 Pretendard,system-ui,sans-serif!important;text-align:left!important;text-decoration:none!important;cursor:pointer!important}.sellerdit-profile-menu a:hover,.sellerdit-profile-menu button:hover,.sellerdit-profile-menu a:focus-visible,.sellerdit-profile-menu button:focus-visible{background:#f1f5f9!important;outline:none!important}.sellerdit-profile-menu button{color:#dc2626!important}@media (max-width:767.98px){.sellerdit-profile-menu{position:fixed!important;top:64px!important;right:12px!important;left:auto!important;width:min(220px,calc(100vw - 24px))!important}}
     </style>

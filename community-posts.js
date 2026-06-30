@@ -35,6 +35,12 @@ export const COMMUNITY_CATEGORIES = {
     title: "초보 셀러 질문답변",
     description: "쿠팡셀러와 개인셀러가 자주 묻는 비용, 마진, 입고, 세금 질문을 답변형으로 정리합니다.",
   },
+  blog: {
+    slug: "blog",
+    label: "내 블로그",
+    title: "내 블로그",
+    description: "셀러 경험, 계산 사례, 상품 소싱 기록을 검색 유입용 글로 쌓는 개인 블로그 영역입니다.",
+  },
 };
 
 export const COMMUNITY_STAGE_SLUGS = [
@@ -45,7 +51,7 @@ export const COMMUNITY_STAGE_SLUGS = [
   "final-margin",
 ];
 
-export const COMMUNITY_BOARD_SLUGS = ["qna"];
+export const COMMUNITY_BOARD_SLUGS = ["qna", "blog"];
 
 export const LEGACY_COMMUNITY_CATEGORY_REDIRECTS = {
   tips: "final-margin",

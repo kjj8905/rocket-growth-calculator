@@ -1,8 +1,9 @@
-const CACHE_VERSION = "sellerdit-pwa-v1";
+const CACHE_VERSION = "sellerdit-pwa-v2";
 const APP_SHELL_CACHE = CACHE_VERSION + "-shell";
 const APP_SHELL_URLS = [
   "/community",
   "/community/suppliers",
+  "/community/blog",
   "/styles.css",
   "/app.js",
   "/manifest.webmanifest",

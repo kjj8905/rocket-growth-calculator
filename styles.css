@@ -28037,6 +28037,93 @@ html body:has(.sellerdit-topbar) main.community-shell.sellerdit-layout-shell .se
   line-height: 18px !important;
 }
 
+/* Sellerdit blog area and post-card meta consistency */
+.sellerdit-blog-hero {
+  margin: 0 0 14px !important;
+  padding: 18px 20px !important;
+  border: 1px solid #e7e9ec !important;
+  border-radius: 16px !important;
+  background: linear-gradient(135deg, #f8fbff, #ffffff) !important;
+}
+
+.sellerdit-blog-hero > span {
+  display: inline-flex !important;
+  margin-bottom: 6px !important;
+  color: #2563eb !important;
+  font-size: 12px !important;
+  font-weight: 800 !important;
+}
+
+.sellerdit-blog-hero h1 {
+  margin: 0 0 8px !important;
+  color: #111827 !important;
+  font-size: 22px !important;
+  line-height: 1.25 !important;
+}
+
+.sellerdit-blog-hero p {
+  margin: 0 0 10px !important;
+  color: #475569 !important;
+  font-size: 14px !important;
+  line-height: 1.55 !important;
+}
+
+.sellerdit-blog-hero ul {
+  margin: 0 0 14px !important;
+  padding-left: 18px !important;
+  color: #64748b !important;
+  font-size: 13px !important;
+  line-height: 1.55 !important;
+}
+
+.sellerdit-blog-hero a,
+.sellerdit-blog-seo-card a {
+  display: inline-flex !important;
+  align-items: center !important;
+  min-height: 34px !important;
+  padding: 0 12px !important;
+  border-radius: 999px !important;
+  background: #2563eb !important;
+  color: #ffffff !important;
+  font-size: 13px !important;
+  font-weight: 800 !important;
+  text-decoration: none !important;
+}
+
+.sellerdit-blog-seo-card p {
+  color: #64748b !important;
+  font-size: 13px !important;
+  line-height: 1.55 !important;
+}
+
+html body:has(.sellerdit-topbar) main.community-shell.sellerdit-layout-shell .sellerdit-feed-post .sellerdit-post-meta {
+  display: flex !important;
+  align-items: center !important;
+  gap: 7px !important;
+  width: 100% !important;
+}
+
+html body:has(.sellerdit-topbar) main.community-shell.sellerdit-layout-shell .sellerdit-feed-post .sellerdit-post-meta .sellerdit-follow {
+  flex: 0 0 auto !important;
+  margin-left: 4px !important;
+}
+
+html body:has(.sellerdit-topbar) main.community-shell.sellerdit-layout-shell .sellerdit-feed-post .sellerdit-post-meta .sellerdit-post-more-wrap {
+  flex: 0 0 auto !important;
+  margin-left: auto !important;
+}
+
+html body:has(.sellerdit-topbar) .sellerdit-bottom-tab a.is-create span svg {
+  width: 24px !important;
+  height: 24px !important;
+  display: block !important;
+  fill: none !important;
+  stroke: currentColor !important;
+  stroke-width: 2.25 !important;
+  stroke-linecap: round !important;
+  stroke-linejoin: round !important;
+}
+
 /* Sellerdit mobile topbar safe spacing: prevent first row from being clipped */
 :root {
   --sellerdit-mobile-topbar-height: 124px;

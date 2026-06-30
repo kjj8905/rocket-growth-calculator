@@ -17,6 +17,10 @@ const routes = [
     mustNotContain: ["무지개"],
   },
   {
+    path: "/community/blog",
+    mustContain: ["내 블로그", "sellerdit-blog-hero", "sellerdit-layout-shell", "sellerdit-layout-grid", "블로그 글 작성"],
+  },
+  {
     path: "/u/%EC%B4%88%EB%B3%B4%EC%85%80%EB%9F%AC%EB%AF%BC%EC%88%98",
     mustContain: ["sellerdit-layout-shell", "sellerdit-layout-grid", "sellerdit-profile-header", "sellerdit-profile-feed-list", "sellerdit-profile-card", "프로필 탭"],
   },
